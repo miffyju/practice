@@ -182,7 +182,7 @@ function end(){
   };
 }
 function summary(r){
-  var t="【芷媃的五年級練習站 練習結果】\n日期："+r.date+"\n科目："+r.subject+"\n單元："+r.unit+"\n成績："+r.right+" / "+r.total+"（第一次就答對 "+r.first+" 題，"+r.stars+" 顆星）\n";
+  var t="【芷媃的五年級加油站 練習結果】\n日期："+r.date+"\n科目："+r.subject+"\n單元："+r.unit+"\n成績："+r.right+" / "+r.total+"（第一次就答對 "+r.first+" 題，"+r.stars+" 顆星）\n";
   if(r.wrong.length){ t+="\n需要加強的題目：\n"; r.wrong.forEach(function(w,i){ t+=(i+1)+". "+w.q+"\n   孩子的答案："+w.tries.join("、")+"\n   正確答案："+w.answer+"\n"; }); }
   else t+="\n全部第一次就答對！\n";
   return t;
