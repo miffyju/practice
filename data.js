@@ -440,3 +440,5 @@ window.PRACTICE_DATA = {
 
  ]
 };
+// 數學題顯示「📝 計算紙」：數學科全部單元＋期中考衝刺的數學組
+window.PRACTICE_DATA.subjects.forEach(function(s){ s.units.forEach(function(u){ if(s.id==="math"||u.id==="x6"||u.id==="x12") u.scratch=true; }); });
