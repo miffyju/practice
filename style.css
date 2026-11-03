@@ -51,3 +51,4 @@ td,th{padding:.4rem;border-bottom:1px solid #f0e0d0;text-align:left}
 .muted{color:#7a7a88;font-size:.95rem}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (orientation:landscape) and (min-width:900px){.quiz{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}}
+.say{width:auto;min-height:56px;margin-top:.2rem}

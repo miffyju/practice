@@ -16,6 +16,9 @@ function celebrate(){ var c=document.createElement("div"); c.className="celebrat
   document.body.appendChild(c); setTimeout(function(){c.remove();},2000); }
 var CHEER=["太棒了！","答對了，好厲害！","你真會想！","完全正確！⭐","好聰明喔！"];
 var ENC=["沒關係，再想一想！","差一點點，加油！","慢慢來，你可以的！"];
+function canSpeak(){ return "speechSynthesis" in window && typeof SpeechSynthesisUtterance!=="undefined"; }
+function speak(t){ try{ var ss=window.speechSynthesis; ss.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=0.8;
+  var v=(ss.getVoices()||[]).filter(function(x){return /^en/i.test(x.lang);})[0]; if(v) u.voice=v; ss.speak(u); }catch(e){ toast("這台裝置不能唸喔"); } }
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 
 // ---------- 首頁 ----------
@@ -54,7 +57,7 @@ function showQ(){
   R.cur={tries:[],done:false};
   var h='<div class="muted">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"><div>';
   if(g.u.passage) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(g.u.passage)+'</div>';
-  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div></div></div><div>';
+  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
     h+='<div class="options" role="group" aria-labelledby="qt">';
     shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
@@ -68,6 +71,7 @@ function showQ(){
   }
   h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
   el(h);
+  var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
   } else {
