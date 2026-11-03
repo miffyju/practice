@@ -57,7 +57,7 @@ function showQ(){
   R.cur={tries:[],done:false};
   var h='<div class="muted'+(g.u.color?' tag" style="background:'+g.u.color:'')+'">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"'+(g.u.color?' style="--uc:'+g.u.color+'"':'')+'><div>';
   var pg=q.passage||g.u.passage; if(pg) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(pg)+'</div>';
-  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
+  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽"'+(q.sayAfter?' hidden':'')+'>🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
     h+='<div class="options" role="group" aria-labelledby="qt">';
     shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
@@ -107,7 +107,7 @@ function answer(a, btn){
   }
 }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
-function finishQ(correct){
+function finishQ(correct){ var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本

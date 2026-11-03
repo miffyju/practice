@@ -2,7 +2,7 @@
 // check：驗證用算式（node validate.js 會重新計算）；passage：題目上方顯示的短文（可放在題目或單元）
 // 題目依五上考卷的題型與考點改寫，不是出版社原題。科目顏色同紫嫈網站。
 (function(){
-var C={chinese:"#7ec8a9", math:"#ff9f68", science:"#6cc070", social:"#f2b84b"};
+var C={chinese:"#7ec8a9", math:"#ff9f68", science:"#6cc070", social:"#f2b84b", english:"#b48ee0"};
 
 var P1="　　海拔三千公尺的山屋裡，擠滿了躲雨的登山客。阿嵐和爸爸是最後到的，全身溼透，鞋子裡都是泥水。屋裡已經沒有空位了，阿嵐心裡涼了半截。\n　　這時，一位滿頭白髮的老伯伯挪了挪背包，騰出一個角落；旁邊的大姊姊遞來一杯熱茶；還有人把乾毛巾塞進阿嵐手裡。沒有人問他們是誰，也沒有人要他們道謝。\n　　隔天清晨，雨停了，雲海在腳下翻滾，像一片無邊無際的白色大海。阿嵐站在山頂，想起昨晚那一杯熱茶。她忽然明白，爬山最難忘的，有時不是山頂的風景，而是路上遇見的人。下山時，她把自己多帶的一雙襪子，悄悄留在了山屋的置物架上。";
 var P2="　　外婆家的巷口，有一間開了四十年的麵店。老闆阿德伯從不打廣告，招牌也舊得看不清字，可是每到中午，店門口總是排著長長的人龍。\n　　有一天，一位年輕人拿著企劃書來拜訪，說可以幫他拍廣告、做網路宣傳，讓生意「翻好幾倍」。阿德伯笑著搖搖頭：「我一天只煮得出三百碗麵，生意再好，也只能賣三百碗。」\n　　年輕人不死心：「那您靠什麼讓客人一直回來？」阿德伯指了指鍋裡的湯：「這鍋湯，我每天清晨四點就開始熬。客人吃得出來。」\n　　年輕人愣了一下，把企劃書收回包包裡。離開前，他點了一碗麵，一口一口慢慢吃完。";
@@ -149,11 +149,47 @@ var z5c=[
  {type:"mc", q:"⭐大航海時代，荷蘭人的據點在南部大員，西班牙人的據點在北部基隆。如果從大員沿著西部往北走到基隆，途中最可能經過哪一個勢力的範圍？", options:["大肚王國","澎湖的鄭氏軍營","蘭嶼的達悟族","日本"], answer:"大肚王國", hint:"大肚王國在南北之間的哪裡？", explain:["大肚王國位在臺灣中部","正好在南部荷蘭人與北部西班牙人的據點之間"]}
 ];
 
+
+var e1=[
+ {type:"mc", q:"「珍珠奶茶」的英文是哪一個？", say:"bubble tea", options:["bubble tea","black tea","milk tea","bubble milk"], answer:"bubble tea", hint:"珍珠像一顆顆泡泡（bubble）。", explain:["bubble tea = 珍珠奶茶（Unit 1）","bubble 是泡泡"]},
+ {type:"mc", q:"「豆漿」的英文是哪一個？", say:"soy milk", options:["soy milk","soy sauce","milk tea","rice milk"], answer:"soy milk", hint:"soy 是黃豆。", explain:["soy milk = 豆漿","soy sauce 是醬油，別搞混"]},
+ {type:"mc", q:"「熱巧克力」的英文是哪一個？", say:"hot chocolate", options:["hot chocolate","hot coffee","cold chocolate","hot cola"], answer:"hot chocolate", hint:"hot 是熱的。", explain:["hot chocolate = 熱巧克力"]},
+ {type:"mc", q:"lemonade 是什麼意思？", say:"lemonade", options:["檸檬汁","柳橙汁","可樂","汽水"], answer:"檸檬汁", hint:"前面藏著 lemon（檸檬）。", explain:["lemon + ade → lemonade 檸檬汁"]},
+ {type:"mc", q:"coffee 是什麼意思？", say:"coffee", options:["咖啡","可樂","茶","可可"], answer:"咖啡", hint:"大人早上常喝、會提神的飲料。", explain:["coffee = 咖啡","cola = 可樂，tea = 茶"]},
+ {type:"mc", q:"guava 是什麼水果？", say:"guava", options:["芭樂","木瓜","鳳梨","葡萄"], answer:"芭樂", hint:"臺灣很常見、綠色外皮的水果。", explain:["guava = 芭樂（番石榴）","papaya = 木瓜"]},
+ {type:"mc", q:"papaya 是什麼水果？", say:"papaya", options:["木瓜","芭樂","香蕉","鳳梨"], answer:"木瓜", hint:"pa-pa-ya，橘色果肉、有很多黑色種子。", explain:["papaya = 木瓜"]},
+ {type:"mc", q:"「鳳梨」的英文是哪一個？", say:"pineapple", options:["pineapple","apple","papaya","grape"], answer:"pineapple", hint:"pine（松樹）+ apple，長得像松果。", explain:["pineapple = 鳳梨","雖然有 apple，但不是蘋果喔"]},
+ {type:"mc", q:"「葡萄（很多串）」的英文是哪一個？", say:"grapes", options:["grapes","grips","greats","glapes"], answer:"grapes", hint:"g-r-a-p-e-s。", explain:["grape 葡萄，複數 grapes"]},
+ {type:"mc", q:"選出拼法正確的「香蕉（複數）」：", say:"bananas", options:["bananas","bananaes","banannas","benanas"], answer:"bananas", hint:"ba-na-na，三個 a，再加 s。", explain:["banana → bananas，直接加 s"]},
+ {type:"mc", q:"選出拼法正確的「檸檬汁」：", say:"lemonade", options:["lemonade","lemonaid","lemmonade","lemonad"], answer:"lemonade", hint:"lemon + ade（字尾有 e）。", explain:["lemonade：l-e-m-o-n-a-d-e"]},
+ {type:"mc", q:"選出拼法正確的「巧克力」：", say:"chocolate", options:["chocolate","chocolat","choclate","chocalate"], answer:"chocolate", hint:"cho-co-late，三段都要寫出來。", explain:["chocolate：c-h-o-c-o-l-a-t-e"]},
+ {type:"mc", q:"拼字填空：co _ _ ee（咖啡）", say:"coffee", options:["ff","f","ph","fe"], answer:"ff", hint:"coffee 裡有兩個 f、兩個 e。", explain:["coffee：c-o-f-f-e-e"]},
+ {type:"mc", q:"拼字填空：pa _ a _ a（木瓜）", say:"papaya", options:["p、y","p、i","b、y","y、p"], answer:"p、y", hint:"pa-pa-ya。", explain:["papaya：p-a-p-a-y-a"]},
+ {type:"mc", q:"拼字填空：gu _ va（芭樂）", say:"guava", options:["a","o","e","u"], answer:"a", hint:"gua-va。", explain:["guava：g-u-a-v-a"]},
+ {type:"mc", q:"拼字填空：s _ y milk（豆漿）", say:"soy milk", options:["o","a","u","e"], answer:"o", hint:"念起來像「索伊」。", explain:["soy：s-o-y"]},
+ {type:"mc", q:"下面哪一個「不是」飲料？", say:"papaya", options:["papaya","cola","tea","soy milk"], answer:"papaya", hint:"Unit 1 是飲料，Unit 2 是水果。", explain:["papaya 是水果（木瓜）","cola、tea、soy milk 都是飲料"]},
+ {type:"mc", q:"下面哪一個「不是」水果？", say:"lemonade", options:["lemonade","orange","guava","grapes"], answer:"lemonade", hint:"有一個是用水果做成的「飲料」。", explain:["lemonade 是檸檬汁，是飲料","orange、guava、grapes 是水果"]}
+];
+var e1c=[
+ {type:"mc", q:"⭐ A: Do you like cola?  B: No, I ____. I like soy milk.", say:"No, I don't. I like soy milk.", options:["don't","doesn't","do","am not"], answer:"don't", hint:"用 Do 問，就用 do / don't 回答。", explain:["Do you ...? → Yes, I do. / No, I don't.","後面說喜歡豆漿，所以是否定"]},
+ {type:"mc", q:"⭐ A: Does she like tea?  B: Yes, she ____. She ____ tea.", say:"Yes, she does. She likes tea.", options:["does、likes","do、like","does、like","is、likes"], answer:"does、likes", hint:"he / she 要用 does，動詞要加 s。", explain:["Does she ...? → Yes, she does.","she 是第三人稱單數：She likes tea."]},
+ {type:"mc", q:"⭐ A: How many ____ do you need?  B: I need three ____.", say:"How many papayas do you need? I need three papayas.", options:["papayas、papayas","papaya、papaya","papayas、papaya","papaya、papayas"], answer:"papayas、papayas", hint:"How many 後面要接複數。", explain:["How many + 複數名詞","three 也是多個，要用複數 papayas"]},
+ {type:"mc", q:"⭐ How many oranges ____ he need?", say:"How many oranges does he need?", options:["does","do","is","are"], answer:"does", hint:"主詞是 he。", explain:["he / she 問句用 does","How many oranges does he need? He needs seven oranges."]},
+ {type:"mc", q:"⭐ Mom needs one ____ and two ____ for the fruit salad.", say:"Mom needs one pineapple and two bananas.", options:["pineapple、bananas","pineapples、banana","pineapple、banana","pineapples、bananas"], answer:"pineapple、bananas", hint:"one 用單數，two 用複數。", explain:["one pineapple（單數）","two bananas（複數加 s）"]},
+ {type:"mc", q:"⭐下面哪一組單數→複數「錯誤」？", say:"guava, guavas", options:["grape → grapies","guava → guavas","apple → apples","orange → oranges"], answer:"grape → grapies", hint:"本課水果的複數都是直接加 s。", explain:["grape → grapes，直接加 s","不要寫成 grapies"]},
+ {type:"mc", q:"⭐ It is cold today. I want something warm. I want ____.", say:"I want hot chocolate.", options:["hot chocolate","cola","lemonade","bubble tea with ice"], answer:"hot chocolate", hint:"cold 冷、warm 溫暖。", explain:["天氣冷，想要溫暖的飲料","hot chocolate 熱巧克力最適合"]},
+ {type:"mc", q:"⭐ apple 前面要用 a 還是 an？I need ____ apple and ____ banana.", say:"I need an apple and a banana.", options:["an、a","a、an","a、a","an、an"], answer:"an、a", hint:"apple 是母音 a 開頭。", explain:["母音開頭（a e i o u 的音）用 an：an apple","banana 是子音 b 開頭：a banana"]},
+ {type:"mc", q:"⭐ Peter ____ coffee, but his sister ____ tea.", say:"Peter likes coffee, but his sister likes tea.", options:["likes、likes","like、like","likes、like","like、likes"], answer:"likes、likes", hint:"Peter 和 his sister 都是一個人（第三人稱單數）。", explain:["第三人稱單數的動詞要加 s","Peter likes ...，his sister likes ..."]}
+];
+
+// sayAfter：作答前隱藏「唸給我聽」（唸出來會洩漏答案的題目），答完才顯示
+e1.forEach(function(q,i){ if(i<3||i>6) q.sayAfter=true; }); e1c.forEach(function(q){ q.sayAfter=true; });
 function U(id,name,color,qs){ return {id:id,name:name,color:color,questions:qs}; }
 var G={
  chinese:[U("z1","國語 第1~3課",C.chinese,z1),U("z1c","⭐ 國語 第1~3課 挑戰題",C.chinese,z1c),U("z2","國語 第4~6課",C.chinese,z2),U("z2c","⭐ 國語 第4~6課 挑戰題",C.chinese,z2c)],
  math:[U("z3","數學 第一~五單元",C.math,z3),U("z3c","⭐ 數學 挑戰題（資優）",C.math,z3c)],
  science:[U("z4","自然 1 太陽與光・2 植物世界",C.science,z4),U("z4c","⭐ 自然 挑戰題",C.science,z4c)],
+ english:[U("e1","英文單字 Unit 1–2 基本",C.english,e1),U("e1c","⭐ 英文單字挑戰",C.english,e1c)],
  social:[U("z5","社會 一、臺灣的位置與先民足跡・二、臺灣登上國際舞臺",C.social,z5),U("z5c","⭐ 社會 挑戰題",C.social,z5c)]
 };
 window.PRACTICE_DATA = { subjects: [
@@ -161,6 +197,7 @@ window.PRACTICE_DATA = { subjects: [
  { id:"chinese", name:"國語", icon:"📖", color:C.chinese, units:G.chinese },
  { id:"math", name:"數學", icon:"🔢", color:C.math, units:G.math },
  { id:"science", name:"自然", icon:"🔬", color:C.science, units:G.science },
+ { id:"english", name:"英文", icon:"🔤", color:C.english, units:G.english },
  { id:"social", name:"社會", icon:"🏫", color:C.social, units:G.social }
 ]};
 })();
