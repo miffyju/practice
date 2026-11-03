@@ -184,12 +184,44 @@ var e1c=[
 
 // sayAfter：作答前隱藏「唸給我聽」（唸出來會洩漏答案的題目），答完才顯示
 e1.forEach(function(q,i){ if(i<3||i>6) q.sayAfter=true; }); e1c.forEach(function(q){ q.sayAfter=true; });
+// ===== 英文：數字 0–100 拼寫（程式產生，validate.js 會另外核對拼字）=====
+var ONES=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+var TENS=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+function numWord(n){ if(n===100) return "one hundred"; if(n<20) return ONES[n]; return TENS[Math.floor(n/10)]+(n%10?"-"+ONES[n%10]:""); }
+var HARD=[12,13,15,18,20,40,50,80,90,100];
+var TIPS={12:"twelve 不是 twoteen 喔！",13:"thirteen：thir 開頭，不是 threeteen。",15:"fifteen：fif 開頭，不是 fiveteen。",18:"eighteen：eigh + teen，只有一個 t。",20:"twenty：tw + enty。",40:"forty 沒有 u！four 有 u，forty 沒有。",50:"fifty：fif 開頭，不是 fivety。",80:"eighty：eigh + ty，只有一個 t。",90:"ninety：nine 的 e 要留著。",100:"one hundred（也可以說 a hundred）。"};
+var en_num=[];
+for(var n=0;n<=100;n++){ (function(n){ var w=numWord(n), t=Math.floor(n/10), o=n%10;
+  var ex = n<20 ? [n+" = "+w] : n===100 ? ["100 = one hundred（或 a hundred）"] : o===0 ? [n+" = "+w,"整十的字尾是 -ty"] : [n+" = "+TENS[t]+"（"+t*10+"）+ "+ONES[o]+"（"+o+"）","中間用連字號：「"+w+"」"];
+  if(TIPS[n]) ex.push("⚠ "+TIPS[n]);
+  en_num.push({type:"text", n:n, q:"把數字寫成英文："+n, answer:w, accept:n===100?["a hundred"]:[], say:w, sayAfter:true, weight:HARD.indexOf(n)>=0?6:(n>20&&o!==0?1:2),
+   hint: n>20&&n<100&&o!==0 ? "先寫 "+t*10+" 的英文，再用「-」接上 "+o+" 的英文。" : (TIPS[n]||"想想 "+n+" 怎麼念。"), explain:ex});
+})(n); }
+en_num.push(
+ {type:"mc", q:"forty-five 是多少？", say:"forty-five", options:["45","54","40","15"], answer:"45", weight:3, hint:"forty 是 40，five 是 5。", explain:["forty-five = 40 + 5 = 45"]},
+ {type:"mc", q:"eighty-three 是多少？", say:"eighty-three", options:["83","38","18","80"], answer:"83", weight:3, hint:"eighty 是 80。", explain:["eighty-three = 80 + 3 = 83"]},
+ {type:"mc", q:"fifteen 和 fifty，哪一個是 50？", say:"fifteen, fifty", options:["fifty","fifteen"], answer:"fifty", weight:3, hint:"-teen 是十幾，-ty 是幾十。", explain:["fifteen = 15（-teen）","fifty = 50（-ty）"]},
+ {type:"mc", q:"thirteen 是多少？", say:"thirteen", options:["13","30","3","31"], answer:"13", weight:3, hint:"-teen 是十幾。", explain:["thirteen = 13，thirty = 30"]},
+ {type:"mc", q:"選出拼法正確的「40」：", options:["forty","fourty","fourteen","forti"], answer:"forty", weight:3, hint:"four 有 u，但 40 沒有。", explain:["40 = forty（沒有 u）","fourteen 是 14"]},
+ {type:"mc", q:"選出拼法正確的「12」：", options:["twelve","twelf","twoteen","tweleve"], answer:"twelve", weight:3, hint:"tw-e-l-v-e。", explain:["12 = twelve"]},
+ {type:"mc", q:"選出拼法正確的「90」：", options:["ninety","ninty","ninity","nineteen"], answer:"ninety", weight:3, hint:"nine 的 e 要留著。", explain:["90 = ninety","nineteen 是 19"]},
+ {type:"mc", q:"選出拼法正確的「18」：", options:["eighteen","eightteen","eighten","aiteen"], answer:"eighteen", weight:3, hint:"eight 的 t 和 teen 的 t 合成一個。", explain:["18 = eighteen（只有一個 t）"]}
+);
+// ===== 英文：Unit 1–2 全部單字拼寫 =====
+var en_sp=[];
+[["咖啡","coffee"],["可樂","cola"],["檸檬汁","lemonade"],["茶","tea"],["珍珠奶茶","bubble tea"],["熱巧克力","hot chocolate"],["豆漿","soy milk"]].forEach(function(w){
+  en_sp.push({type:"text", q:"拼出英文：「"+w[0]+"」（Unit 1 飲料）", answer:w[1], say:w[1], hint:"先按 🔊 聽一聽，再一個字母一個字母拼。", explain:[w[0]+" = "+w[1]].concat(w[1].indexOf(" ")>0?["是兩個字，中間要空一格"]:[])});
+});
+[["蘋果","apples","apple"],["香蕉","bananas","banana"],["葡萄","grapes","grape"],["芭樂","guavas","guava"],["木瓜","papayas","papaya"],["鳳梨","pineapples","pineapple"],["柳橙","oranges","orange"]].forEach(function(w){
+  en_sp.push({type:"text", q:"拼出英文：「"+w[0]+"」（Unit 2 水果，單數或複數都可以）", answer:w[1], accept:[w[2]], say:w[1], hint:"先按 🔊 聽一聽。課本用的是複數（字尾加 s）。", explain:[w[0]+"：一個是 "+w[2]+"，課本用複數 "+w[1],"How many "+w[1]+" do you need?"]});
+});
+
 function U(id,name,color,qs){ return {id:id,name:name,color:color,questions:qs}; }
 var G={
  chinese:[U("z1","國語 第1~3課",C.chinese,z1),U("z1c","⭐ 國語 第1~3課 挑戰題",C.chinese,z1c),U("z2","國語 第4~6課",C.chinese,z2),U("z2c","⭐ 國語 第4~6課 挑戰題",C.chinese,z2c)],
  math:[U("z3","數學 第一~五單元",C.math,z3),U("z3c","⭐ 數學 挑戰題（資優）",C.math,z3c)],
  science:[U("z4","自然 1 太陽與光・2 植物世界",C.science,z4),U("z4c","⭐ 自然 挑戰題",C.science,z4c)],
- english:[U("e1","英文單字 Unit 1–2 基本",C.english,e1),U("e1c","⭐ 英文單字挑戰",C.english,e1c)],
+ english:[U("e1","英文單字 Unit 1–2 基本",C.english,e1),U("e1c","⭐ 英文單字挑戰",C.english,e1c),{id:"e2",name:"🔢 數字 0–100 拼寫",color:C.english,round:16,questions:en_num},{id:"e3",name:"✏️ Unit 1–2 全部單字拼寫",color:C.english,round:14,questions:en_sp}],
  social:[U("z5","社會 一、臺灣的位置與先民足跡・二、臺灣登上國際舞臺",C.social,z5),U("z5c","⭐ 社會 挑戰題",C.social,z5c)]
 };
 window.PRACTICE_DATA = { subjects: [

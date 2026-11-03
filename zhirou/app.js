@@ -33,16 +33,35 @@ function home(){
   document.getElementById("parentBtn").onclick=parent;
 }
 function units(sid){
-  var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題。</p><div class="grid">';
+  var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題（打字題組約 16 題）。</p><div class="grid">';
   s.units.forEach(function(u){ h+='<button class="big'+(u.color?' unitc':'')+'"'+(u.color?' style="background:'+u.color+'"':'')+' data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+u.questions.length+'題）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
-    var items=shuffle(u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i}; })).slice(0,ROUND);
+    var items=drawItems(s,u);
     start(s.name, u.name, items, false);
   }; });
   document.getElementById("back").onclick=home;
 }
+// 抽題：u.round 指定題數（預設 ROUND）；q.weight 越大越容易被抽到（不重複抽）
+function drawItems(s,u){
+  var pool=u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i,w:q.weight||1}; }), out=[], k=Math.min(u.round||ROUND,pool.length);
+  while(out.length<k){ var t=0; pool.forEach(function(p){t+=p.w;}); var r=Math.random()*t, j=0;
+    for(;j<pool.length-1;j++){ r-=pool[j].w; if(r<0) break; }
+    var it=pool.splice(j,1)[0]; out.push({sid:it.sid,uid:it.uid,idx:it.idx}); }
+  return out;
+}
+// 打字題：比對（不分大小寫、去頭尾空白、多個空白算一個）
+function normT(a){ return String(a).toLowerCase().trim().replace(/\s+/g," "); }
+function judgeText(q,a){
+  var x=normT(a), acc=[q.answer].concat(q.accept||[]).map(normT);
+  if(acc.indexOf(x)>=0) return {ok:true};
+  if(acc.some(function(c){ return c.indexOf("-")>=0 && c.replace(/-/g," ")===x; })) return {ok:true, note:"答對了！不過標準寫法要用連字號「-」："+q.answer};
+  return {ok:false};
+}
+function diffHTML(a,ans){ var x=normT(a), y=normT(ans), h="";
+  for(var i=0;i<x.length;i++){ var c=esc(x[i]===" "?"␣":x[i]); h+= x[i]===y[i] ? c : '<b class="bad">'+c+'</b>'; }
+  return '<span class="diff">'+h+'</span>'+(x.length<y.length?' <span class="muted">（還少了 '+(y.length-x.length)+' 個字母）</span>':x.length>y.length?' <span class="muted">（多了 '+(x.length-y.length)+' 個字母）</span>':''); }
 function getQ(it){ var s=subj(it.sid), u=s&&unit(s,it.uid); return u ? {q:u.questions[it.idx], u:u, s:s} : null; }
 
 // ---------- 作答 ----------
@@ -62,6 +81,8 @@ function showQ(){
     h+='<div class="options" role="group" aria-labelledby="qt">';
     shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
     h+='</div>';
+  } else if(q.type==="text"){
+    h+='<form id="tform" class="tform" autocomplete="off"><input id="tin" class="tin" type="text" aria-label="輸入英文" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="在這裡輸入英文"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
   } else {
     h+='<div class="display" id="disp" aria-live="polite" aria-label="你的答案"></div><div class="keypad">';
     ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
@@ -74,6 +95,10 @@ function showQ(){
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
+  } else if(q.type==="text"){
+    var tin=document.getElementById("tin");
+    document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); if(R.cur.done) return; if(!tin.value.trim()){ toast("先輸入英文喔"); return; } answer(tin.value, null); };
+    tin.focus();
   } else {
     var disp=document.getElementById("disp"), val="";
     app.querySelectorAll("[data-k]").forEach(function(b){ b.onclick=function(){
@@ -86,28 +111,29 @@ function showQ(){
   }
 }
 function answer(a, btn){
-  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), ok=(a===String(q.answer));
+  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), jt=q.type==="text"?judgeText(q,a):{ok:a===String(q.answer)}, ok=jt.ok;
   R.cur.tries.push(a);
   if(ok){
     R.cur.done=true; if(btn) btn.classList.add("right");
     if(q.type==="num") document.getElementById("disp").textContent=a;
     celebrate();
-    fb.innerHTML='<div class="feedback good pop"><b>🎉 '+pick(CHEER)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback good pop"><b>🎉 '+pick(CHEER)+'</b>'+(jt.note?'<br>📌 '+esc(jt.note):'')+explainHTML(q)+'</div>';
     finishQ(true);
   } else if(R.cur.tries.length===1){
     if(btn){ btn.classList.add("wrong"); btn.disabled=true; }
-    fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
+    fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+(q.type==="text"?'<br>你寫的：'+diffHTML(a,q.answer)+'<br><span class="muted">紅色是寫錯的字母</span>':'')+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
     if(q.type==="num") document.getElementById("disp").textContent="";
+    if(q.type==="text"){ var ti=document.getElementById("tin"); ti.value=""; ti.focus(); }
   } else {
     R.cur.done=true; if(btn) btn.classList.add("wrong");
     app.querySelectorAll(".opt").forEach(function(b){ if(b.dataset.o===String(q.answer)) b.classList.add("right"); });
     if(q.type==="num") document.getElementById("disp").textContent=a+" → "+q.answer;
-    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>'+(q.type==="text"?'你寫的：'+diffHTML(a,q.answer)+'<br>':'')+'正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
     finishQ(false);
   }
 }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
-function finishQ(correct){ var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
+function finishQ(correct){ var tf=document.getElementById("tin"); if(tf){ tf.disabled=true; var tk=document.getElementById("tok"); if(tk) tk.disabled=true; } var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
@@ -145,7 +171,7 @@ function end(){
   document.getElementById("again").onclick=function(){
     if(R.isWB) return wrongbook();
     var it=R.items[0], s=subj(it.sid), u=unit(s,it.uid);
-    start(s.name,u.name,shuffle(u.questions.map(function(q,i){return {sid:s.id,uid:u.id,idx:i};})).slice(0,ROUND),false);
+    start(s.name,u.name,drawItems(s,u),false);
   };
 }
 function summary(r){

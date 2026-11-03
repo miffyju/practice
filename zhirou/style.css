@@ -60,3 +60,9 @@ td,th{padding:.4rem;border-bottom:1px solid #f0e0d0;text-align:left}
 .tag{display:inline-block;color:#fff;padding:.15rem .7rem;border-radius:12px;text-shadow:0 1px 2px rgba(0,0,0,.25)}
 .quiz[style] .card{border-left:10px solid var(--uc)}
 [hidden]{display:none!important}
+.tform{display:flex;gap:.6rem;flex-wrap:wrap}
+.tin{flex:1 1 220px;font-size:1.6rem;padding:.6rem .9rem;border:3px solid #d9c6b3;border-radius:16px;min-height:64px;font-family:inherit}
+.tin:focus{outline:none;border-color:#b48ee0}
+.tform .big{width:auto;flex:0 0 auto}
+.diff{font-size:1.3rem;letter-spacing:.08em;font-family:ui-monospace,monospace}
+.diff .bad{color:#d9363e;text-decoration:underline}
