@@ -68,6 +68,12 @@ function showQ(){
     h+='<div class="options" role="group" aria-labelledby="qt">';
     shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
     h+='</div>';
+  } else if(q.type==="spell"){
+    var w=String(q.answer).toLowerCase(), pool=w.split(""), ab="abcdefghijklmnopqrstuvwxyz".split("").filter(function(c){return w.indexOf(c)<0;});
+    ab=shuffle(ab).slice(0,3); pool=shuffle(pool.concat(ab));
+    h+='<div class="spboxes" id="spx" aria-live="polite" aria-label="你的拼字">'+w.split("").map(function(){return '<span class="spbox"></span>';}).join("")+'</div><div class="spdiff" id="spdiff"></div><div class="tiles" role="group" aria-label="字母按鍵">';
+    pool.forEach(function(c,i){ h+='<button class="tile" data-t="'+i+'" data-c="'+c+'" aria-label="'+c+'">'+c+'</button>'; });
+    h+='</div><div class="row"><button class="big secondary" id="spBack" aria-label="退格">⌫ 退格</button><button class="big primary" id="spOk" aria-label="送出">✔ 送出</button></div>';
   } else {
     h+='<div class="display" id="disp" aria-live="polite" aria-label="你的答案"></div><div class="keypad">';
     ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
@@ -81,6 +87,14 @@ function showQ(){
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
+  } else if(q.type==="spell"){
+    var used=[], boxes=app.querySelectorAll(".spbox"), W=String(q.answer).length;
+    var paint=function(){ boxes.forEach(function(b,i){ b.textContent=used[i]?used[i].dataset.c:""; b.classList.toggle("on",i===used.length); }); };
+    R.cur.spReset=function(){ used.forEach(function(t){ t.disabled=false; }); used=[]; paint(); };
+    app.querySelectorAll(".tile").forEach(function(t){ t.onclick=function(){ if(R.cur.done||t.disabled||used.length>=W) return; t.disabled=true; used.push(t); paint(); }; });
+    document.getElementById("spBack").onclick=function(){ if(R.cur.done||!used.length) return; used.pop().disabled=false; paint(); };
+    document.getElementById("spOk").onclick=function(){ if(R.cur.done) return; if(used.length<W){ toast("還有空格喔，把格子填滿再送出"); return; } answer(used.map(function(t){return t.dataset.c;}).join(""), null); };
+    paint();
   } else {
     var disp=document.getElementById("disp"), val="";
     app.querySelectorAll("[data-k]").forEach(function(b){ b.onclick=function(){
@@ -93,7 +107,7 @@ function showQ(){
   }
 }
 function answer(a, btn){
-  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), ok=(a===String(q.answer));
+  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), ok=(q.type==="spell"?a.toLowerCase()===String(q.answer).toLowerCase():a===String(q.answer));
   R.cur.tries.push(a);
   if(ok){
     R.cur.done=true; if(btn) btn.classList.add("right");
@@ -105,14 +119,17 @@ function answer(a, btn){
     if(btn){ btn.classList.add("wrong"); btn.disabled=true; }
     fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
     if(q.type==="num") document.getElementById("disp").textContent="";
+    if(q.type==="spell"){ document.getElementById("spdiff").innerHTML='你拼的：'+diffHTML(a,q.answer); R.cur.spReset(); }
   } else {
     R.cur.done=true; if(btn) btn.classList.add("wrong");
     app.querySelectorAll(".opt").forEach(function(b){ if(b.dataset.o===String(q.answer)) b.classList.add("right"); });
     if(q.type==="num") document.getElementById("disp").textContent=a+" → "+q.answer;
+    if(q.type==="spell") document.getElementById("spdiff").innerHTML='你拼的：'+diffHTML(a,q.answer)+'　正確：<b class="good-w">'+esc(q.answer)+'</b>';
     fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
     finishQ(false);
   }
 }
+function diffHTML(a,ans){ var s=String(ans).toLowerCase(); return '<span class="diff">'+a.split("").map(function(c,i){ return c.toLowerCase()===s[i]?esc(c):'<span class="bad">'+esc(c)+'</span>'; }).join("")+'</span>'; }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
 function finishQ(correct){
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;

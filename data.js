@@ -442,3 +442,14 @@ window.PRACTICE_DATA = {
 };
 // 數學題顯示「📝 計算紙」：數學科全部單元＋期中考衝刺的數學組
 window.PRACTICE_DATA.subjects.forEach(function(s){ s.units.forEach(function(u){ if(s.id==="math"||u.id==="x6"||u.id==="x12") u.scratch=true; }); });
+// ===== 英文：單字拼寫（翰林 Here We Go 1 Starter~Review 1，取自英文複習單）=====
+(function(){
+ function SP(list){ return list.map(function(w){ return {type:"spell", q:"拼出英文："+w[2]+" "+w[1], answer:w[0], say:w[0], hint:"第一個字母是「"+w[0][0]+"」，先按 🔊 聽一聽。", explain:[w[1]+" = "+w[0],"拼法："+w[0].split("").join("-")]}; }); }
+ var A=[["apple","蘋果","🍎"],["ant","螞蟻","🐜"],["bag","袋子","👜"],["boy","男孩","👦"],["cat","貓","🐱"],["cup","杯子","☕"],["dog","狗","🐶"],["duck","鴨子","🦆"],["egg","蛋","🥚"],["fish","魚","🐟"],["goat","山羊","🐐"],["girl","女孩","👧"]];
+ var B=[["hand","手","✋"],["hat","帽子","👒"],["jam","果醬","🍓"],["jet","噴射機","✈️"],["key","鑰匙","🔑"],["kite","風箏","🪁"],["lion","獅子","🦁"],["leg","腿","🦵"],["milk","牛奶","🥛"],["nose","鼻子","👃"],["ox","牛","🐂"],["five","數字 5","5️⃣"],["ten","數字 10","🔟"]];
+ var S=window.PRACTICE_DATA.subjects, en=S.filter(function(s){return s.id==="english";})[0], ex=S.filter(function(s){return s.id==="exam";})[0];
+ en.units.push({id:"e3",name:"✏️ 拼字 1：A～G 單字",questions:SP(A)},{id:"e4",name:"✏️ 拼字 2：H～O 單字＋數字",questions:SP(B)});
+ var at=0; ex.units.forEach(function(u,i){ if(u.id==="x9") at=i+1; });
+ ex.units.splice(at,0,{id:"x13",name:"11/5 英語 ✏️ 拼字衝刺",questions:SP([A[0],A[3],A[5],A[7],A[9],A[10],A[11],B[0],B[3],B[5],B[6],B[8],B[9],B[11],B[12]])});
+})();
+
