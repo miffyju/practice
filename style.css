@@ -52,3 +52,4 @@ td,th{padding:.4rem;border-bottom:1px solid #f0e0d0;text-align:left}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (orientation:landscape) and (min-width:900px){.quiz{display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start}}
 .say{width:auto;min-height:56px;margin-top:.2rem}
+.subject.exam{grid-column:1/-1;font-size:1.7rem;min-height:120px;box-shadow:0 0 0 4px #ffd166}

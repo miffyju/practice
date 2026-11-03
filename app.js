@@ -25,7 +25,7 @@ function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function home(){
   var wb = load(KEY_W, []);
   var h = '<p class="greet">嗨，小練習生！今天想練習什麼呢？😊</p><div class="grid">';
-  D.subjects.forEach(function(s){ h += '<button class="big subject" style="background:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+'</button>'; });
+  D.subjects.forEach(function(s){ h += '<button class="big subject'+(s.featured?' exam':'')+'" style="background:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+'</button>'; });
   h += '</div><div class="row"><button class="big secondary" id="wbBtn">📒 我的錯題本（'+wb.length+'）</button><button class="big secondary" id="parentBtn">👪 家長區</button></div>';
   el(h);
   app.querySelectorAll("[data-s]").forEach(function(b){ b.onclick=function(){ units(b.dataset.s); }; });
