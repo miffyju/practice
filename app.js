@@ -20,6 +20,12 @@ function canSpeak(){ return "speechSynthesis" in window && typeof SpeechSynthesi
 function speak(t){ try{ var ss=window.speechSynthesis; ss.cancel(); var u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=0.8;
   var v=(ss.getVoices()||[]).filter(function(x){return /^en/i.test(x.lang);})[0]; if(v) u.voice=v; ss.speak(u); }catch(e){ toast("這台裝置不能唸喔"); } }
 function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+function tap(el, fn){
+  var stamp=0;
+  function go(){ var n=Date.now(); if(n-stamp<450) return; stamp=n; fn(); }
+  el.addEventListener("pointerup", function(e){ if(e.pointerType==="mouse"||e.button>0) return; go(); });
+  el.addEventListener("click", go);
+}
 
 // ---------- 首頁 ----------
 function home(){
@@ -71,7 +77,7 @@ function showQ(){
   }
   h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
   var spWas=SP.isOpen(); el(h);
-  SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.setAttribute("aria-expanded","false"); spb.innerHTML="📝 計算紙"; spb.onclick=SP.toggle; document.querySelector(".quiz .card").appendChild(spb); if(spWas) SP.open(); }
+  SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.setAttribute("aria-expanded","false"); spb.innerHTML="📝 計算紙"; tap(spb, SP.toggle); document.querySelector(".quiz .card").appendChild(spb); if(spWas) SP.open(); }
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
@@ -202,14 +208,14 @@ var SP=(function(){
     panel=document.createElement("div"); panel.id="spPanel"; panel.className="sp-panel"; panel.hidden=true;
     var h='<div class="sp-tools" role="toolbar" aria-label="計算紙工具">';
     COLORS.forEach(function(c){ h+='<button class="sp-t sp-color" data-c="'+c[0]+'" aria-label="'+c[1]+'色筆"><span style="background:'+c[0]+'"></span>'+c[1]+'</button>'; });
-    h+='<button class="sp-t" id="spEraser" aria-label="橡皮擦">🧽 橡皮擦</button><button class="sp-t" id="spUndo" aria-label="復原">↶ 復原</button><button class="sp-t" id="spClear" aria-label="全部清除">🗑 清除</button><button class="sp-t sp-close" id="spClose" aria-label="收起計算紙">⬇ 收起</button></div><canvas id="spCanvas" aria-label="計算紙，可以用手指或筆書寫"></canvas>';
+    h+='<button class="sp-t" id="spEraser" aria-label="橡皮擦">🧽 橡皮擦</button><button class="sp-t" id="spUndo" aria-label="復原">↶ 復原</button><button class="sp-t" id="spClear" aria-label="全部清除">🗑 清除</button><button class="sp-t sp-close" id="spClose" aria-label="關閉計算紙">✖ 關閉</button></div><canvas id="spCanvas" aria-label="計算紙，可以用手指或筆書寫"></canvas>';
     panel.innerHTML=h; document.body.appendChild(panel);
     cv=panel.querySelector("canvas"); ctx=cv.getContext("2d");
-    panel.querySelectorAll(".sp-color").forEach(function(b){ b.onclick=function(){ mode="pen"; color=b.dataset.c; mark(); }; });
-    panel.querySelector("#spEraser").onclick=function(){ mode="eraser"; mark(); };
-    panel.querySelector("#spUndo").onclick=function(){ strokes.pop(); redraw(); };
-    panel.querySelector("#spClear").onclick=function(){ strokes=[]; redraw(); };
-    panel.querySelector("#spClose").onclick=close;
+    panel.querySelectorAll(".sp-color").forEach(function(b){ tap(b, function(){ mode="pen"; color=b.dataset.c; mark(); }); });
+    tap(panel.querySelector("#spEraser"), function(){ mode="eraser"; mark(); });
+    tap(panel.querySelector("#spUndo"), function(){ strokes.pop(); redraw(); });
+    tap(panel.querySelector("#spClear"), function(){ strokes=[]; redraw(); });
+    tap(panel.querySelector("#spClose"), close);
     cv.addEventListener("pointerdown",down); cv.addEventListener("pointermove",move);
     ["pointerup","pointercancel","pointerleave"].forEach(function(e){ cv.addEventListener(e,up); });
     window.addEventListener("resize",resize); window.addEventListener("orientationchange",resize);
@@ -221,7 +227,7 @@ var SP=(function(){
   function down(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
     cur={mode:mode,color:color,w:mode==="eraser"?28:(e.pointerType==="pen"?3:4),pts:[pt(e)]}; strokes.push(cur); redraw(); }
   function move(e){ if(!cur) return; e.preventDefault(); cur.pts.push(pt(e)); drawStroke(cur,true); }
-  function up(){ cur=null; }
+  function up(e){ cur=null; if(e&&e.pointerId!=null){ try{ cv.releasePointerCapture(e.pointerId); }catch(_){} } }
   function drawStroke(s,lastOnly){ var p=s.pts; ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=s.w;
     ctx.globalCompositeOperation=s.mode==="eraser"?"destination-out":"source-over"; ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
     if(p.length===1){ ctx.beginPath(); ctx.arc(p[0][0],p[0][1],s.w/2,0,Math.PI*2); ctx.fill(); }

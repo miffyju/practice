@@ -54,6 +54,7 @@ td,th{padding:.4rem;border-bottom:1px solid #f0e0d0;text-align:left}
 .say{width:auto;min-height:56px;margin-top:.2rem}
 .subject.exam{grid-column:1/-1;font-size:1.7rem;min-height:120px;box-shadow:0 0 0 4px #ffd166}
 /* 計算紙：固定在畫面下半部的面板，題目留在上半部看得到 */
+[hidden]{display:none!important}
 .spbtn{margin-top:.8rem}
 .sp-panel{position:fixed;left:0;right:0;bottom:0;height:55vh;z-index:30;background:#fffef6;border-top:4px solid #ff9f68;box-shadow:0 -6px 20px rgba(0,0,0,.18);display:flex;flex-direction:column}
 .sp-panel canvas{flex:1;width:100%;touch-action:none;background-image:linear-gradient(#e9e3d3 1px,transparent 1px),linear-gradient(90deg,#e9e3d3 1px,transparent 1px);background-size:32px 32px;cursor:crosshair}
