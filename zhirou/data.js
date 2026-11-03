@@ -224,6 +224,7 @@ var G={
  english:[U("e1","英文單字 Unit 1–2 基本",C.english,e1),U("e1c","⭐ 英文單字挑戰",C.english,e1c),{id:"e2",name:"🔢 數字 0–100 拼寫",color:C.english,round:16,questions:en_num},{id:"e3",name:"✏️ Unit 1–2 全部單字拼寫",color:C.english,round:14,questions:en_sp}],
  social:[U("z5","社會 一、臺灣的位置與先民足跡・二、臺灣登上國際舞臺",C.social,z5),U("z5c","⭐ 社會 挑戰題",C.social,z5c)]
 };
+G.math.forEach(function(u){ u.scratch=true; }); // 數學題顯示「📝 計算紙」
 window.PRACTICE_DATA = { subjects: [
  { id:"exam", name:"期中考衝刺", icon:"📝", color:"#ff6b81", featured:true, units:[].concat(G.chinese,G.math,G.science,G.social) },
  { id:"chinese", name:"國語", icon:"📖", color:C.chinese, units:G.chinese },

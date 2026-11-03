@@ -6,7 +6,7 @@ function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v 
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function el(html){ app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
+function el(html){ SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
 function subj(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
 function unit(s,id){ return s.units.filter(function(u){return u.id===id;})[0]; }
 function today(){ var d=new Date(); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
@@ -93,6 +93,7 @@ function showQ(){
   h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
   el(h);
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
+  SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.innerHTML="📝 計算紙"; spb.onclick=SP.toggle; document.querySelector(".quiz .card").appendChild(spb); }
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
   } else if(q.type==="text"){
@@ -218,6 +219,52 @@ function parent(){
   document.getElementById("hm").onclick=home;
   document.getElementById("clr").onclick=function(){ if(confirm("確定要清除所有紀錄和錯題本嗎？")){ save(KEY_H,[]); save(KEY_W,[]); parent(); } };
 }
+
+// ---------- 計算紙（數學題用；只存在記憶體，換題就清空，不寫入 localStorage） ----------
+var SP=(function(){
+  var panel=null, cv, ctx, strokes=[], cur=null, color="#222", mode="pen", openState=false, ro;
+  var COLORS=[["#222","黑"],["#2a6fdb","藍"],["#e03131","紅"]];
+  function build(){
+    if(panel) return;
+    panel=document.createElement("div"); panel.id="spPanel"; panel.className="sp-panel"; panel.hidden=true;
+    var h='<div class="sp-tools" role="toolbar" aria-label="計算紙工具">';
+    COLORS.forEach(function(c){ h+='<button class="sp-t sp-color" data-c="'+c[0]+'" aria-label="'+c[1]+'色筆"><span style="background:'+c[0]+'"></span>'+c[1]+'</button>'; });
+    h+='<button class="sp-t" id="spEraser" aria-label="橡皮擦">🧽 橡皮擦</button><button class="sp-t" id="spUndo" aria-label="復原">↶ 復原</button><button class="sp-t" id="spClear" aria-label="全部清除">🗑 清除</button><button class="sp-t sp-close" id="spClose" aria-label="關閉計算紙">✖ 關閉</button></div><canvas id="spCanvas" aria-label="計算紙，可以用手指或筆書寫"></canvas>';
+    panel.innerHTML=h; document.body.appendChild(panel);
+    cv=panel.querySelector("canvas"); ctx=cv.getContext("2d");
+    panel.querySelectorAll(".sp-color").forEach(function(b){ b.onclick=function(){ mode="pen"; color=b.dataset.c; mark(); }; });
+    panel.querySelector("#spEraser").onclick=function(){ mode="eraser"; mark(); };
+    panel.querySelector("#spUndo").onclick=function(){ strokes.pop(); redraw(); };
+    panel.querySelector("#spClear").onclick=function(){ strokes=[]; redraw(); };
+    panel.querySelector("#spClose").onclick=close;
+    cv.addEventListener("pointerdown",down); cv.addEventListener("pointermove",move);
+    ["pointerup","pointercancel","pointerleave"].forEach(function(e){ cv.addEventListener(e,up); });
+    window.addEventListener("resize",resize); window.addEventListener("orientationchange",resize);
+    mark();
+  }
+  function mark(){ panel.querySelectorAll(".sp-color").forEach(function(b){ b.classList.toggle("on",mode==="pen"&&b.dataset.c===color); });
+    panel.querySelector("#spEraser").classList.toggle("on",mode==="eraser"); }
+  function pt(e){ var r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+  function down(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    cur={mode:mode,color:color,w:mode==="eraser"?28:(e.pointerType==="pen"?3:4),pts:[pt(e)]}; strokes.push(cur); redraw(); }
+  function move(e){ if(!cur) return; e.preventDefault(); cur.pts.push(pt(e)); drawStroke(cur,true); }
+  function up(){ cur=null; }
+  function drawStroke(s,lastOnly){ var p=s.pts; ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=s.w;
+    ctx.globalCompositeOperation=s.mode==="eraser"?"destination-out":"source-over"; ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
+    if(p.length===1){ ctx.beginPath(); ctx.arc(p[0][0],p[0][1],s.w/2,0,Math.PI*2); ctx.fill(); }
+    else { var st=lastOnly?p.length-2:0; ctx.beginPath(); ctx.moveTo(p[st][0],p[st][1]); for(var i=st+1;i<p.length;i++) ctx.lineTo(p[i][0],p[i][1]); ctx.stroke(); }
+    ctx.restore(); }
+  function redraw(){ if(!cv) return; var d=window.devicePixelRatio||1; ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,cv.width,cv.height); ctx.setTransform(d,0,0,d,0,0);
+    strokes.forEach(function(s){ drawStroke(s,false); }); }
+  function resize(){ if(!openState) return; var r=cv.getBoundingClientRect(), d=window.devicePixelRatio||1;
+    var w=Math.max(1,Math.round(r.width*d)), h=Math.max(1,Math.round(r.height*d)); if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; } redraw(); }
+  function open(){ build(); panel.hidden=false; openState=true; document.body.classList.add("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 收起計算紙"; b.setAttribute("aria-expanded","true"); } resize(); }
+  function close(){ if(!panel) return; panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
+  function toggle(){ openState?close():open(); }
+  function reset(){ strokes=[]; cur=null; if(cv) redraw(); }
+  return {open:open, close:close, toggle:toggle, reset:reset, _strokes:function(){return strokes.length;}};
+})();
+
 document.getElementById("homeBtn").onclick=home;
 home();
 })();
