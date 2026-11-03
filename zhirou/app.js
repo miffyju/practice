@@ -34,7 +34,7 @@ function home(){
 }
 function units(sid){
   var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題。</p><div class="grid">';
-  s.units.forEach(function(u){ h+='<button class="big" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+u.questions.length+'題）</span></button>'; });
+  s.units.forEach(function(u){ h+='<button class="big'+(u.color?' unitc':'')+'"'+(u.color?' style="background:'+u.color+'"':'')+' data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+u.questions.length+'題）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
@@ -55,8 +55,8 @@ function start(sname, uname, items, isWB){
 function showQ(){
   var it=R.items[R.i], g=getQ(it), q=g.q, n=R.items.length;
   R.cur={tries:[],done:false};
-  var h='<div class="muted">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"><div>';
-  if(g.u.passage) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(g.u.passage)+'</div>';
+  var h='<div class="muted'+(g.u.color?' tag" style="background:'+g.u.color:'')+'">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"'+(g.u.color?' style="--uc:'+g.u.color+'"':'')+'><div>';
+  var pg=q.passage||g.u.passage; if(pg) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(pg)+'</div>';
   h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
     h+='<div class="options" role="group" aria-labelledby="qt">';
