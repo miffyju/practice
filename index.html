@@ -4,8 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache">
 <title>小學三年級練習站</title>
-<link rel="stylesheet" href="style.css">
+<script>
+(function () {
+  var t = Date.now();
+  var css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "style.css?t=" + t;
+  document.head.appendChild(css);
+  var files = ["data.js", "app.js"];
+  function load(i) {
+    if (i >= files.length) return;
+    var s = document.createElement("script");
+    s.src = files[i] + "?t=" + t;
+    s.onload = function () { load(i + 1); };
+    document.body.appendChild(s);
+  }
+  function start() { load(0); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+</script>
 </head>
 <body>
 <header class="topbar">
@@ -15,7 +35,5 @@
 </header>
 <main id="app" tabindex="-1" aria-live="polite"></main>
 <div id="toast" role="status" aria-live="assertive"></div>
-<script src="data.js"></script>
-<script src="app.js"></script>
 </body>
 </html>
