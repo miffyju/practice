@@ -1,5 +1,5 @@
 // node validate.js — 檢查題庫
-global.window={}; require("./data.js"); var D=window.PRACTICE_DATA, err=0, count={}, seenN={};
+global.window={}; require("./data.js"); require("./extra.js"); require("./gen.js"); var D=window.PRACTICE_DATA, err=0, count={}, seenN={};
 // 獨立的數字拼字表（和 data.js 分開寫，用來交叉核對）
 function W(n){ var a="zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(" "), t={2:"twenty",3:"thirty",4:"forty",5:"fifty",6:"sixty",7:"seventy",8:"eighty",9:"ninety"};
  return n===100?"one hundred":n<20?a[n]:t[(n-n%10)/10]+(n%10?"-"+a[n%10]:""); }

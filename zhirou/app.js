@@ -1,7 +1,8 @@
 (function(){
 "use strict";
 var D = window.PRACTICE_DATA, app = document.getElementById("app");
-var KEY_H = "p5zr_history", KEY_W = "p5zr_wrongbook", ROUND = 8;
+var KEY_H = "p5zr_history", KEY_W = "p5zr_wrongbook", KEY_SEEN = "p5zr_seen", SEEN_ROUNDS = 3, ROUND = 8;
+var GEN = window.PRACTICE_GEN || null;
 function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -40,7 +41,7 @@ function home(){
 }
 function units(sid){
   var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題（打字題組約 16 題）。</p><div class="grid">';
-  s.units.forEach(function(u){ h+='<button class="big'+(u.color?' unitc':'')+'"'+(u.color?' style="background:'+u.color+'"':'')+' data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+u.questions.length+'題）</span></button>'; });
+  s.units.forEach(function(u){ h+='<button class="big'+(u.color?' unitc':'')+'"'+(u.color?' style="background:'+u.color+'"':'')+' data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(u.gen?'🎲 隨機出題':u.questions.length+'題')+'）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
@@ -50,8 +51,31 @@ function units(sid){
   document.getElementById("back").onclick=home;
 }
 // 抽題：u.round 指定題數（預設 ROUND）；q.weight 越大越容易被抽到（不重複抽）
+// 隨機出題單元（u.gen）：每題現場產生，題目整份存進 item.q
+// 固定題庫：避開最近 SEEN_ROUNDS 回合出現過的題目；不夠時用「最久沒出現」的補
+function seenAll(){ var v=load(KEY_SEEN,{}); return v&&typeof v==="object"&&!Array.isArray(v)?v:{}; }
+function markSeen(items){ var all=seenAll(), by={};
+  items.forEach(function(it){ if(it.q||it.idx==null) return; (by[it.uid]=by[it.uid]||[]).push(it.idx); });
+  Object.keys(by).forEach(function(uid){ var r=Array.isArray(all[uid])?all[uid]:[]; r.push(by[uid]); all[uid]=r.slice(-SEEN_ROUNDS); });
+  save(KEY_SEEN, all); }
 function drawItems(s,u){
-  var pool=u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i,w:q.weight||1}; }), out=[], k=Math.min(u.round||ROUND,pool.length);
+  if(u.gen&&GEN){ var outG=[], texts={}, kG=u.round||ROUND, guard=0;
+    while(outG.length<kG && guard++<kG*20){ var gid=u.gen[Math.floor(Math.random()*u.gen.length)], q;
+      try{ q=GEN.make(gid); }catch(e){ continue; }
+      if(texts[q.q]) continue; texts[q.q]=1; outG.push({sid:s.id,uid:u.id,uname:u.name,sname:s.name,q:q}); }
+    return outG; }
+  var rounds=(seenAll()[u.id]||[]), age={};
+  rounds.forEach(function(r,ri){ (r||[]).forEach(function(i){ age[i]=ri+1; }); }); // 越新的回合數字越大
+  var all=u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i,w:q.weight||1,age:age[i]||0}; }), k=Math.min(u.round||ROUND,all.length);
+  var fresh=all.filter(function(p){return !p.age;});
+  if(fresh.length<k){ var old=shuffle(all.filter(function(p){return p.age;})).sort(function(a,b){return a.age-b.age;});
+    var outF=fresh.map(function(it){return {sid:it.sid,uid:it.uid,idx:it.idx};});
+    if(fresh.length) outF=wDraw(fresh,fresh.length);
+    return shuffle(outF.concat(old.slice(0,k-outF.length).map(function(it){return {sid:it.sid,uid:it.uid,idx:it.idx};}))); }
+  return wDraw(fresh,k);
+}
+function wDraw(pool,k){
+  pool=pool.slice(); var out=[];
   while(out.length<k){ var t=0; pool.forEach(function(p){t+=p.w;}); var r=Math.random()*t, j=0;
     for(;j<pool.length-1;j++){ r-=pool[j].w; if(r<0) break; }
     var it=pool.splice(j,1)[0]; out.push({sid:it.sid,uid:it.uid,idx:it.idx}); }
@@ -68,7 +92,11 @@ function judgeText(q,a){
 function diffHTML(a,ans){ var x=normT(a), y=normT(ans), h="";
   for(var i=0;i<x.length;i++){ var c=esc(x[i]===" "?"␣":x[i]); h+= x[i]===y[i] ? c : '<b class="bad">'+c+'</b>'; }
   return '<span class="diff">'+h+'</span>'+(x.length<y.length?' <span class="muted">（還少了 '+(y.length-x.length)+' 個字母）</span>':x.length>y.length?' <span class="muted">（多了 '+(x.length-y.length)+' 個字母）</span>':''); }
-function getQ(it){ var s=subj(it.sid), u=s&&unit(s,it.uid); return u ? {q:u.questions[it.idx], u:u, s:s} : null; }
+function getQ(it){ if(!it) return null; var s=subj(it.sid), u=s&&unit(s,it.uid);
+  if(it.q) return {q:it.q, u:u||{name:it.uname||"隨機題"}, s:s||{name:it.sname||""}};
+  return u&&u.questions[it.idx] ? {q:u.questions[it.idx], u:u, s:s} : null; }
+function itKey(it){ return it.q ? it.sid+"|"+it.uid+"|g|"+it.q.q : it.sid+"|"+it.uid+"|"+it.idx; }
+function itCopy(w){ var o={sid:w.sid,uid:w.uid}; if(w.q){ o.q=w.q; o.uname=w.uname; o.sname=w.sname; } else o.idx=w.idx; return o; }
 
 // ---------- 作答 ----------
 var R;
@@ -144,9 +172,9 @@ function finishQ(correct){ var tf=document.getElementById("tin"); if(tf){ tf.dis
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
-  var wb=load(KEY_W,[]), key=it.sid+"|"+it.uid+"|"+it.idx, pos=-1;
+  var wb=load(KEY_W,[]), key=itKey(it), pos=-1;
   wb.forEach(function(w,i){ if(w.key===key) pos=i; });
-  if(!firstTry && pos<0) wb.push({key:key,sid:it.sid,uid:it.uid,idx:it.idx,date:today()});
+  if(!firstTry && pos<0){ var ent=itCopy(it); ent.key=key; ent.date=today(); wb.push(ent); }
   if(firstTry && R.isWB && pos>=0) wb.splice(pos,1);
   save(KEY_W,wb);
   var last=R.i===R.items.length-1;
@@ -169,7 +197,7 @@ function herAnswer(r){ var tries=r.tries||[]; if(!tries.length) return ""; retur
 function mistakeLines(results){
   var lines=[];
   results.forEach(function(r){ if(r.firstTry) return;
-    lines.push(r.it.uid+"#"+(r.it.idx+1)+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
+    lines.push(r.it.uid+"#"+(r.it.q?"隨機":(r.it.idx+1))+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
   return lines.length?lines.join("\n"):"全對";
 }
 function subjectLabel(){
@@ -224,6 +252,7 @@ function end(){
   var n=R.results.length, right=R.results.filter(function(r){return r.correct;}).length, first=R.results.filter(function(r){return r.firstTry;}).length;
   var stars = first===n?3 : first/n>=0.7?2 : right/n>=0.5?1 : 0;
   var wrong=R.results.filter(function(r){return !r.firstTry;});
+  if(!R.isWB) markSeen(R.items);
   var rec={date:today(), subject:R.sname, unit:R.uname, total:n, right:right, first:first, stars:stars,
     wrong:wrong.map(function(r){return {q:r.q,tries:r.tries,answer:r.answer,unit:r.unit};})};
   var hist=load(KEY_H,[]); hist.unshift(rec); save(KEY_H,hist.slice(0,50));
@@ -272,7 +301,7 @@ function wrongbook(){
   wb.forEach(function(w){ var g=getQ(w); h+='<li>'+esc(g.q.q)+' <span class="muted">（'+esc(g.s.name)+'・'+esc(g.u.name)+'）</span></li>'; });
   el(h+'</ol></div><div class="row"><button class="big secondary" id="hm">🏠 回首頁</button></div>');
   document.getElementById("hm").onclick=home;
-  document.getElementById("redo").onclick=function(){ start("錯題本","錯題本重做",shuffle(wb).slice(0,10).map(function(w){return {sid:w.sid,uid:w.uid,idx:w.idx};}),true); };
+  document.getElementById("redo").onclick=function(){ start("錯題本","錯題本重做",shuffle(wb).slice(0,10).map(itCopy),true); };
 }
 
 // ---------- 家長區 ----------
