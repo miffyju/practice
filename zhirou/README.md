@@ -11,4 +11,4 @@
 
 本機測試：`python3 -m http.server 8000` 後開 http://localhost:8000/
 
-作答紀錄與錯題本只存在該裝置瀏覽器的 localStorage。
+作答紀錄與錯題本存在該裝置瀏覽器的 localStorage。每一回合結束（含錯題本重做）會把成績送到媽媽的 Google 表單：孩子固定為芷媃、送出時間、科目、題組、分數，以及錯題明細（沒有錯題就寫「全對」）。離線時先排進 localStorage 的 p5zr_outbox（最多 50 筆），下次開啟再送。

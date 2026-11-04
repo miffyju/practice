@@ -156,6 +156,69 @@ function finishQ(correct){ var tf=document.getElementById("tin"); if(tf){ tf.dis
   nb.onclick=function(){ if(last) end(); else { R.i++; showQ(); } };
 }
 
+// ---------- 送給媽媽（Google 表單；離線先排進 p5zr_outbox） ----------
+var KEY_OUT = "p5zr_outbox", OUTBOX_MAX = 50;
+var FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdBJyTLSLXI6ZvVMOne2_1jqBL266GRXtXdRUGxiDfruydVKA/formResponse";
+var outbox = null, flushChain = Promise.resolve();
+function sentAt(d){ d=d||new Date(); function p(n){ return String(n).padStart(2,"0"); }
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+" "+p(d.getHours())+":"+p(d.getMinutes()); }
+function queue(){ if(!outbox){ var q=load(KEY_OUT,[]); outbox=Array.isArray(q)?q:[]; } return outbox; }
+function persistOut(){ save(KEY_OUT, queue()); }
+function trimQ(s){ s=String(s).replace(/\s+/g," ").trim(); return s.length>60?s.slice(0,60):s; }
+function herAnswer(r){ var tries=r.tries||[]; if(!tries.length) return ""; return String(r.correct?tries[0]:tries[tries.length-1]); }
+function mistakeLines(results){
+  var lines=[];
+  results.forEach(function(r){ if(r.firstTry) return;
+    lines.push(r.it.uid+"#"+(r.it.idx+1)+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
+  return lines.length?lines.join("\n"):"全對";
+}
+function subjectLabel(){
+  if(!R.isWB) return R.sname;
+  var names=[], seen={};
+  R.results.forEach(function(r){ var g=getQ(r.it), n=g&&g.s?g.s.name:""; if(n&&!seen[n]){ seen[n]=1; names.push(n); } });
+  return names.join("、")||R.sname;
+}
+function roundFields(right, n){
+  return {
+    "entry.648531033":"芷媃",
+    "entry.1291387086":sentAt(new Date()),
+    "entry.130022767":subjectLabel(),
+    "entry.822327708":R.uname,
+    "entry.1811768317":right+"/"+n,
+    "entry.1816962498":mistakeLines(R.results)
+  };
+}
+function postForm(fields){
+  if(typeof fetch!=="function"||typeof URLSearchParams!=="function") return Promise.reject(new Error("no fetch"));
+  return fetch(FORM_URL,{method:"POST",mode:"no-cors",body:new URLSearchParams(fields)});
+}
+function drain(){
+  var q=queue(); if(!q.length) return Promise.resolve(true);
+  var item=q[0];
+  return postForm(item.fields).then(function(){
+    var i=-1; queue().forEach(function(x,idx){ if(x.id===item.id) i=idx; });
+    if(i>=0) queue().splice(i,1);
+    persistOut();
+    return drain();
+  }, function(){ return false; });
+}
+function flushOutbox(){
+  var run=flushChain.then(drain, drain);
+  flushChain=run.then(function(){}, function(){});
+  return run;
+}
+function enqueueAndSend(fields){
+  var item={id:String(Date.now())+"-"+Math.random().toString(36).slice(2), fields:fields};
+  var q=queue(); q.push(item); if(q.length>OUTBOX_MAX) outbox=q.slice(q.length-OUTBOX_MAX);
+  persistOut();
+  var id=item.id;
+  return flushOutbox().then(function(){ return queue().every(function(x){ return x.id!==id; }); });
+}
+function showSendStatus(ok){
+  var el=document.getElementById("sendStat"); if(!el) return;
+  el.textContent=ok?"📨 已送給媽媽":"📨 稍後自動補送";
+}
+
 // ---------- 結算 ----------
 function end(){
   var n=R.results.length, right=R.results.filter(function(r){return r.correct;}).length, first=R.results.filter(function(r){return r.firstTry;}).length;
@@ -165,7 +228,7 @@ function end(){
     wrong:wrong.map(function(r){return {q:r.q,tries:r.tries,answer:r.answer,unit:r.unit};})};
   var hist=load(KEY_H,[]); hist.unshift(rec); save(KEY_H,hist.slice(0,50));
   var h='<div class="card" style="text-align:center"><h2>'+(stars>=2?"🎊 做得好！":"👍 繼續加油！")+'</h2><div class="stars pop" aria-label="'+stars+'顆星">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'+
-    '<div class="score">'+right+' / '+n+'</div><p class="muted">第一次就答對 '+first+' 題</p></div>';
+    '<div class="score">'+right+' / '+n+'</div><p class="muted">第一次就答對 '+first+' 題</p><p class="muted" id="sendStat"></p></div>';
   if(wrong.length){
     h+='<div class="card"><h3>要再練習的題目</h3><ol>';
     wrong.forEach(function(r){ h+='<li>'+esc(r.q)+'<br><span class="muted">你的答案：'+esc(r.tries.join("、"))+'　正確答案：'+esc(r.answer)+'</span></li>'; });
@@ -173,6 +236,7 @@ function end(){
   }
   h+='<div class="row"><button class="big primary" id="copy">📋 複製結果給教練</button><button class="big secondary" id="again">🔁 再玩一次</button><button class="big secondary" id="hm">🏠 回首頁</button></div><div id="fallback"></div>';
   el(h); if(stars>=2) celebrate();
+  enqueueAndSend(roundFields(right, n)).then(showSendStatus, function(){ showSendStatus(false); });
   document.getElementById("copy").onclick=function(){ copyText(summary(rec)); };
   document.getElementById("hm").onclick=home;
   document.getElementById("again").onclick=function(){
@@ -208,7 +272,7 @@ function wrongbook(){
   wb.forEach(function(w){ var g=getQ(w); h+='<li>'+esc(g.q.q)+' <span class="muted">（'+esc(g.s.name)+'・'+esc(g.u.name)+'）</span></li>'; });
   el(h+'</ol></div><div class="row"><button class="big secondary" id="hm">🏠 回首頁</button></div>');
   document.getElementById("hm").onclick=home;
-  document.getElementById("redo").onclick=function(){ start("錯題本","錯題重做",shuffle(wb).slice(0,10).map(function(w){return {sid:w.sid,uid:w.uid,idx:w.idx};}),true); };
+  document.getElementById("redo").onclick=function(){ start("錯題本","錯題本重做",shuffle(wb).slice(0,10).map(function(w){return {sid:w.sid,uid:w.uid,idx:w.idx};}),true); };
 }
 
 // ---------- 家長區 ----------
@@ -219,7 +283,7 @@ function parent(){
   else { h+='<table><thead><tr><th>日期</th><th>科目・單元</th><th>成績</th></tr></thead><tbody>';
     hist.slice(0,20).forEach(function(r,i){ h+='<tr><td>'+esc(r.date)+'</td><td>'+esc(r.subject)+'・'+esc(r.unit)+'</td><td>'+r.right+'/'+r.total+' '+"⭐".repeat(r.stars)+' <button class="iconbtn" data-c="'+i+'" aria-label="複製這次結果">📋</button></td></tr>'; });
     h+='</tbody></table>'; }
-  h+='<p class="muted">紀錄只存在這台裝置的瀏覽器裡（localStorage），不會上傳。</p><div id="fallback"></div></div><div class="row"><button class="big secondary" id="clr">🗑 清除所有紀錄與錯題本</button><button class="big secondary" id="hm">🏠 回首頁</button></div>';
+  h+='<p class="muted">紀錄存在這台裝置的瀏覽器裡。每一回合的成績和錯題會送給媽媽；沒網路時先暫存，下次開啟再送。</p><div id="fallback"></div></div><div class="row"><button class="big secondary" id="clr">🗑 清除所有紀錄與錯題本</button><button class="big secondary" id="hm">🏠 回首頁</button></div>';
   el(h);
   app.querySelectorAll("[data-c]").forEach(function(b){ b.onclick=function(){ copyText(summary(hist[+b.dataset.c])); }; });
   document.getElementById("hm").onclick=home;
@@ -272,5 +336,6 @@ var SP=(function(){
 })();
 
 document.getElementById("homeBtn").onclick=home;
+flushOutbox();
 home();
 })();
