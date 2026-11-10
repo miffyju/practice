@@ -1,7 +1,8 @@
 (function(){
 "use strict";
 var D = window.PRACTICE_DATA, app = document.getElementById("app");
-var KEY_H = "p3_history", KEY_W = "p3_wrongbook", ROUND = 8;
+var KEY_H = "p3_history", KEY_W = "p3_wrongbook", KEY_RECENT = "p3_recent", ROUND = 8, RECENT_ROUNDS = 3;
+var GEN = window.PRACTICE_GEN || null;
 function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -31,7 +32,7 @@ function tap(el, fn){
 function home(){
   var wb = load(KEY_W, []);
   var h = '<p class="greet">嗨，小練習生！今天想練習什麼呢？😊</p><div class="grid">';
-  D.subjects.forEach(function(s){ h += '<button class="big subject'+(s.featured?' exam':'')+'" style="background:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+'</button>'; });
+  D.subjects.forEach(function(s){ h += '<button class="big subject'+(s.featured?' exam':'')+'" style="background:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+(s.sub?'<small class="sub">'+esc(s.sub)+'</small>':'')+'</button>'; });
   h += '</div><div class="row"><button class="big secondary" id="wbBtn">📒 我的錯題本（'+wb.length+'）</button><button class="big secondary" id="parentBtn">👪 家長區</button></div>';
   el(h);
   app.querySelectorAll("[data-s]").forEach(function(b){ b.onclick=function(){ units(b.dataset.s); }; });
@@ -39,24 +40,68 @@ function home(){
   document.getElementById("parentBtn").onclick=parent;
 }
 function units(sid){
-  var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題。</p><div class="grid">';
-  s.units.forEach(function(u){ h+='<button class="big" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+u.questions.length+'題）</span></button>'; });
+  var s=subj(sid), h='<h2>'+s.icon+' '+esc(s.name)+(s.sub?'<small class="sub2">（'+esc(s.sub)+'）</small>':'')+'</h2><p class="muted">選一個單元開始，每回合最多 '+ROUND+' 題，每次的題目都不一樣。</p>', last=null;
+  s.units.forEach(function(u){
+    if(u.group&&u.group!==last){ if(last!==null) h+='</div>'; h+='<h3 class="grp">'+esc((D.groups&&D.groups[u.group])||u.group)+'</h3><div class="grid">'; last=u.group; }
+    else if(last===null){ h+='<div class="grid">'; last=u.group||""; }
+    h+='<button class="big" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(genList(u).length?'題目無限變化':poolSize(u)+'題，每次抽題')+'）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
-    var items=shuffle(u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i}; })).slice(0,ROUND);
-    start(s.name, u.name, items, false);
+    start(s.name, u.name, buildRound(s,u), false, {sid:s.id,uid:u.id});
   }; });
   document.getElementById("back").onclick=home;
 }
-function getQ(it){ var s=subj(it.sid), u=s&&unit(s,it.uid); return u ? {q:u.questions[it.idx], u:u, s:s} : null; }
+function getQ(it){
+  if(it.lg){ return it.g ? {q:it.g, u:{id:it.uid,name:it.un||"舊題",scratch:!!it.scr}, s:{id:it.sid,name:it.sn||"舊題"}} : null; }
+  var s=subj(it.sid), u=s&&unit(s,it.uid); if(!u) return null;
+  if(it.gen){ if(!it.g&&GEN) it.g=GEN.make(it.gen,it.seed); return it.g ? {q:it.g, u:u, s:s} : null; }
+  var q=u.questions[it.idx]; return q ? {q:q, u:u, s:s} : null; }
+// ---------- 每回合出題：數學用產生器；其他科從題庫抽題，避開最近 3 回合出現過的 ----------
+function genList(u){ return (GEN&&GEN.units[u.id])||[]; }
+function newSeed(){ return 1+Math.floor(Math.random()*2147483646); }
+function genItem(s,u,name){ var seed=newSeed(); return {sid:s.id,uid:u.id,gen:name,seed:seed,g:GEN.make(name,seed)}; }
+function recentIds(key){ var r=load(KEY_RECENT,{}); var a=(r&&r[key])||[]; var seen={}; a.forEach(function(round){ (round||[]).forEach(function(id){ seen[id]=1; }); }); return seen; }
+function remember(key, ids){ var r=load(KEY_RECENT,{}); if(!r||typeof r!=="object"||Array.isArray(r)) r={}; var a=Array.isArray(r[key])?r[key]:[]; a.push(ids); r[key]=a.slice(-RECENT_ROUNDS); save(KEY_RECENT,r); }
+function itemId(it){ return it.gen ? it.gen : (it.m ? it.uid+"#"+it.idx : "q"+it.idx); }
+// 「綜合」單元（u.mix）：題目從其他單元的題庫抽，分成幾組，每組平均抽幾題
+function mixPool(group){ var all=[]; group.forEach(function(r){ var ms=subj(r[0]), mu=ms&&unit(ms,r[1]); if(mu) mu.questions.forEach(function(q,i){ all.push({sid:ms.id,uid:mu.id,idx:i,m:1}); }); }); return all; }
+function poolSize(u){ if(!u.mix) return u.questions.length; var n=0; u.mix.forEach(function(g){ n+=mixPool(g).length; }); return n; }
+function pickMix(u,size,seen){
+  var G=u.mix, out=[];
+  G.forEach(function(g,gi){
+    var per=Math.floor(size/G.length)+(gi<size%G.length?1:0), all=mixPool(g);
+    var fresh=shuffle(all.filter(function(it){ return !seen[itemId(it)]; })), old=shuffle(all.filter(function(it){ return seen[itemId(it)]; }));
+    out=out.concat(fresh.concat(old).slice(0,per)); });
+  return shuffle(out);
+}
+function pickStatic(s,u,n,seen){
+  var all=u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i}; });
+  var fresh=shuffle(all.filter(function(it){ return !seen[itemId(it)]; })), old=shuffle(all.filter(function(it){ return seen[itemId(it)]; }));
+  return fresh.concat(old).slice(0,n);
+}
+function buildRound(s,u){
+  var key=s.id+"|"+u.id, seen=recentIds(key), gens=genList(u), size=u.round||ROUND, items;
+  if(gens.length){
+    var nStatic=Math.min(2,u.questions.length), st=pickStatic(s,u,nStatic,seen), g=[];
+    // 產生器輪流使用，最近用過的題型排後面
+    var order=shuffle(gens.filter(function(n){return !seen[n];})).concat(shuffle(gens.filter(function(n){return seen[n];})));
+    for(var i=0;g.length<size-st.length;i++) g.push(genItem(s,u,order[i%order.length]));
+    items=shuffle(st.concat(g));
+  } else if(u.mix) items=pickMix(u,size,seen);
+  else items=pickStatic(s,u,size,seen);
+  remember(key, items.map(itemId));
+  return items;
+}
+var PIN=/^(以上皆是|以上皆非|以上都是|以上都不是|以上都對|以上都不對|以上皆對|都對|都不對|都是|都不是|以上.*)$/;
+function orderOptions(opts){ var free=opts.filter(function(o){return !PIN.test(o);}), pin=opts.filter(function(o){return PIN.test(o);}); return shuffle(free).concat(pin); }
 
 // ---------- 作答 ----------
 var R;
-function start(sname, uname, items, isWB){
+function start(sname, uname, items, isWB, src){
   items=items.filter(getQ);
   if(!items.length){ toast("沒有題目喔"); return home(); }
-  R={sname:sname,uname:uname,items:items,i:0,results:[],isWB:isWB}; showQ();
+  R={sname:sname,uname:uname,items:items,i:0,results:[],isWB:isWB,src:src||null}; showQ();
 }
 function showQ(){
   var it=R.items[R.i], g=getQ(it), q=g.q, n=R.items.length;
@@ -66,7 +111,7 @@ function showQ(){
   h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
     h+='<div class="options" role="group" aria-labelledby="qt">';
-    shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
+    orderOptions(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
     h+='</div>';
   } else if(q.type==="spell"){
     var w=String(q.answer).toLowerCase(), pool=w.split(""), ab="abcdefghijklmnopqrstuvwxyz".split("").filter(function(c){return w.indexOf(c)<0;});
@@ -135,9 +180,9 @@ function finishQ(correct){
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
-  var wb=load(KEY_W,[]), key=it.sid+"|"+it.uid+"|"+it.idx, pos=-1;
+  var wb=load(KEY_W,[]), key=it.gen?"gen|"+it.sid+"|"+it.uid+"|"+g.q.gid:it.sid+"|"+it.uid+"|"+it.idx, pos=-1;
   wb.forEach(function(w,i){ if(w.key===key) pos=i; });
-  if(!firstTry && pos<0) wb.push({key:key,sid:it.sid,uid:it.uid,idx:it.idx,date:today()});
+  if(!firstTry && pos<0) wb.push(it.gen?(it.lg?{key:key,v:2,lg:1,sid:it.sid,uid:it.uid,gen:it.gen,seed:it.seed,g:g.q,sn:it.sn,un:it.un,scr:it.scr,date:today()}:{key:key,v:2,sid:it.sid,uid:it.uid,gen:it.gen,seed:it.seed,g:g.q,date:today()}):{key:key,v:2,sid:it.sid,uid:it.uid,idx:it.idx,date:today()});
   if(firstTry && R.isWB && pos>=0) wb.splice(pos,1);
   save(KEY_W,wb);
   var last=R.i===R.items.length-1;
@@ -160,7 +205,7 @@ function herAnswer(r){ var tries=r.tries||[]; if(!tries.length) return ""; retur
 function mistakeLines(results){
   var lines=[];
   results.forEach(function(r){ if(r.firstTry) return;
-    lines.push(r.it.uid+"#"+(r.it.idx+1)+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
+    lines.push(r.it.uid+"#"+(r.it.gen?(r.it.g&&r.it.g.gid)||(r.it.gen+"~"+r.it.seed):(r.it.idx+1))+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
   return lines.length?lines.join("\n"):"全對";
 }
 function subjectLabel(){
@@ -232,8 +277,8 @@ function end(){
   document.getElementById("hm").onclick=home;
   document.getElementById("again").onclick=function(){
     if(R.isWB) return wrongbook();
-    var it=R.items[0], s=subj(it.sid), u=unit(s,it.uid);
-    start(s.name,u.name,shuffle(u.questions.map(function(q,i){return {sid:s.id,uid:u.id,idx:i};})).slice(0,ROUND),false);
+    var sr=R.src||{sid:R.items[0].sid,uid:R.items[0].uid}, s=subj(sr.sid), u=unit(s,sr.uid);
+    start(s.name,u.name,buildRound(s,u),false,sr);
   };
 }
 function summary(r){
@@ -256,14 +301,14 @@ function copyText(t){
 
 // ---------- 錯題本 ----------
 function wrongbook(){
-  var wb=load(KEY_W,[]).filter(function(w){return getQ(w);});
+  var wb=load(KEY_W,[]).filter(function(w){return (w.gen||w.v===2)&&getQ(w);});
   var h='<h2>📒 我的錯題本</h2>';
   if(!wb.length){ el(h+'<div class="card">目前沒有錯題，太厲害了！🌟</div><div class="row"><button class="big secondary" id="hm">🏠 回首頁</button></div>'); document.getElementById("hm").onclick=home; return; }
   h+='<p class="muted">共 '+wb.length+' 題。重做時第一次就答對，題目就會從錯題本畢業喔！</p><div class="row"><button class="big primary" id="redo">✏️ 重做錯題（最多10題）</button></div><div class="card"><ol>';
   wb.forEach(function(w){ var g=getQ(w); h+='<li>'+esc(g.q.q)+' <span class="muted">（'+esc(g.s.name)+'・'+esc(g.u.name)+'）</span></li>'; });
   el(h+'</ol></div><div class="row"><button class="big secondary" id="hm">🏠 回首頁</button></div>');
   document.getElementById("hm").onclick=home;
-  document.getElementById("redo").onclick=function(){ start("錯題本","錯題重做",shuffle(wb).slice(0,10).map(function(w){return {sid:w.sid,uid:w.uid,idx:w.idx};}),true); };
+  document.getElementById("redo").onclick=function(){ start("錯題本","錯題重做",shuffle(wb).slice(0,10).map(function(w){return w.gen?(w.lg?{sid:w.sid,uid:w.uid,gen:w.gen,seed:w.seed,g:w.g,lg:1,sn:w.sn,un:w.un,scr:w.scr}:{sid:w.sid,uid:w.uid,gen:w.gen,seed:w.seed,g:w.g}):{sid:w.sid,uid:w.uid,idx:w.idx};}),true); };
 }
 
 // ---------- 家長區 ----------
@@ -299,16 +344,20 @@ var SP=(function(){
     tap(panel.querySelector("#spClose"), close);
     cv.addEventListener("pointerdown",down); cv.addEventListener("pointermove",move);
     ["pointerup","pointercancel","pointerleave"].forEach(function(e){ cv.addEventListener(e,up); });
+    document.addEventListener("selectstart",blockSel); document.addEventListener("contextmenu",blockSel); panel.addEventListener("contextmenu",function(e){ e.preventDefault(); });
     window.addEventListener("resize",resize); window.addEventListener("orientationchange",resize);
     mark();
   }
   function mark(){ panel.querySelectorAll(".sp-color").forEach(function(b){ b.classList.toggle("on",mode==="pen"&&b.dataset.c===color); });
     panel.querySelector("#spEraser").classList.toggle("on",mode==="eraser"); }
   function pt(e){ var r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
-  function down(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  // 畫圖中：整頁禁止選取文字、擋掉長按選單，避免用筆寫字時把題目反白
+  function blockSel(e){ if(cur) e.preventDefault(); }
+  function clearSel(){ try{ var g=window.getSelection&&window.getSelection(); if(g&&g.removeAllRanges) g.removeAllRanges(); }catch(_){} }
+  function down(e){ e.preventDefault(); clearSel(); document.body.classList.add("sp-drawing"); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
     cur={mode:mode,color:color,w:mode==="eraser"?28:(e.pointerType==="pen"?3:4),pts:[pt(e)]}; strokes.push(cur); redraw(); }
   function move(e){ if(!cur) return; e.preventDefault(); cur.pts.push(pt(e)); drawStroke(cur,true); }
-  function up(e){ cur=null; if(e&&e.pointerId!=null){ try{ cv.releasePointerCapture(e.pointerId); }catch(_){} } }
+  function up(e){ cur=null; document.body.classList.remove("sp-drawing"); if(e&&e.pointerId!=null){ try{ cv.releasePointerCapture(e.pointerId); }catch(_){} } }
   function drawStroke(s,lastOnly){ var p=s.pts; ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=s.w;
     ctx.globalCompositeOperation=s.mode==="eraser"?"destination-out":"source-over"; ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
     if(p.length===1){ ctx.beginPath(); ctx.arc(p[0][0],p[0][1],s.w/2,0,Math.PI*2); ctx.fill(); }
@@ -319,13 +368,40 @@ var SP=(function(){
   function resize(){ if(!openState) return; var r=cv.getBoundingClientRect(), d=window.devicePixelRatio||1;
     var w=Math.max(1,Math.round(r.width*d)), h=Math.max(1,Math.round(r.height*d)); if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; } redraw(); }
   function open(){ build(); panel.hidden=false; openState=true; document.body.classList.add("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 收起計算紙"; b.setAttribute("aria-expanded","true"); } resize(); }
-  function close(){ if(!panel) return; panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
+  function close(){ if(!panel) return; cur=null; document.body.classList.remove("sp-drawing"); panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
   function toggle(){ openState?close():open(); }
   function reset(){ strokes=[]; cur=null; if(cv) redraw(); }
   return {isOpen:function(){return openState;}, open:open, close:close, toggle:toggle, reset:reset, _strokes:function(){return strokes.length;}};
 })();
 
 document.getElementById("homeBtn").onclick=home;
+// ---------- 舊版錯題本轉換：期中版依「題號」存放的錯題，改存成完整題目，不會因為題庫改版而錯亂 ----------
+function migrateWB(){
+  var wb=load(KEY_W,[]); if(!Array.isArray(wb)||!wb.some(function(w){ return w&&w.v!==2; })) return;
+  var L=window.LEGACY_DATA; if(!L) return;
+  function lsu(sid,uid){ var ls=L.subjects.filter(function(x){return x.id===sid;})[0], lu=ls&&ls.units.filter(function(x){return x.id===uid;})[0]; return {ls:ls,lu:lu}; }
+  var out=[], seen={};
+  wb.forEach(function(w){
+    if(!w||typeof w!=="object") return;
+    var e=null;
+    if(w.v===2) e=w;
+    else {
+      var f=lsu(w.sid,w.uid), keepLive=false;
+      if(w.gen&&w.g){
+        var cs=subj(w.sid), cu=cs&&unit(cs,w.uid);
+        keepLive=!!(cu&&GEN&&GEN.generators[w.gen]&&(GEN.units[w.uid]||[]).indexOf(w.gen)>=0);
+        if(keepLive) e={key:w.key,v:2,sid:w.sid,uid:w.uid,gen:w.gen,seed:w.seed,g:w.g,date:w.date};
+        else e={key:"gen|"+w.sid+"|"+w.uid+"|"+(w.g.gid||w.gen+"~"+w.seed),v:2,lg:1,sid:w.sid,uid:w.uid,gen:"legacy",seed:0,g:w.g,sn:f.ls?f.ls.name:"舊題",un:f.lu?f.lu.name:"舊題",scr:w.sid==="math"||w.uid==="x6"||w.uid==="x12",date:w.date};
+      } else if(f.lu&&f.lu.questions[w.idx]){
+        var q=JSON.parse(JSON.stringify(f.lu.questions[w.idx])); q.gid="old-"+w.uid+"#"+(w.idx+1);
+        e={key:"gen|"+w.sid+"|"+w.uid+"|"+q.gid,v:2,lg:1,sid:w.sid,uid:w.uid,gen:"legacy",seed:0,g:q,sn:f.ls.name,un:f.lu.name,scr:!!f.lu.scratch,date:w.date};
+      }
+    }
+    if(e&&!seen[e.key]){ seen[e.key]=1; out.push(e); }
+  });
+  save(KEY_W,out);
+}
+migrateWB();
 flushOutbox();
 home();
 })();
