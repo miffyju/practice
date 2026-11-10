@@ -301,6 +301,99 @@ G.en_pat=function(){
     null, "his / her + favorite subject is …", [who[2]+" "+who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+"."], {say:who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+"."});
 };
 
+
+// ===== 奧數風格產生器（隨機挑戰，答案由程式計算）=====
+function Nfill(q,ans,hint,explain,check){ var o={type:"num", q:q, answer:String(ans), hint:hint, explain:explain}; if(check!=null) o.check=String(check); return o; }
+G.oly_digit=function(){
+  if(Math.random()<0.45){
+    var a,b,r; do{ a=pk([3,4,5,6,7,8,9]); b=pk([4,5,6,7,8,9,11,12]); r=ri(1,Math.min(a,b)-1); }while(a===b);
+    var L=lcm(a,b), ans=L+r;
+    return Nfill("一個正整數，除以 "+a+" 餘 "+r+"，除以 "+b+" 也餘 "+r+"。這樣的正整數最小是多少？", ans,
+      "兩個餘數都一樣，可以先把餘數拿掉，剩下的數同時是 "+a+" 和 "+b+" 的倍數。",
+      [a+" 和 "+b+" 的最小公倍數是 "+L+"。","這個數＝ "+L+"＋"+r+" ＝ "+ans+"。"], L+"+"+r);
+  }
+  var cands=[];
+  for(var u=1;u<=9;u++) for(var q2=2;q2<=4;q2++) for(var p=2;p<=4;p++){
+    var t=q2*u, h=p*t; if(t<=9&&h<=9) cands.push([h,t,u,p,q2]);
+  }
+  var x=pk(cands), n=x[0]*100+x[1]*10+x[2];
+  return Nfill("一個三位數，百位數字是十位數字的 "+x[3]+" 倍，十位數字是個位數字的 "+x[4]+" 倍。這個三位數是多少？", n,
+    "設個位是 a，十位、百位就可以寫出來。每個數字都要是 0～9 的整數。",
+    ["個位是 "+x[2]+"，十位是 "+x[4]+"×"+x[2]+"＝"+x[1]+"，百位是 "+x[3]+"×"+x[1]+"＝"+x[0]+"。","這個三位數是 "+n+"。"], String(n));
+};
+G.oly_chicken=function(){
+  var r=ri(4,20), c=ri(6,30), heads=r+c, feet=4*r+2*c;
+  if(Math.random()<0.5) return Nfill("籠子裡有雞和兔共 "+heads+" 隻，腳一共 "+feet+" 隻。請問兔子有幾隻？", r,
+    "可以先假設全部是雞（每隻 2 隻腳），多出來的腳就是兔子多的。",
+    ["如果全部是雞，腳有 "+(2*heads)+" 隻，實際有 "+feet+" 隻，多了 "+(feet-2*heads)+" 隻。","每隻兔子比雞多 2 隻腳，兔子有 "+(feet-2*heads)+"/2＝"+r+" 隻。"], String(r));
+  return Nfill("籠子裡有雞和兔共 "+heads+" 隻，腳一共 "+feet+" 隻。請問雞有幾隻？", c,
+    "可以先假設全部是兔子（每隻 4 隻腳），少掉的腳就是雞少的。",
+    ["如果全部是兔，腳有 "+(4*heads)+" 隻，實際有 "+feet+" 隻，少了 "+(4*heads-feet)+" 隻。","每隻雞比兔少 2 隻腳，雞有 "+(4*heads-feet)+"/2＝"+c+" 隻。"], String(c));
+};
+G.oly_tree=function(){
+  var typ=ri(0,2), d=pk([2,3,4,5,6,8,10]), segs=ri(8,25);
+  if(typ===0){ var L=segs*d, ans=segs+1;
+    return Nfill("一條長 "+L+" 公尺的小路，從一端到另一端每隔 "+d+" 公尺種一棵樹，而且兩端都要種。一共要種幾棵樹？", ans,
+      "兩端都種的時候，棵數＝間隔數＋1。先算有幾個間隔。",
+      [L+"÷"+d+"＝"+segs+" 個間隔。","兩端都種，共 "+segs+"＋1＝"+ans+" 棵。"], segs+"+1"); }
+  if(typ===1){ var L=segs*d, ans=segs;
+    return Nfill("一個周長 "+L+" 公尺的圓形花圃，沿著邊緣每隔 "+d+" 公尺插一面小旗。一共要插幾面旗？", ans,
+      "因為是封閉的圓，起點和終點是同一面旗，旗子數＝間隔數。",
+      ["周長 "+L+"÷"+d+"＝"+ans+" 個間隔，也就是 "+ans+" 面旗。"], String(ans)); }
+  var side=pk([8,10,12,16,20,24]), gap=pk([2,4]); if(side%gap!==0) gap=2;
+  var ans=side*4/gap;
+  return Nfill("在邊長 "+side+" 公尺的正方形道路上，從一個角落開始，每隔 "+gap+" 公尺種一棵樹。一共種幾棵樹？", ans,
+    "正方形是一圈，周長除以間隔就是棵數（角落不會算重，因為剛好走到下一邊）。",
+    ["周長 "+(side*4)+" 公尺，"+(side*4)+"÷"+gap+"＝"+ans+" 棵。"], "("+side+"*4)/"+gap);
+};
+G.oly_age=function(){
+  var kid, parent, ratio, years, guard=0;
+  do{ kid=ri(8,16); ratio=pk([2,3]); parent=ri(ratio*kid+ratio, ratio*kid+48);
+    var num=parent-ratio*kid; if(num%(ratio-1)===0) years=num/(ratio-1); else years=-1;
+    guard++;
+  }while((years<1||years>60||years!==Math.floor(years)) && guard<80);
+  if(!(years>=1)) { kid=15; parent=51; ratio=2; years=21; }
+  var who=pk(["小晴","小安","子恩","品妤"]);
+  return Nfill("今年"+who+" "+kid+" 歲，爸爸 "+parent+" 歲。請問幾年後，爸爸的年齡恰是"+who+"的 "+ratio+" 倍？", years,
+    "設 x 年後。那時兩人都加了 x 歲，列式：爸爸現在的歲數＋x ＝ "+ratio+"×（"+who+"現在的歲數＋x）。",
+    [parent+"＋x ＝ "+ratio+"×（"+kid+"＋x）。",parent+"＋x ＝ "+(ratio*kid)+"＋"+ratio+"x。", (parent-ratio*kid)+" ＝ "+(ratio-1)+"x，x ＝ "+years+"。"], String(years));
+};
+G.oly_seq=function(){
+  var typ=ri(0,2);
+  if(typ===0){ var a=ri(2,20), d=ri(2,9), n=ri(8,20), ans=a+(n-1)*d;
+    return Nfill("數列 "+a+"、"+(a+d)+"、"+(a+2*d)+"、… 是公差固定的等差數列。第 "+n+" 項是多少？", ans,
+      "第 n 項＝首項＋（n−1）×公差。",
+      ["首項 "+a+"，公差 "+d+"。","第 "+n+" 項＝ "+a+"＋"+(n-1)+"×"+d+" ＝ "+ans+"。"], a+"+"+(n-1)+"*"+d); }
+  if(typ===1){ var a=ri(1,9), d=pk([2,3,4,5]), n=ri(10,20), last=a+(n-1)*d, ans=(a+last)*n/2;
+    return Nfill("求 "+a+"＋"+(a+d)+"＋"+(a+2*d)+"＋⋯＋"+last+" 的和。", ans,
+      "這是等差數列。先數有幾項，再用（首項＋末項）×項數÷2。",
+      ["項數＝（"+last+"−"+a+"）÷"+d+"＋1＝"+n+" 項。","和＝（"+a+"＋"+last+"）×"+n+"÷2＝"+ans+"。"], "("+a+"+"+last+")*"+n+"/2"); }
+  var k=pk([2,3]), start=ri(1,6), seq=[start];
+  for(var i=0;i<8;i++) seq.push(i%2===0?seq[i]*k:seq[i]-1);
+  var hide=pk([4,5,6]);
+  var shown=seq.map(function(v,i){ return i===hide?"x":v; }).join("、");
+  return Nfill("數列 "+shown+"，依「乘 "+k+"、再減 1」交錯出現的規律，x 是多少？", seq[hide],
+    "看看前幾項：是不是先乘 "+k+"，再減 1，再乘 "+k+"，再減 1……",
+    ["檢查："+seq[0]+"×"+k+"＝"+seq[1]+"，"+seq[1]+"−1＝"+seq[2]+"，依此類推。","所以 x＝"+seq[hide]+"。"], String(seq[hide]));
+};
+G.oly_divisors=function(){
+  var typ=ri(0,2);
+  if(typ===0){ var n=pk([36,48,60,72,84,90,96,108,120,144,180,240,252,270]), d=divs(n);
+    return Nfill(n+" 有幾個正因數？", d.length,
+      "一對一對找：1 和 "+n+"、2 和 ……，找到交叉就停，再數有幾個。",
+      [n+" 的正因數："+d.join("、")+"。","共 "+d.length+" 個。"], String(d.length)); }
+  if(typ===1){ var g=pk([6,8,12,18,24]), p=ri(2,6), q=ri(2,6); while(gcd(p,q)!==1||p===q){ p=ri(2,6); q=ri(2,6); }
+    var a=g*p, b=g*q, cd=divs(g);
+    return Nfill(a+" 和 "+b+" 共有多少個公因數？", cd.length,
+      "先求最大公因數，再數它有幾個因數。那些因數就是公因數。",
+      [a+" 和 "+b+" 的最大公因數是 "+g+"。",g+" 的因數："+cd.join("、")+"，共 "+cd.length+" 個。"], String(cd.length)); }
+  var a=pk([12,15,18,20,24,30,36]), b=pk([8,10,12,16,18,20,24]); while(a===b) b=pk([8,10,16,20,24]);
+  var r=ri(1,Math.min(a,b)-1), L=lcm(a,b), cap=L*ri(3,6)+r, k=Math.floor((cap-r)/L), ans=k*L+r;
+  return Nfill("一堆糖果，每 "+a+" 顆裝一袋會剩 "+r+" 顆，每 "+b+" 顆裝一袋也剩 "+r+" 顆。若總數不超過 "+cap+" 顆，最多有幾顆？", ans,
+    "先拿掉剩下的 "+r+" 顆，剩下的數同時是 "+a+" 和 "+b+" 的倍數。再找不超過 "+cap+" 的最大那個。",
+    [a+" 和 "+b+" 的最小公倍數是 "+L+"。","糖果數＝ "+L+" 的倍數＋"+r+"。不超過 "+cap+" 的最大是 "+ans+"。"], k+"*"+L+"+"+r);
+};
+
 // ===== 單元設定（數學按六～十單元分開；期末衝刺再做綜合）=====
 var MATH_C="#ff9f68", EN_C="#b48ee0";
 var G6=["frac_addsub","frac_word","frac_mix","frac_reduce","frac_compare"];

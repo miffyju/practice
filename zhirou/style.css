@@ -104,6 +104,7 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
 .subject[data-s="english"]{background:#ead9f6}
 .subject[data-s="science"]{background:#d4efd8}
 .subject[data-s="social"]{background:var(--yellow)}
+.subject[data-s="olympiad"]{background:#ffe9a8}
 .subject.exam{grid-column:1/-1;font-size:1.7rem;min-height:126px;position:relative}
 .subject.exam::after{
   content:"衝刺中";
@@ -117,6 +118,7 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
   line-height:1.4;
   box-shadow:0 2px 0 var(--brown);
 }
+.subject[data-s="olympiad"].exam::after{content:"歷屆試題";background:#fff3bf;}
 .primary{
   background:var(--yellow);color:var(--ink);
   box-shadow:0 var(--shadow) 0 var(--brown);
@@ -355,3 +357,11 @@ body.sp-open main{padding-bottom:56vh}
 @media (max-width:860px){
   .row .big{font-size:1.02rem;padding:.6rem .55rem}
 }
+
+.fillform{flex-direction:column;align-items:stretch;max-width:520px;margin:0 auto;}
+.fillform .filltin{width:100%;flex:1 1 auto;letter-spacing:0;text-align:center;font-size:1.15rem;}
+.fillpad{display:grid;grid-template-columns:repeat(5,1fr);gap:.45rem;max-width:520px;margin:.55rem auto 0;}
+.fillpad button{min-height:56px;font-size:1.25rem;font-weight:800;border-radius:14px;background:#fff;color:var(--ink);border:var(--stroke) solid var(--brown);box-shadow:0 var(--shadow) 0 var(--brown);}
+.fillpad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brown)}
+.qfig{margin:.7rem auto .2rem;max-width:100%;text-align:center;}
+.qfig svg{max-width:100%;height:auto;}

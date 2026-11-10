@@ -90,6 +90,41 @@ function wDraw(pool,k){
 }
 // 打字題：比對（不分大小寫、去頭尾空白、多個空白算一個）
 function normT(a){ return String(a).toLowerCase().trim().replace(/\s+/g," "); }
+
+function toHalfWidth(s){
+  return String(s==null?"":s).replace(/[０-９]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)-65280+32); })
+    .replace(/[／⁄∕]/g,"/").replace(/[：﹕]/g,":").replace(/[－—–−]/g,"-")
+    .replace(/[，]/g,",").replace(/[（]/g,"(").replace(/[）]/g,")").replace(/[＝=]/g,"=").replace(/[×ｘxX]/g,"x");
+}
+function fillCompact(s){
+  return toHalfWidth(s).replace(/\s+/g,"").replace(/度/g,"").replace(/°/g,"")
+    .replace(/個$/g,"").replace(/人$/g,"").replace(/元$/g,"").replace(/題$/g,"");
+}
+function fillFrac(s){
+  s=fillCompact(s);
+  var m=/^(\-?\d+)又(\d+)\/(\d+)$/.exec(s); if(m) return [+m[1]*+m[3]+ +m[2], +m[3]];
+  m=/^(\-?\d+)\/(\d+)$/.exec(s); if(m) return [+m[1], +m[2]];
+  return null;
+}
+function fillSame(a,b){
+  a=fillCompact(a); b=fillCompact(b);
+  if(!a||!b) return false;
+  if(a===b) return true;
+  if(a.toLowerCase()===b.toLowerCase()) return true;
+  var fa=fillFrac(a), fb=fillFrac(b);
+  if(fa&&fb&&fa[1]&&fb[1]&&fa[0]*fb[1]===fb[0]*fa[1]) return true;
+  // 11月9日20:30 ↔ 11/9 20:30
+  var da=a.replace(/月/g,"/").replace(/日/g,""), db=b.replace(/月/g,"/").replace(/日/g,"");
+  if(da===db) return true;
+  // 比大小 d<c<b<a 允許去掉空格已處理
+  return false;
+}
+function judgeFill(q,a){
+  var cands=[String(q.answer)].concat(q.accept||[]), all=[];
+  cands.forEach(function(s){ String(s).split(/\s*或\s*/).forEach(function(p){ if(p.trim()) all.push(p.trim()); }); });
+  for(var i=0;i<all.length;i++) if(fillSame(a, all[i])) return {ok:true};
+  return {ok:false};
+}
 function judgeText(q,a){
   var x=normT(a), acc=[q.answer].concat(q.accept||[]).map(normT);
   if(acc.indexOf(x)>=0) return {ok:true};
@@ -122,13 +157,21 @@ function showQ(){
   var curPct=Math.max(0,Math.min(100,R.i/n*100)), prevPct=R.i>0?Math.max(0,Math.min(100,(R.i-1)/n*100)):0;
   var h='<div class="muted'+(g.u.color?' tag" style="--uc:'+g.u.color:'')+'">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'" style="--p:'+prevPct+'%"><div></div><span class="pchick" aria-hidden="true"><span class="pchick-i">🐥</span></span></div><div class="quiz"'+(g.u.color?' style="--uc:'+g.u.color+'"':'')+'><div>';
   var pg=q.passage||g.u.passage; if(pg) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(pg)+'</div>';
-  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽"'+(q.sayAfter?' hidden':'')+'>🔊 唸給我聽</button>':'')+'</div></div><div>';
+  h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.fig?'<div class="qfig">'+q.fig+'</div>':'')+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽"'+(q.sayAfter?' hidden':'')+'>🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
     h+='<div class="options" role="group" aria-labelledby="qt">';
     shuffle(q.options).forEach(function(o){ h+='<button class="big opt" data-o="'+esc(o)+'">'+esc(o)+'</button>'; });
     h+='</div>';
   } else if(q.type==="text"){
     h+='<form id="tform" class="tform" autocomplete="off"><input id="tin" class="tin" type="text" aria-label="輸入英文" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="在這裡輸入英文"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
+  } else if(q.type==="fill"){
+    h+='<form id="tform" class="tform fillform" autocomplete="off"><input id="tin" class="tin filltin" type="text" inputmode="text" aria-label="輸入答案" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="請輸入答案"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
+    h+='<div class="keypad fillpad" aria-label="答案快捷鍵">';
+    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","、","(",")","空白","⌫"].forEach(function(k){
+      var lab=k==="⌫"?"刪除":k==="空白"?"空格":k==="："?"冒號":k;
+      h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'">'+k+'</button>';
+    });
+    h+='</div>';
   } else {
     h+='<div class="display" id="disp" aria-live="polite" aria-label="你的答案"></div><div class="keypad">';
     ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
@@ -143,9 +186,16 @@ function showQ(){
   SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.innerHTML="📝 計算紙"; tap(spb, SP.toggle); document.querySelector(".quiz .card").appendChild(spb); }
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
-  } else if(q.type==="text"){
+  } else if(q.type==="text"||q.type==="fill"){
     var tin=document.getElementById("tin");
-    document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); if(R.cur.done) return; if(!tin.value.trim()){ toast("先輸入英文喔"); return; } answer(tin.value, null); };
+    document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); if(R.cur.done) return; if(!tin.value.trim()){ toast(q.type==="fill"?"先輸入答案喔":"先輸入英文喔"); return; } answer(tin.value, null); };
+    app.querySelectorAll("[data-fk]").forEach(function(b){ b.onclick=function(){
+      if(R.cur.done) return; var k=b.dataset.fk;
+      if(k==="⌫") tin.value=tin.value.slice(0,-1);
+      else if(k==="空白") tin.value+=" ";
+      else if(tin.value.length<32) tin.value+=k;
+      tin.focus();
+    }; });
     tin.focus();
   } else {
     var disp=document.getElementById("disp"), val="";
@@ -159,7 +209,7 @@ function showQ(){
   }
 }
 function answer(a, btn){
-  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), jt=q.type==="text"?judgeText(q,a):{ok:a===String(q.answer)}, ok=jt.ok;
+  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), jt=q.type==="text"?judgeText(q,a):q.type==="fill"?judgeFill(q,a):{ok:a===String(q.answer)}, ok=jt.ok;
   R.cur.tries.push(a);
   if(ok){
     R.cur.done=true; if(btn) btn.classList.add("right");
@@ -171,12 +221,12 @@ function answer(a, btn){
     if(btn){ btn.classList.add("wrong"); btn.disabled=true; }
     fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+(q.type==="text"?'<br>你寫的：'+diffHTML(a,q.answer)+'<br><span class="muted">紅色是寫錯的字母</span>':'')+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
     if(q.type==="num") document.getElementById("disp").textContent="";
-    if(q.type==="text"){ var ti=document.getElementById("tin"); ti.value=""; ti.focus(); }
+    if(q.type==="text"||q.type==="fill"){ var ti=document.getElementById("tin"); ti.value=""; ti.focus(); }
   } else {
     R.cur.done=true; if(btn) btn.classList.add("wrong");
     app.querySelectorAll(".opt").forEach(function(b){ if(b.dataset.o===String(q.answer)) b.classList.add("right"); });
     if(q.type==="num") document.getElementById("disp").textContent=a+" → "+q.answer;
-    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>'+(q.type==="text"?'你寫的：'+diffHTML(a,q.answer)+'<br>':'')+'正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>'+(q.type==="text"?'你寫的：'+diffHTML(a,q.answer)+'<br>':q.type==="fill"?'你寫的：<b>'+esc(a)+'</b><br>':'')+'正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
     finishQ(false);
   }
 }

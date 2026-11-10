@@ -45,6 +45,7 @@ window.PRACTICE_DATA = { subjects: [
     U("zf_so","🏫 社會期末綜合（第三・四單元）",C.social),
     U("zf_gift","⭐ 資優跨科挑戰","#c45c7a",[],{round:8})
   ]},
+  { id:"olympiad", name:"奧林匹克數學", icon:"🏅", color:"#e8b030", featured:true, units:[]},
   { id:"chinese", name:"國語", icon:"📖", color:C.chinese, units:[
     U("c7","第七課 為生命找出口",C.chinese),
     U("c8","第八課 最勇敢的女孩",C.chinese),

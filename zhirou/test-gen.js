@@ -1,5 +1,5 @@
 // node test-gen.js — 每個產生器出 200 題，檢查格式與答案
-global.window={}; require("./data.js"); require("./archive.js"); require("./extra.js"); require("./gen.js");
+global.window={}; require("./data.js"); require("./archive.js"); require("./extra.js"); require("./olympiad.js"); require("./gen.js");
 var G=window.PRACTICE_GEN, err=0, made=0;
 function bad(k,m,q){ err++; if(err<40) console.log("✗",k,m,q?JSON.stringify(q).slice(0,240):""); }
 G.list.forEach(function(k){ var texts={};
@@ -28,6 +28,13 @@ for(i=0;i<500;i++){ var q=G.make("dist_law"), e=q.q.replace("計算：","").repl
   if(String(eval(e))!==String(q.answer)) bad("dist_law","答案錯",q); }
 for(i=0;i<500;i++){ var q=G.make("div_chain"); if(/^計算：/.test(q.q)){ var e=q.q.replace("計算：","").replace(" = ？","").replace(/÷/g,"/"); var parts=e.split(" / "); if(String(parts[0]/parts[1]/parts[2])!==String(q.answer) && String(Math.round(parts[0]/parts[1]/parts[2]))!==String(q.answer)) bad("div_chain","答案錯",q); } }
 for(i=0;i<300;i++){ var q=G.make("avg_prob"); if(/平均分數是 (\d+) 分，前 \d+ 科分別是 ([0-9、]+) 分，最後一科是幾分？/.test(q.q)){ var m=q.q.match(/(\d+) 科的平均分數是 (\d+) 分，前 \d+ 科分別是 ([0-9、]+) 分/); var nn=+m[1], avg=+m[2], arr=m[3].split("、").map(Number); if(+q.answer!==avg*nn-arr.reduce(function(a,b){return a+b;},0)) bad("avg_prob","答案錯",q); } }
+
+var OLY=["oly_digit","oly_chicken","oly_tree","oly_age","oly_seq","oly_divisors"];
+OLY.forEach(function(k){ if(G.list.indexOf(k)<0) bad(k,"產生器沒有註冊"); });
+for(var i=0;i<500;i++){ OLY.forEach(function(k){ var q=G.make(k);
+  if(q.type!=="num" && q.type!=="fill") bad(k,"應為數字／填充題",q);
+  if(q.check!==undefined && String(eval(q.check))!==String(q.answer)) bad(k,"答案算錯 "+q.check,q);
+}); }
 console.log("產生器 "+G.list.length+" 個，共產生 "+made+" 題");
 console.log(err?err+" 個錯誤":"全部通過 ✅");
 process.exit(err?1:0);
