@@ -32,7 +32,7 @@ function tap(el, fn){
 function home(){
   var wb = load(KEY_W, []);
   var h = '<p class="greet">嗨，小練習生！今天想練習什麼呢？😊</p><div class="grid">';
-  D.subjects.forEach(function(s){ h += '<button class="big subject'+(s.featured?' exam':'')+'" style="background:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+(s.sub?'<small class="sub">'+esc(s.sub)+'</small>':'')+'</button>'; });
+  D.subjects.forEach(function(s){ h += '<button class="big subject'+(s.featured?' exam':'')+'" style="--uc:'+s.color+'" data-s="'+s.id+'"><span aria-hidden="true">'+s.icon+'</span> '+esc(s.name)+(s.sub?'<small class="sub">'+esc(s.sub)+'</small>':'')+'</button>'; });
   h += '</div><div class="row"><button class="big secondary" id="wbBtn">📒 我的錯題本（'+wb.length+'）</button><button class="big secondary" id="parentBtn">👪 家長區</button></div>';
   el(h);
   app.querySelectorAll("[data-s]").forEach(function(b){ b.onclick=function(){ units(b.dataset.s); }; });
@@ -44,7 +44,7 @@ function units(sid){
   s.units.forEach(function(u){
     if(u.group&&u.group!==last){ if(last!==null) h+='</div>'; h+='<h3 class="grp">'+esc((D.groups&&D.groups[u.group])||u.group)+'</h3><div class="grid">'; last=u.group; }
     else if(last===null){ h+='<div class="grid">'; last=u.group||""; }
-    h+='<button class="big" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(genList(u).length?'題目無限變化':poolSize(u)+'題，每次抽題')+'）</span></button>'; });
+    h+='<button class="big unitc" style="--uc:'+s.color+'" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(genList(u).length?'題目無限變化':poolSize(u)+'題，每次抽題')+'）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
@@ -106,7 +106,8 @@ function start(sname, uname, items, isWB, src){
 function showQ(){
   var it=R.items[R.i], g=getQ(it), q=g.q, n=R.items.length;
   R.cur={tries:[],done:false};
-  var h='<div class="muted">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"><div>';
+  var uc=g.s.color?' style="--uc:'+g.s.color+'"':'';
+  var h='<div class="muted tag"'+uc+'>'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"'+uc+'><div>';
   if(g.u.passage) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(g.u.passage)+'</div>';
   h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
