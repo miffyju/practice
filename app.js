@@ -53,10 +53,16 @@ function units(sid){
   document.getElementById("back").onclick=home;
 }
 function getQ(it){
-  if(it.lg){ return it.g ? {q:it.g, u:{id:it.uid,name:it.un||"舊題",scratch:!!it.scr}, s:{id:it.sid,name:it.sn||"舊題"}} : null; }
-  var s=subj(it.sid), u=s&&unit(s,it.uid); if(!u) return null;
-  if(it.gen){ if(!it.g&&GEN) it.g=GEN.make(it.gen,it.seed); return it.g ? {q:it.g, u:u, s:s} : null; }
-  var q=u.questions[it.idx]; return q ? {q:q, u:u, s:s} : null; }
+  var res=null;
+  if(it.lg){ res=it.g ? {q:it.g, u:{id:it.uid,name:it.un||"舊題",scratch:!!it.scr}, s:{id:it.sid,name:it.sn||"舊題"}} : null; }
+  else {
+    var s=subj(it.sid), u=s&&unit(s,it.uid); if(!u) return null;
+    if(it.gen){ if(!it.g&&GEN) it.g=GEN.make(it.gen,it.seed); res=it.g ? {q:it.g, u:u, s:s} : null; }
+    else { var q=u.questions[it.idx]; res=q ? {q:q, u:u, s:s} : null; }
+  }
+  if(res && it.presentAs) res.q=applyPresentAs(res.q, it.presentAs);
+  return res;
+}
 // ---------- 每回合出題：數學用產生器；其他科從題庫抽題，避開最近 3 回合出現過的 ----------
 function genList(u){ return (GEN&&GEN.units[u.id])||[]; }
 function newSeed(){ return 1+Math.floor(Math.random()*2147483646); }
@@ -114,13 +120,19 @@ function applyNumKey(k){
   if(k==="⌫") numVal=numVal.slice(0,-1);
   else if(k==="清除") numVal="";
   else if(k==="✔"){ submitNum(); return; }
-  else if(numVal.length<6) numVal=(numVal==="0"?"":numVal)+k;
+  else if(k==="."){
+    if(numVal.length<12 && numVal.indexOf(".")<0 && numVal.indexOf("/")<0) numVal=(numVal||"0")+".";
+  } else if(k==="/"){
+    if(numVal.length && numVal.length<12 && numVal!=="." && numVal.indexOf("/")<0 && numVal.indexOf(".")<0) numVal+="/";
+  } else if(/^[0-9]$/.test(k) && numVal.length<12){
+    numVal=(numVal==="0"?"":numVal)+k;
+  }
   renderNum();
 }
 function submitNum(){
   if(!R || !R.cur || R.cur.done) return;
-  if(!numVal){ toast("先按數字喔"); return; }
-  answer(String(parseInt(numVal,10)), null);
+  if(!String(numVal).trim() || numVal==="." || numVal==="/" || /\/$/.test(numVal)){ toast("先輸入答案喔"); return; }
+  answer(numVal, null);
 }
 function bindNumPad(){
   numVal="";
@@ -160,13 +172,110 @@ function bindNumPad(){
     if(k==="Enter"){ e.preventDefault(); submitNum(); return; }
     if(k==="Backspace"){ e.preventDefault(); applyNumKey(e.ctrlKey||e.metaKey?"清除":"⌫"); return; }
     if(k==="Escape"){ e.preventDefault(); applyNumKey("清除"); return; }
-    if(/^[0-9]$/.test(k)){ e.preventDefault(); applyNumKey(k); }
+    if(/^[0-9]$/.test(k) || k==="." || k==="/"){ e.preventDefault(); applyNumKey(k); }
   };
   document.addEventListener("keydown", numKeysBound, true);
 }
+var UNIT_SUF=/(平方公分|平方公尺|毫升|公升|公分|毫米|公尺|公里|公斤|張|輛|元|個|枝|本|瓶|塊|人|顆|片|下|週|盒|袋|角|邊|格|份|盤)$/;
+function trimAns(s){ return String(s==null?"":s).replace(/[\s\u3000]+/g,""); }
+function numericCore(ans){
+  var s=trimAns(ans).replace(/／/g,"/");
+  s=s.replace(UNIT_SUF,"");
+  if(/^-?\d+\/\d+$/.test(s) || /^-?\d+(\.\d+)?$/.test(s) || /^-?\.\d+$/.test(s)) return s;
+  return null;
+}
+function parseQty(s){
+  s=trimAns(s).replace(/／/g,"/");
+  s=s.replace(UNIT_SUF,"");
+  if(s==="" || s==="." || s==="/") return null;
+  if(/^-?\d+\/\d+$/.test(s)){
+    var p=s.split("/"), a=+p[0], b=+p[1];
+    if(!b) return null;
+    return a/b;
+  }
+  if(/^-?\d+(\.\d+)?$/.test(s) || /^-?\.\d+$/.test(s)) return parseFloat(s);
+  return null;
+}
+function answersEqual(typed, official){
+  var a=trimAns(typed).replace(/／/g,"/"), b=trimAns(official).replace(/／/g,"/");
+  if(a===b) return true;
+  var ca=numericCore(typed), cb=numericCore(official);
+  if(ca && cb && ca===cb) return true;
+  var x=parseQty(typed), y=parseQty(official);
+  if(x!=null && y!=null) return Math.abs(x-y)<1e-9;
+  return false;
+}
+function isConceptAns(q){
+  var ans=String(q.answer||"").trim(), text=(q.q||"")+(q.answer||"");
+  if(/^[<>＝=]$/.test(ans)) return true;
+  if(/\d+\s*公升\s+\d+\s*毫升/.test(ans) || /\d+\s*公分\s+\d+\s*毫米/.test(ans)) return true;
+  if(/不對|應該|銳角|直角|鈍角|平角|頂點|張開|長×寬|長＋寬/.test(ans)) return true;
+  if(/^(公升|毫升|公分|毫米|公尺|公斤|平方公分)$/.test(ans)) return true;
+  if(/下面哪一個|哪一個算式|餘數不可能/.test(q.q||"")) return true;
+  if(/[÷×＋+]/.test(ans) && !numericCore(ans)) return true;
+  if(q.options && q.options.length){
+    var units=q.options.map(function(o){ var m=String(o).replace(/\s+/g,"").match(UNIT_SUF); return m?m[0]:""; });
+    var uniq={}; units.forEach(function(u){ if(u) uniq[u]=1; });
+    if(Object.keys(uniq).length>1) return true;
+  }
+  return false;
+}
+function isPadable(q){
+  if(!q || q.type==="spell") return false;
+  if(isConceptAns(q)) return false;
+  return !!numericCore(q.answer);
+}
+function isMathItem(it){
+  if(!it) return false;
+  if(it.sid==="math" || /^(fm\d+|m\d+)$/.test(it.uid||"")) return true;
+  var s=it.sid&&subj(it.sid); if(s && /數學/.test(s.name||"")) return true;
+  return false;
+}
+function makeDistractors(core){
+  var opts=[String(core)], cands=[], i;
+  if(/^\d+\/\d+$/.test(core)){
+    var p=core.split("/"), a=+p[0], b=+p[1];
+    cands=[a+1+"/"+b, a+"/"+(b+1), (a>1?a-1:a+2)+"/"+b, b+"/"+ (a||b), a+"/"+(b+2), (a+1)+"/"+(b+1), a+"/"+(b>2?b-1:b+3), (a+2)+"/"+b];
+  } else {
+    var n=parseFloat(core), step=Math.abs(n)>=100?10:1;
+    cands=[n+1,n-1,n+2,n-2,n+step,n-step,n+10,n-10,n*2,Math.floor(n/2),n+100,n+5,n+20];
+  }
+  for(i=0;i<cands.length && opts.length<4;i++){
+    var c=String(cands[i]);
+    if(!c || answersEqual(c, core)) continue;
+    if(parseQty(c)!=null && parseQty(c)<0) continue;
+    if(opts.indexOf(c)<0) opts.push(c);
+  }
+  return opts;
+}
+function applyPresentAs(q, as){
+  var o={}, k; for(k in q) o[k]=q[k];
+  var core=numericCore(q.answer);
+  if(as==="num" && core){ o.type="num"; o.answer=core; return o; }
+  if(as==="mc"){
+    o.type="mc";
+    if(q.options && q.options.length>=2){ o.options=q.options.slice(); o.answer=q.answer; }
+    else { o.answer=String(core!=null?core:q.answer); o.options=makeDistractors(o.answer); }
+    return o;
+  }
+  return o;
+}
+function assignPresentTypes(items){
+  var padable=[];
+  items.forEach(function(it){
+    if(!isMathItem(it)) return;
+    var g=getQ(it); if(g && isPadable(g.q)) padable.push(it);
+  });
+  padable=shuffle(padable);
+  var nNum=Math.round(padable.length*0.6);
+  if(padable.length>=2) nNum=Math.max(1, Math.min(padable.length-1, nNum));
+  padable.forEach(function(it,i){ it.presentAs=i<nNum?"num":"mc"; });
+}
+function needsFracKeys(q){ return !!(q && /[\/\.／]/.test(String(q.answer||""))); }
 function start(sname, uname, items, isWB, src){
   items=items.filter(getQ);
   if(!items.length){ toast("沒有題目喔"); return home(); }
+  assignPresentTypes(items);
   R={sname:sname,uname:uname,items:items,i:0,results:[],isWB:isWB,src:src||null}; showQ();
 }
 function showQ(){
@@ -189,12 +298,14 @@ function showQ(){
     h+='</div><div class="row"><button class="big secondary" id="spBack" aria-label="退格">⌫ 退格</button><button class="big primary" id="spOk" aria-label="送出">✔ 送出</button></div>';
   } else {
     h+='<div class="dispwrap"><div class="display empty" id="disp" role="textbox" aria-readonly="true" aria-label="你的答案" aria-live="polite"></div>';
-    h+='<button type="button" class="wipe" data-k="清除" aria-label="全部清除">清除</button></div>';
+    h+='<button type="button" class="ok sideok" data-k="✔" aria-label="送出">✔</button></div>';
     h+='<div id="fb"></div>';
-    h+='<div class="keypad" aria-label="數字鍵盤">';
-    ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
-      var lab = k==="⌫"?"刪除（長按清除）":k==="✔"?"送出":k;
-      h+='<button type="button" data-k="'+k+'" aria-label="'+lab+'"'+(k==="✔"?' class="ok"':'')+'>'+k+'</button>'; });
+    var frac=needsFracKeys(q), keys=frac?["1","2","3","4","5","6","7","8","9",".","0","/","⌫","清除"]:["1","2","3","4","5","6","7","8","9","⌫","0","清除"];
+    h+='<div class="keypad'+(frac?" frac":"")+'" aria-label="數字鍵盤">';
+    keys.forEach(function(k){
+      var lab = k==="⌫"?"刪除（長按清除）":k==="清除"?"全部清除":k==="."?"小數點":k==="/"?"分數線":k;
+      var cls = k==="清除"?' class="wipe"':(k==="⌫"&&frac)?' class="bk"':'';
+      h+='<button type="button" data-k="'+k+'" aria-label="'+lab+'"'+cls+'>'+k+'</button>'; });
     h+='</div>';
   }
   if(q.type!=="num") h+='<div id="fb"></div>';
@@ -218,7 +329,7 @@ function showQ(){
   }
 }
 function answer(a, btn){
-  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), ok=(q.type==="spell"?a.toLowerCase()===String(q.answer).toLowerCase():a===String(q.answer));
+  var g=getQ(R.items[R.i]), q=g.q, fb=document.getElementById("fb"), ok=(q.type==="spell"?a.toLowerCase()===String(q.answer).toLowerCase():answersEqual(a,q.answer));
   R.cur.tries.push(a);
   if(ok){
     R.cur.done=true; if(btn) btn.classList.add("right");
@@ -259,7 +370,7 @@ function revealFb(){
 function diffHTML(a,ans){ var s=String(ans).toLowerCase(); return '<span class="diff">'+a.split("").map(function(c,i){ return c.toLowerCase()===s[i]?esc(c):'<span class="bad">'+esc(c)+'</span>'; }).join("")+'</span>'; }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
 function finishQ(correct){
-  var pad=app.querySelector(".keypad"); if(pad) pad.hidden=true; var wipe=app.querySelector(".wipe"); if(wipe) wipe.hidden=true; var d=document.getElementById("disp"); if(d) d.classList.add("is-done");
+  var pad=app.querySelector(".keypad"); if(pad) pad.hidden=true; var side=app.querySelector(".dispwrap button"); if(side) side.hidden=true; var d=document.getElementById("disp"); if(d) d.classList.add("is-done");
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
@@ -486,6 +597,6 @@ function migrateWB(){
 }
 migrateWB();
 flushOutbox();
-window.__p3Test={start:start, answer:answer, applyNumKey:applyNumKey, renderNum:renderNum};
+window.__p3Test={start:start, answer:answer, applyNumKey:applyNumKey, renderNum:renderNum, isPadable:isPadable, answersEqual:answersEqual, numericCore:numericCore, assignPresentTypes:assignPresentTypes, buildRound:buildRound, subj:subj, unit:unit, results:function(){return R&&R.results;}, mistakeLines:function(){return R?mistakeLines(R.results):"";}, startUnit:function(sid,uid){ var s=subj(sid), u=unit(s,uid); start(s.name,u.name,buildRound(s,u),false,{sid:s.id,uid:u.id}); }};
 home();
 })();
