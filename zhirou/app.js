@@ -58,21 +58,28 @@ function markSeen(items){ var all=seenAll(), by={};
   items.forEach(function(it){ if(it.q||it.idx==null) return; (by[it.uid]=by[it.uid]||[]).push(it.idx); });
   Object.keys(by).forEach(function(uid){ var r=Array.isArray(all[uid])?all[uid]:[]; r.push(by[uid]); all[uid]=r.slice(-SEEN_ROUNDS); });
   save(KEY_SEEN, all); }
-function drawItems(s,u){
-  if(u.gen&&GEN){ var outG=[], texts={}, kG=u.round||ROUND, guard=0;
-    while(outG.length<kG && guard++<kG*20){ var gid=u.gen[Math.floor(Math.random()*u.gen.length)], q;
-      try{ q=GEN.make(gid); }catch(e){ continue; }
-      if(texts[q.q]) continue; texts[q.q]=1; outG.push({sid:s.id,uid:u.id,uname:u.name,sname:s.name,q:q}); }
-    return outG; }
+function drawGen(s,u,k){ var outG=[], texts={}, guard=0;
+  if(!GEN||!u.gen||!k) return outG;
+  while(outG.length<k && guard++<k*20){ var gid=u.gen[Math.floor(Math.random()*u.gen.length)], q;
+    try{ q=GEN.make(gid); }catch(e){ continue; }
+    if(texts[q.q]) continue; texts[q.q]=1; outG.push({sid:s.id,uid:u.id,uname:u.name,sname:s.name,q:q}); }
+  return outG; }
+function drawBank(s,u,k){
+  var qs=u.questions||[]; if(!qs.length||k<=0) return [];
   var rounds=(seenAll()[u.id]||[]), age={};
   rounds.forEach(function(r,ri){ (r||[]).forEach(function(i){ age[i]=ri+1; }); }); // 越新的回合數字越大
-  var all=u.questions.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i,w:q.weight||1,age:age[i]||0}; }), k=Math.min(u.round||ROUND,all.length);
+  var all=qs.map(function(q,i){ return {sid:s.id,uid:u.id,idx:i,w:q.weight||1,age:age[i]||0}; }), need=Math.min(k,all.length);
   var fresh=all.filter(function(p){return !p.age;});
-  if(fresh.length<k){ var old=shuffle(all.filter(function(p){return p.age;})).sort(function(a,b){return a.age-b.age;});
-    var outF=fresh.map(function(it){return {sid:it.sid,uid:it.uid,idx:it.idx};});
-    if(fresh.length) outF=wDraw(fresh,fresh.length);
-    return shuffle(outF.concat(old.slice(0,k-outF.length).map(function(it){return {sid:it.sid,uid:it.uid,idx:it.idx};}))); }
-  return wDraw(fresh,k);
+  if(fresh.length<need){ var old=shuffle(all.filter(function(p){return p.age;})).sort(function(a,b){return a.age-b.age;});
+    var outF=fresh.length?wDraw(fresh,fresh.length):[];
+    return shuffle(outF.concat(old.slice(0,need-outF.length).map(function(it){return {sid:it.sid,uid:it.uid,idx:it.idx};}))); }
+  return wDraw(fresh,need);
+}
+function drawItems(s,u){
+  var k=u.round||ROUND, hasG=u.gen&&GEN, hasB=u.questions&&u.questions.length;
+  if(hasG&&hasB){ var nG=Math.min(Math.ceil(k/2),k); var g=drawGen(s,u,nG); return shuffle(g.concat(drawBank(s,u,k-g.length))); }
+  if(hasG) return drawGen(s,u,k);
+  return drawBank(s,u,k);
 }
 function wDraw(pool,k){
   pool=pool.slice(); var out=[];
@@ -92,9 +99,13 @@ function judgeText(q,a){
 function diffHTML(a,ans){ var x=normT(a), y=normT(ans), h="";
   for(var i=0;i<x.length;i++){ var c=esc(x[i]===" "?"␣":x[i]); h+= x[i]===y[i] ? c : '<b class="bad">'+c+'</b>'; }
   return '<span class="diff">'+h+'</span>'+(x.length<y.length?' <span class="muted">（還少了 '+(y.length-x.length)+' 個字母）</span>':x.length>y.length?' <span class="muted">（多了 '+(x.length-y.length)+' 個字母）</span>':''); }
+function findArchived(uid,sid){ var A=window.PRACTICE_ARCHIVE||[], hit=null;
+  for(var i=0;i<A.length;i++){ if(A[i].id!==uid) continue; if(sid&&A[i].sids&&A[i].sids.indexOf(sid)>=0) return A[i]; if(!hit) hit=A[i]; }
+  return hit; }
 function getQ(it){ if(!it) return null; var s=subj(it.sid), u=s&&unit(s,it.uid);
+  if(!u){ var a=findArchived(it.uid,it.sid); if(a){ u=a; s=s||{id:it.sid,name:(a.snames&&a.snames[it.sid])||it.sname||a.name||""}; } }
   if(it.q) return {q:it.q, u:u||{name:it.uname||"隨機題"}, s:s||{name:it.sname||""}};
-  return u&&u.questions[it.idx] ? {q:u.questions[it.idx], u:u, s:s} : null; }
+  return u&&u.questions&&u.questions[it.idx] ? {q:u.questions[it.idx], u:u, s:s} : null; }
 function itKey(it){ return it.q ? it.sid+"|"+it.uid+"|g|"+it.q.q : it.sid+"|"+it.uid+"|"+it.idx; }
 function itCopy(w){ var o={sid:w.sid,uid:w.uid}; if(w.q){ o.q=w.q; o.uname=w.uname; o.sname=w.sname; } else o.idx=w.idx; return o; }
 
@@ -344,10 +355,15 @@ var SP=(function(){
   function mark(){ panel.querySelectorAll(".sp-color").forEach(function(b){ b.classList.toggle("on",mode==="pen"&&b.dataset.c===color); });
     panel.querySelector("#spEraser").classList.toggle("on",mode==="eraser"); }
   function pt(e){ var r=cv.getBoundingClientRect(); return [e.clientX-r.left, e.clientY-r.top]; }
+  function blockSel(e){ e.preventDefault(); }
+  function armSelGuard(){ document.addEventListener("selectstart",blockSel,true); document.addEventListener("contextmenu",blockSel,true); }
+  function disarmSelGuard(){ document.body.classList.remove("sp-drawing"); document.removeEventListener("selectstart",blockSel,true); document.removeEventListener("contextmenu",blockSel,true); }
   function down(e){ e.preventDefault(); try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+    document.body.classList.add("sp-drawing"); armSelGuard();
+    try{ var sel=window.getSelection(); if(sel&&sel.removeAllRanges) sel.removeAllRanges(); }catch(_){}
     cur={mode:mode,color:color,w:mode==="eraser"?28:(e.pointerType==="pen"?3:4),pts:[pt(e)]}; strokes.push(cur); redraw(); }
   function move(e){ if(!cur) return; e.preventDefault(); cur.pts.push(pt(e)); drawStroke(cur,true); }
-  function up(e){ cur=null; if(e&&e.pointerId!=null){ try{ cv.releasePointerCapture(e.pointerId); }catch(_){} } }
+  function up(e){ cur=null; disarmSelGuard(); if(e&&e.pointerId!=null){ try{ cv.releasePointerCapture(e.pointerId); }catch(_){} } }
   function drawStroke(s,lastOnly){ var p=s.pts; ctx.save(); ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=s.w;
     ctx.globalCompositeOperation=s.mode==="eraser"?"destination-out":"source-over"; ctx.strokeStyle=s.color; ctx.fillStyle=s.color;
     if(p.length===1){ ctx.beginPath(); ctx.arc(p[0][0],p[0][1],s.w/2,0,Math.PI*2); ctx.fill(); }
@@ -358,7 +374,7 @@ var SP=(function(){
   function resize(){ if(!openState) return; var r=cv.getBoundingClientRect(), d=window.devicePixelRatio||1;
     var w=Math.max(1,Math.round(r.width*d)), h=Math.max(1,Math.round(r.height*d)); if(cv.width!==w||cv.height!==h){ cv.width=w; cv.height=h; } redraw(); }
   function open(){ build(); panel.hidden=false; openState=true; document.body.classList.add("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 收起計算紙"; b.setAttribute("aria-expanded","true"); } resize(); }
-  function close(){ if(!panel) return; panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
+  function close(){ if(!panel) return; panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); disarmSelGuard(); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
   function toggle(){ openState?close():open(); }
   function reset(){ strokes=[]; cur=null; if(cv) redraw(); }
   return {open:open, close:close, toggle:toggle, reset:reset, _strokes:function(){return strokes.length;}};

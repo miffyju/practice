@@ -69,8 +69,10 @@ td,th{padding:.4rem;border-bottom:1px solid #f0e0d0;text-align:left}
 
 /* 計算紙：固定在畫面下半部的面板，題目留在上半部看得到 */
 .spbtn{margin-top:.8rem}
+.sp-panel,.sp-panel canvas{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
 .sp-panel{position:fixed;left:0;right:0;bottom:0;height:55vh;z-index:30;background:#fffef6;border-top:4px solid #ff9f68;box-shadow:0 -6px 20px rgba(0,0,0,.18);display:flex;flex-direction:column}
-.sp-panel canvas{flex:1;width:100%;touch-action:none;background-image:linear-gradient(#e9e3d3 1px,transparent 1px),linear-gradient(90deg,#e9e3d3 1px,transparent 1px);background-size:32px 32px;cursor:crosshair}
+.sp-panel canvas{flex:1;width:100%;background-image:linear-gradient(#e9e3d3 1px,transparent 1px),linear-gradient(90deg,#e9e3d3 1px,transparent 1px);background-size:32px 32px;cursor:crosshair}
+body.sp-drawing,body.sp-drawing *{user-select:none !important;-webkit-user-select:none !important;-webkit-touch-callout:none !important}
 .sp-tools{display:flex;flex-wrap:wrap;gap:.4rem;padding:.4rem .6rem;background:#fff1e3}
 .sp-t{min-height:52px;min-width:72px;padding:.3rem .8rem;border-radius:14px;background:#fff;font-size:1.05rem;box-shadow:0 2px 0 #e6cdb5;display:flex;align-items:center;gap:.35rem}
 .sp-t span{display:inline-block;width:18px;height:18px;border-radius:50%}

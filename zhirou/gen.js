@@ -80,7 +80,7 @@ G.frac_reduce=function(){ var p,q; do{ p=ri(1,11); q=ri(2,15); }while(p>=q||gcd(
    "分子、分母同除以它們的最大公因數。", [n+" 和 "+d+" 的最大公因數是 "+k, n+" ÷ "+k+" = "+p+"，"+d+" ÷ "+k+" = "+q, "最簡分數是 "+p+"/"+q]); };
 G.frac_compare=function(){ var fs=[], seen={}; while(fs.length<4){ var d=ri(3,15), n=ri(1,d-1), f=F(n,d), key=f.n/f.d; if(!seen[key]){ seen[key]=1; fs.push(f); } }
   var big=pk([true,false]), best=fs.reduce(function(m,f){ return (big? f.n*m.d>m.n*f.d : f.n*m.d<m.n*f.d)?f:m; });
-  return Q("下面哪一個分數「"+(big?"最大":"最小")+"」？", fstr(best), fs.filter(function(f){return f!==best;}).map(fstr), null,
+  return Q("下面哪一個分數「"+(big?"最大":"最小")+"」？"+fs.map(fstr).join("、"), fstr(best), fs.filter(function(f){return f!==best;}).map(fstr), null,
    "可以通分，或和 1/2 比一比、用交叉相乘比較。", fs.map(function(f){ return fstr(f)+" ≈ "+(Math.round(f.n/f.d*1000)/1000); }).concat(["所以"+(big?"最大":"最小")+"的是 "+fstr(best)])); };
 G.frac_between=function(){ var m=pk([12,15,18,20,24,30,36]), lo=pk([F(1,4),F(1,3),F(1,5),F(2,5)]), hi=pk([F(2,3),F(3,4),F(4,5),F(5,6)]), list=[];
   for(var n=1;n<m;n++) if(gcd(n,m)===1 && n*lo.d>lo.n*m && n*hi.d<hi.n*m) list.push(n+"/"+m);
@@ -142,30 +142,193 @@ G.solid=function(){ var n=ri(3,10), names={3:"三",4:"四",5:"五",6:"六",7:"�
    kind==="角柱"?"角柱有上下兩個底面，側面數 = 底面的邊數。":"角錐只有一個底面，側面都是三角形，在頂點會合。",
    kind==="角柱"?["n 角柱：面 n + 2、邊 3n、頂點 2n","n = "+n+" → "+what+" "+ans]:["n 角錐：面 n + 1、邊 2n、頂點 n + 1","n = "+n+" → "+what+" "+ans]); };
 
-// ===== 英文單字：從 Unit 1–2 單字表隨機出題 =====
-var W=[]; D.subjects.forEach(function(s){ s.units.forEach(function(u){ if(u.id==="e3") u.questions.forEach(function(q){ var m=/「(.+?)」/.exec(q.q); if(m) W.push([m[1], (q.accept&&q.accept[0])||q.answer, q.answer]); }); }); });
+// ===== 第六～十單元：再增加變化（分配律、平均、連除、複合面積、展開圖、球、對稱性質）=====
+G.frac_mix=function(){
+  var a=fadd(F(ri(1,4),1),F(ri(1,5),pk([2,3,4,5,6])));
+  var b=F(ri(1,8),pk([3,4,5,6,8,10]));
+  var op=pk(["+","−"]), r=op==="+"?fadd(a,b):fsub(a,b);
+  if(r.n<=0){ op="+"; r=fadd(a,b); }
+  var item=pk(["果汁","牛奶","糖漿","麵粉"]);
+  return Q("媽媽先準備 "+fstr(a)+" 公升"+item+"，再"+(op==="+"?"倒入":"倒出")+" "+fstr(b)+" 公升，現在有多少公升？（化成最簡）", fstr(r),
+    [fstr(op==="+"?fsub(a,b):fadd(a,b)), fstr(F(a.n+b.n,a.d+b.d)), fstr(a)], function(){ return fstr(F(ri(1,9),ri(2,9))); },
+    "先通分再"+(op==="+"?"加":"減")+"，最後約分。",
+    [fstr(a)+" "+op+" "+fstr(b)+" = "+fstr(r)]);
+};
+G.dist_law=function(){
+  var t=ri(0,2);
+  if(t===0){ var a=ri(12,80), b=ri(20,400), c=pk([100,200,250,300,400,500,600,800,1000])-b; if(c<=0){ c=ri(20,200); }
+    var ans=a*(b+c), e=a+" × "+b+" + "+a+" × "+c;
+    return Q("計算："+e+" = ？（用分配律會比較快）", ans, [a*b+c, a*(b+c+1), (a+b)*c, a*b*c], function(){return ans+ri(-30,30);},
+      "相同的因數可以提出來：a×b + a×c = a×(b+c)。", [e+" = "+a+" × ("+b+" + "+c+") = "+a+" × "+(b+c)+" = "+ans]); }
+  if(t===1){ var s=ri(20,90), p=ri(15,80), q=ri(15,80); while(p===q) q=ri(15,80);
+    var ans=s*(p+q), e=p+" × "+s+" + "+q+" × "+s;
+    return Q("計算："+e+" = ？", ans, [(p+q)*s+s, p*s+q, p*q*s], function(){return ans+ri(-40,40);},
+      "右邊都有 × "+s+"，把 "+s+" 提出來。", [e+" = ("+p+" + "+q+") × "+s+" = "+(p+q)+" × "+s+" = "+ans]); }
+  var x=ri(8,40), y=ri(100,800), z=ri(10,80); var ans=x*y-x*z; if(ans<=0){ z=ri(5,Math.max(6,Math.floor(y/3))); ans=x*y-x*z; }
+  var e2=x+" × "+y+" − "+x+" × "+z;
+  return Q("計算："+e2+" = ？", ans, [x*(y-z+1), x*y-z, x*(y+z)], function(){return Math.max(1,ans+ri(-50,50));},
+    "a×b − a×c = a×(b−c)。", [e2+" = "+x+" × ("+y+" − "+z+") = "+x+" × "+(y-z)+" = "+ans]);
+};
+G.avg_prob=function(){
+  var t=ri(0,2);
+  if(t===0){ var n=pk([3,4,5]), avg=ri(60,95), arr=[]; var s=avg*n; for(var i=0;i<n-1;i++){ arr.push(ri(avg-15,avg+15)); } var last=s-arr.reduce(function(a,b){return a+b;},0);
+    if(last<0||last>100){ return G.avg_prob(); }
+    return Q(n+" 科的平均分數是 "+avg+" 分，前 "+(n-1)+" 科分別是 "+arr.join("、")+" 分，最後一科是幾分？", last,
+      [avg, last+ri(2,8), Math.round(s/(n-1)), Math.abs(last-10)], function(){return ri(40,100);},
+      "總分 = 平均 × 科數，再減去已經知道的分數。", ["總分 "+avg+" × "+n+" = "+s, s+" − ("+arr.join(" + ")+") = "+last]); }
+  if(t===1){ var m=pk([4,5,6,8]), a1=ri(10,40), tot=a1*m, add=ri(2,m-1), more=ri(5,20), newAvg=(tot+more)/m;
+    if((tot+more)%m) { more=m-tot%m + ri(0,3)*m; newAvg=(tot+more)/m; }
+    return Q(m+" 個人平均有 "+a1+" 顆彈珠。後來又放入 "+more+" 顆再平均分，現在平均每人幾顆？", newAvg,
+      [a1+more, a1+more/m, tot+more, a1], function(){return ri(a1,a1+10);},
+      "先算總數，加上新的，再除以人數。", ["原來總共 "+a1+" × "+m+" = "+tot, tot+" + "+more+" = "+(tot+more), (tot+more)+" ÷ "+m+" = "+newAvg]); }
+  var k=pk([5,6,8,10]), avg2=ri(8,20), one=avg2+ri(3,12), rest=(avg2*k-one)/(k-1);
+  if(rest!==Math.floor(rest)||rest<=0) return G.avg_prob();
+  return Q(k+" 筆資料的平均是 "+avg2+"，其中一筆是 "+one+"，其餘 "+(k-1)+" 筆的平均是多少？", rest,
+    [avg2, one, avg2*k-one, Math.round(rest+1)], function(){return ri(1,30);},
+    "先還原總和，減去這一筆，再除以剩下的筆數。", ["總和 "+avg2+" × "+k+" = "+(avg2*k), (avg2*k)+" − "+one+" = "+(avg2*k-one), (avg2*k-one)+" ÷ "+(k-1)+" = "+rest]);
+};
+G.div_chain=function(){
+  var c=ri(2,9), b=ri(2,12), mid=b*c*ri(2,8), a=mid*ri(2,6), ans=a/b/c;
+  if(ans!==Math.floor(ans)) return G.div_chain();
+  var t=ri(0,1);
+  if(t===0) return Q("計算："+a+" ÷ "+b+" ÷ "+c+" = ？", ans, [a/(b+c), a/b, a/c, a-b-c].map(function(x){return Math.round(x);}), function(){return ri(2,40);},
+    "連除由左而右，也可以先算 "+b+" × "+c+" 再一次除。", [a+" ÷ "+b+" = "+(a/b), (a/b)+" ÷ "+c+" = "+ans, "或 "+a+" ÷ ("+b+" × "+c+" = "+(b*c)+") = "+ans]);
+  var item=pk(["彩帶","繩子","布"]);
+  return Q(item+"長 "+a+" 公分，先平均剪成 "+b+" 段，每段再平均剪成 "+c+" 小段。每小段長幾公分？", ans,
+    [a/b, a/c, b*c, a-b-c].map(function(x){return Math.max(1,Math.round(x));}), function(){return ri(2,30);},
+    "就是連除：總長 ÷ 第一刀的段數 ÷ 再細分的段數。", [a+" ÷ "+b+" ÷ "+c+" = "+ans]);
+};
+G.area_compound=function(){
+  var t=ri(0,2);
+  if(t===0){ var L=ri(10,24), W=ri(6,16), tb=2*ri(1,Math.floor((L-2)/2)), th=ri(2,W-1); if((tb*th)%2) th++; var ans=L*W-tb*th/2;
+    return Q("長方形長 "+L+" 公分、寬 "+W+" 公分，從裡面剪去一個底 "+tb+" 公分、高 "+th+" 公分的三角形，剩下面積是多少平方公分？", ans,
+      [L*W, L*W-tb*th, L*W+tb*th/2, tb*th/2], function(){return ri(20,200);},
+      "剩餘面積 = 長方形 − 三角形。", [L+" × "+W+" = "+(L*W), "三角形 "+tb+" × "+th+" ÷ 2 = "+(tb*th/2), (L*W)+" − "+(tb*th/2)+" = "+ans]); }
+  if(t===1){ var a=ri(6,16), b=ri(4,12), c=ri(3,10); var ans=a*b+a*c;
+    return Q("一個大 L 形可以看成兩個長方形：一個是 "+a+"×"+b+"，另一個是 "+a+"×"+c+"（共用邊 "+a+" 公分）。全面積是多少平方公分？", ans,
+      [a*b, a*(b+c+1), a+b+c, (a+b)*c], function(){return ri(20,200);},
+      "拆成兩個長方形再相加，或看成一個長方形 a×(b+c)。", [a+" × "+b+" = "+(a*b), a+" × "+c+" = "+(a*c), (a*b)+" + "+(a*c)+" = "+ans]); }
+  var B=ri(8,20), H=ri(6,16), cut=ri(2,Math.min(5,H-2)); var ans=B*H-B*cut;
+  return Q("長方形長 "+B+" 公分、寬 "+H+" 公分，沿著長邊剪掉一條寬 "+cut+" 公分的小長方形，剩下多少平方公分？", ans,
+    [B*H, B*(H-cut+1), B*cut, B+H-cut], function(){return ri(20,200);},
+    "大面積減去剪掉的小長方形。", [B+" × "+H+" = "+(B*H), B+" × "+cut+" = "+(B*cut), (B*H)+" − "+(B*cut)+" = "+ans+"（也等於 "+B+" × "+(H-cut)+"）"]);
+};
+G.solid_net=function(){
+  var t=ri(0,3);
+  if(t===0) return Q("下面哪一種「不能」摺成正方體？", "六個正方形連成一長條",
+    ["有四個正方形排成一列，左右再各接一個（像十字架再加長）","兩個並排的正方形組成的「階梯」形展開圖，共六個正方形且沒有重疊面","四個正方形排成一列，兩側在不同位置各接一個"],
+    null, "正方體展開圖不能有超過四個正方形排成一直線，也不能讓面重疊。",
+    ["六個連成一長條時，摺起來會有面重疊或蓋不起來","展開圖一定剛好六個面，且排列要能折成盒子"]);
+  if(t===1) return Q("直的四角柱（長方體）展開圖，下面哪一句正確？", "要有 6 個面：通常是 2 個底面和 4 個側面，排列時不能重疊",
+    ["只要畫 4 個長方形就夠了","展開圖一定是 8 個面","球的展開圖和長方體完全一樣"],
+    null, "先數面的個數，再想它們怎麼連在一起。",
+    ["長方體有 6 個面","展開後仍是這 6 個面，只是拆開排在平面上"]);
+  if(t===2) return Q("三角柱的展開圖通常包含哪些面？", "兩個三角形底面，加上三個長方形（或矩形）側面",
+    ["六個一樣的三角形","只有三個三角形","一個圓形和一個長方形"],
+    null, "角柱：兩個全等的底，側面個數等於底的邊數。",
+    ["三角柱的底是三角形，所以有 2 個三角形和 3 個側面"]);
+  return Q("下面哪一句關於展開圖是正確的？", "球的表面不能像柱體或錐體那樣，完整展開成一個沒有重疊、又不破裂的平面圖形",
+    ["任何立體都可以像紙盒一樣攤成平面","正方體沒有展開圖","圓柱絕對不能有展開圖（其實側面可以攤成矩形）"],
+    null, "想想球的表面是不是「可展開曲面」。",
+    ["柱體、錐體的側面常常可以展開","球面不行"]);
+};
+G.solid_rel=function(){
+  var t=ri(0,2);
+  if(t===0) return Q("直的四角柱中，兩個底面的關係最正確的是哪一句？", "互相平行，而且形狀、大小都相同",
+    ["互相垂直，而且一定是三角形","只相交於一點","一定不平行"],
+    null, "直柱的兩底像樓層的地板和天花板。", ["上下底平行且全等","側邊垂直於底面"]);
+  if(t===1) return Q("直的五角柱，側面和底面的關係是？", "每個側面都和底面垂直",
+    ["每個側面都和底面平行","側面和底面一定重合","沒有側面"],
+    null, "「直」的角柱，側邊垂直於底。", ["側面直立在底面上 → 垂直"]);
+  var n=ri(3,8), names={3:"三",4:"四",5:"五",6:"六",7:"七",8:"八"};
+  return Q("直的"+names[n]+"角柱，互相平行的側面一共有幾對？", n%2?0:n/2,
+    [n, n-1, 2, 1].filter(function(x,i,a){return x!==(n%2?0:n/2)&&a.indexOf(x)===i;}), function(){return ri(0,6);},
+    "底是正多邊形時，對邊平行的才會讓對應側面平行。奇數邊沒有對邊。",
+    n%2?["正"+names[n]+"邊形沒有對邊，所以側面沒有平行的一對","答案是 0 對"]:["正"+names[n]+"邊形有 "+(n/2)+" 組對邊","所以有 "+(n/2)+" 對互相平行的側面"]);
+};
+G.sphere=function(){
+  var t=ri(0,3);
+  if(t===0) return Q("球和圓有什麼不同？", "圓是平面圖形，球是立體形體",
+    ["兩者完全相同，只是名字不同","球是平面圖形，圓是立體","球有棱，圓有頂點"],
+    null, "一個在平面上，一個佔有空間。", ["圓：平面；球：立體","球沒有稜、沒有頂點"]);
+  if(t===1) return Q("把一個球平分成兩半，切面最可能是什麼形狀？", "圓形",
+    ["正方形","三角形","五邊形"],
+    null, "通過球心的切面是大圓，一般的平面切球也會得到圓。", ["平面切球，切面是圓"]);
+  if(t===2) return Q("球有幾個平面？有幾條稜？", "0 個平面，0 條稜",
+    ["2 個平面，1 條稜","1 個平面，0 條稜","6 個平面，12 條稜"],
+    null, "球的表面是曲面。", ["球沒有平面的「面」，也沒有稜和頂點"]);
+  return Q("下面哪一個日常物品最接近「球」？", "籃球（充氣後外形接近球體）",
+    ["一本教科書","一個紙箱","一塊三角板"],
+    null, "球體從各個方向看起來都接近圓形。", ["球體沒有稜角"]);
+};
+G.sym_prop=function(){
+  var t=ri(0,2);
+  if(t===0){ var d=ri(2,12); return Q("點 A 和它的對稱點 A' 對某一條對稱軸來說，A 到軸的垂直距離是 "+d+" 公分。A' 到軸的垂直距離是幾公分？", d,
+    [2*d, d+1, 0, d*3], null, "對稱點到對稱軸的距離相等，而且連線被軸垂直平分。",
+    ["距離相同，都是 "+d+" 公分","AA' 會被對稱軸垂直平分"]); }
+  if(t===1) return Q("在線對稱圖形裡，下面哪一句正確？", "對應邊相等，對應角也相等",
+    ["對應邊一定不相等","對應角一定差 90 度","對稱軸兩邊的圖形不必能完全重合"],
+    null, "對摺後會重合，所以對應的邊和角都一樣。", ["重合 → 對應邊、對應角相等"]);
+  var m=ri(3,9); return Q("線段 PQ 的垂直平分線是對稱軸，P 的對稱點是 Q。若 PQ 長 "+(2*m)+" 公分，對稱軸和 PQ 的交點到 P 是幾公分？", m,
+    [2*m, 2*m+1, m+2, 0], null, "垂直平分線通過中點。", ["中點把 "+(2*m)+" 公分分成兩段，各 "+m+" 公分"]);
+};
+
+// ===== 英文單字：期末 Unit 3–4 與新年文化 =====
+var DAYS=[["星期日","Sunday"],["星期一","Monday"],["星期二","Tuesday"],["星期三","Wednesday"],["星期四","Thursday"],["星期五","Friday"],["星期六","Saturday"]];
+var SUBJS=[["美術","art"],["國語","Chinese"],["英文","English"],["數學","math"],["音樂","music"],["體育","PE"],["自然","science"],["社會","social studies"]];
+var CNY=[["農曆新年","Chinese New Year"],["紅包","red envelope"],["團圓飯","reunion dinner"],["舞獅","lion dance"],["舞龍","dragon dance"],["鞭炮","firecrackers"],["煙火","fireworks"],["餃子","dumplings"],["新衣","new clothes"],["新年快樂","Happy New Year"]];
+var W=DAYS.concat(SUBJS,CNY).map(function(x){ return [x[0], x[1], x[1]]; });
 function others(w,i){ return W.filter(function(x){return x!==w;}).map(function(x){return x[i];}); }
 function shuf(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 G.en_zh2en=function(){ var w=pk(W); return Q("「"+w[0]+"」的英文是哪一個？", w[2], shuf(others(w,2)), null, "先按 🔊 唸唸看。", [w[0]+" = "+w[2]], {say:w[2], sayAfter:true}); };
-G.en_en2zh=function(){ var w=pk(W); return Q(w[2]+" 是什麼意思？", w[0], shuf(others(w,0)), null, "按 🔊 聽一聽，想想課本的圖。", [w[2]+" = "+w[0]], {say:w[2]}); };
-G.en_blank=function(){ var w=pk(W.filter(function(x){return x[2].replace(/ /g,"").length>=4;})), s=w[2], idx; do{ idx=ri(0,s.length-1); }while(!/[a-z]/.test(s[idx]));
-  var c=s[idx], masked=s.slice(0,idx)+"_"+s.slice(idx+1), letters="aeioulrnstcmpbdgh".split("").filter(function(x){return x!==c;});
-  return Q("「"+w[0]+"」的英文："+masked+"，空格要填哪一個字母？", c, shuf(letters), null, "按 🔊 聽清楚每個音。", [w[0]+" = "+s], {say:s, sayAfter:true}); };
-
-// ===== 單元設定 =====
-var MATH_C="#ff9f68", EN_C="#b48ee0";
-var UNITS={
- math:[
-  {id:"mgA", name:"🎲 數學 一~五 隨機題（每次都不同）", color:MATH_C, scratch:true, round:10, gen:["dec_sum","dec_round","dec_misread","fac_count","gcd_ribbon","gcd_square","lcm_bus","lcm_rem","frac_reduce","frac_compare","poly_angle","sector"]},
-  {id:"mgB", name:"🎲 數學 六~十 期末範圍 隨機題", color:MATH_C, scratch:true, round:10, gen:["frac_addsub","frac_word","sym_axes","order_ops","ops_word","area","area_rev","solid"]},
-  {id:"mgC", name:"⭐🎲 數學 資優隨機挑戰（一~十）", color:MATH_C, scratch:true, round:8, gen:["dec_round","dec_misread","mult_count","lcm_rem","gcd_square","frac_between","frac_addsub","area_rev","order_ops","solid","poly_angle"]}
- ],
- english:[ {id:"egA", name:"🎲 英文單字 隨機練習（中翻英・英翻中・填字母）", color:EN_C, round:10, gen:["en_zh2en","en_en2zh","en_blank"]} ]
+G.en_en2zh=function(){ var w=pk(W); return Q(w[2]+" 在本課裡是什麼意思？", w[0], shuf(others(w,0)), null, "按 🔊 聽一聽。", [w[2]+" = "+w[0]], {say:w[2]}); };
+G.en_blank=function(){ var w=pk(W.filter(function(x){return x[2].replace(/ /g,"").length>=4;})), s=w[2], idx; do{ idx=ri(0,s.length-1); }while(!/[a-zA-Z]/.test(s[idx]));
+  var c=s[idx], masked=s.slice(0,idx)+"_"+s.slice(idx+1), letters="aeioulrnstcmpbdghHyN".split("").filter(function(x){return x!==c;});
+  return Q("「"+w[0]+"」的英文："+masked+"，空格要填哪一個字母？", c, shuf(letters), null, "注意大寫（專有名詞、星期常大寫）。", [w[0]+" = "+s], {say:s, sayAfter:true}); };
+G.en_pat=function(){
+  var t=ri(0,3);
+  if(t===0){ var d=pk(DAYS); return Q("今天是"+d[0]+"。A: What day is today?  B 該怎麼答？", "It's "+d[1]+".",
+    shuf(["It's "+d[1]+".","It "+d[1]+".","Is "+d[1]+".","I am "+d[1]+"."]), null, "It's = It is。", ["What day is today? It's "+d[1]+"."], {say:"It's "+d[1]+"."}); }
+  if(t===1){ var a=pk(DAYS), b=pk(DAYS.filter(function(x){return x[0]!==a[0];})); return Q("今天是"+b[0]+"，不是"+a[0]+"。A: Is today "+a[1]+"?  該怎麼答？", "No, it's "+b[1]+".",
+    shuf(["No, it's "+b[1]+".","Yes, it is.","No, I don't.","Yes, I am "+b[1]+"."]), null, "先說 No, it isn't / No, it's … 再更正。", ["No, it's "+b[1]+"."], {say:"No, it's "+b[1]+"."}); }
+  if(t===2){ var s=pk(SUBJS); return Q("我最喜歡的科目是"+s[0]+"。A: What's your favorite subject?  該怎麼答？", "My favorite subject is "+s[1]+".",
+    shuf(["My favorite subject is "+s[1]+".","I favorite is "+s[1]+".","My subject favorite "+s[1]+".","He favorite subject is "+s[1]+"."]), null, "My favorite subject is …", ["My favorite subject is "+s[1]+"."], {say:"My favorite subject is "+s[1]+"."}); }
+  var s2=pk(SUBJS), who=pk([["他","his","What's his favorite subject?"],["她","her","What's her favorite subject?"]]);
+  return Q(who[0]+"最喜歡的科目是"+s2[0]+"。A: "+who[2]+"  該怎麼答？", who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+".",
+    shuf([who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+".","He favorite subject is "+s2[1]+".","She favorite is "+s2[1]+".","My favorite subject is "+s2[1]+"."]),
+    null, "his / her + favorite subject is …", [who[2]+" "+who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+"."], {say:who[1][0].toUpperCase()+who[1].slice(1)+" favorite subject is "+s2[1]+"."});
 };
+
+// ===== 單元設定（數學按六～十單元分開；期末衝刺再做綜合）=====
+var MATH_C="#ff9f68", EN_C="#b48ee0";
+var G6=["frac_addsub","frac_word","frac_mix","frac_reduce","frac_compare"];
+var G7=["sym_axes","sym_prop"];
+var G8=["order_ops","ops_word","dist_law","avg_prob","div_chain"];
+var G9=["area","area_rev","area_compound"];
+var G10=["solid","solid_net","solid_rel","sphere"];
+var G610=G6.concat(G7,G8,G9,G10);
+var GX=["frac_mix","frac_between","frac_addsub","area_rev","area_compound","order_ops","dist_law","avg_prob","solid","solid_rel","sym_prop"];
+function MU(id,name,gen,round){ return {id:id,name:name,color:MATH_C,scratch:true,round:round||10,gen:gen,questions:[]}; }
+var MATH_UNITS=[
+  MU("mg6","🎲 第六單元 異分母分數的加減",G6),
+  MU("mg7","🎲 第七單元 線對稱圖形",G7),
+  MU("mg8","🎲 第八單元 整數四則運算",G8),
+  MU("mg9","🎲 第九單元 面積",G9),
+  MU("mg10","🎲 第十單元 柱體、錐體和球",G10),
+  MU("mgX","⭐🎲 數學資優挑戰（六～十）",GX,8)
+];
+var EN_UNITS=[
+  {id:"egA", name:"🎲 英文期末隨機練習（星期・科目・新年・句型）", color:EN_C, round:10, gen:["en_zh2en","en_en2zh","en_blank","en_pat"], questions:[]}
+];
 function make(gid){ var q=G[gid](); q.gid=gid; return q; }
 function sub(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
-UNITS.math.forEach(function(u){ u.questions=[]; sub("math").units.unshift(u); });
-sub("exam").units.splice(sub("exam").units.length,0,UNITS.math[0]);
-if(W.length>=4) UNITS.english.forEach(function(u){ u.questions=[]; sub("english").units.unshift(u); });
+function unitById(id){ var r=null; D.subjects.forEach(function(s){ s.units.forEach(function(u){ if(u.id===id) r=u; }); }); return r; }
+MATH_UNITS.forEach(function(u){ sub("math").units.push(u); });
+var zfMa=MU("zf_ma","🎲 數學期末綜合（六～十）隨機題",G610,10);
+sub("exam").units.splice(1,0,zfMa);
+var mix=unitById("zf_mix"); if(mix) mix.gen=G610;
+var gift=unitById("zf_gift"); if(gift) gift.gen=GX;
+var zfEn=unitById("zf_en"); if(zfEn) zfEn.gen=["en_zh2en","en_en2zh","en_blank","en_pat"];
+if(W.length>=4) EN_UNITS.forEach(function(u){ sub("english").units.unshift(u); });
 window.PRACTICE_GEN={make:make, generators:G, list:Object.keys(G)};
 })();
