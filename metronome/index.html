@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache">
+<title>紫嫈的練琴節拍器</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script>
+(function () {
+  var t = Date.now();
+  var css = document.createElement("link");
+  css.rel = "stylesheet";
+  css.href = "style.css?t=" + t;
+  document.head.appendChild(css);
+  function start() {
+    var s = document.createElement("script");
+    s.src = "app.js?t=" + t;
+    document.body.appendChild(s);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
+  else start();
+})();
+</script>
+</head>
+<body>
+<header class="topbar">
+  <a href="../" class="iconbtn" id="homeLink" aria-label="回練習站">🏠</a>
+  <h1><span class="title-hl">紫嫈的練琴節拍器</span></h1>
+  <span class="spacer chick" aria-hidden="true">🐥</span>
+</header>
+<main>
+  <section class="card" aria-labelledby="bpmTitle">
+    <h2 id="bpmTitle">速度</h2>
+    <div class="bpm-row">
+      <button type="button" id="bpmDown" class="iconbtn bpm-btn" aria-label="變慢一拍">−</button>
+      <div class="bpm-field">
+        <input id="bpmInput" type="number" inputmode="numeric" min="30" max="240" value="80" aria-label="每分鐘拍數">
+        <span class="bpm-unit">BPM</span>
+        <span id="tempoName" class="tempo-name">Andante 走路</span>
+      </div>
+      <button type="button" id="bpmUp" class="iconbtn bpm-btn" aria-label="變快一拍">＋</button>
+    </div>
+    <div class="chips" id="tempoPresets" role="group" aria-label="常用速度">
+      <button type="button" class="chip" data-bpm="56">Largo 很慢</button>
+      <button type="button" class="chip" data-bpm="80">Andante 走路</button>
+      <button type="button" class="chip" data-bpm="108">Moderato 不快不慢</button>
+      <button type="button" class="chip" data-bpm="132">Allegro 快快</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="sigTitle">
+    <h2 id="sigTitle">拍號</h2>
+    <div class="chips sigs" id="sigBtns" role="group" aria-label="拍號">
+      <button type="button" class="chip" data-sig="2/4">2/4</button>
+      <button type="button" class="chip" data-sig="3/4">3/4</button>
+      <button type="button" class="chip on" data-sig="4/4">4/4</button>
+      <button type="button" class="chip" data-sig="6/8">6/8</button>
+    </div>
+    <p id="sigHint" class="muted sig-hint" hidden>6/8：以八分音符為一拍，第 1 拍重音、第 4 拍次重音</p>
+    <div id="beats" class="beats" role="presentation"></div>
+  </section>
+
+  <section class="card" aria-labelledby="timerTitle">
+    <h2 id="timerTitle">練琴時間</h2>
+    <div class="chips" id="minBtns" role="group" aria-label="練習分鐘">
+      <button type="button" class="chip" data-min="5">5 分</button>
+      <button type="button" class="chip on" data-min="10">10 分</button>
+      <button type="button" class="chip" data-min="15">15 分</button>
+      <button type="button" class="chip" data-min="20">20 分</button>
+      <button type="button" class="chip" data-min="30">30 分</button>
+      <button type="button" class="chip" id="customMinBtn" data-min="custom">自訂</button>
+    </div>
+    <form id="customRow" class="custom-row" hidden>
+      <label class="sr-only" for="customMin">自訂分鐘</label>
+      <input id="customMin" class="tin" type="number" inputmode="numeric" min="1" max="120" placeholder="分鐘" aria-label="自訂分鐘">
+      <button type="submit" class="big primary custom-ok">確定</button>
+    </form>
+    <div class="progress" id="progress" style="--p:0%">
+      <div></div>
+      <span class="pchick" aria-hidden="true"><span class="pchick-i">🐥</span></span>
+    </div>
+    <p class="remain" id="remainLabel">剩餘 <span id="remain">10:00</span></p>
+    <div class="row timer-ops">
+      <button type="button" class="big secondary" id="timerPauseBtn">暫停時間</button>
+      <button type="button" class="big secondary" id="timerResetBtn">重設時間</button>
+    </div>
+  </section>
+
+</main>
+<div class="dock">
+  <div class="dock-inner">
+    <button type="button" class="big primary start-btn" id="startBtn">開始練習</button>
+    <div class="dock-links">
+      <button type="button" id="metroOnlyBtn">只開節拍器</button>
+      <a href="../">回練習站</a>
+    </div>
+  </div>
+</div>
+
+<div id="done" class="done" hidden>
+  <div class="card done-card pop">
+    <div class="stars" aria-hidden="true">⭐⭐⭐</div>
+    <h2>練完囉！紫嫈好棒 🎹</h2>
+    <p class="muted">今天也認真練琴了</p>
+    <button type="button" class="big primary" id="againBtn">再練一次</button>
+    <a class="big secondary" href="../">回練習站</a>
+  </div>
+</div>
+<div id="celebrate" class="celebrate" aria-hidden="true"></div>
+<div id="toast" role="status" aria-live="assertive"></div>
+</body>
+</html>
