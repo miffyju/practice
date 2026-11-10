@@ -10,6 +10,18 @@ G.list.forEach(function(k){ var texts={};
     if(q.type==="mc"){ if(q.options.indexOf(String(q.answer))<0 && q.options.indexOf(q.answer)<0) bad(k,"答案不在選項",q);
       if(new Set(q.options).size!==q.options.length) bad(k,"選項重複",q); if(q.options.length<3) bad(k,"選項少於3",q);
       q.options.forEach(function(o){ if(/^−/.test(o) || (/^-/.test(o)&&/^\-?\d/.test(o))) bad(k,"負數選項",q); }); }
+    if(q.type==="fill"){
+      var F=window.PRACTICE_FILL;
+      if(!F||!F.judgeFill) bad(k,"缺 PRACTICE_FILL",q);
+      else {
+        if(!F.judgeFill(q,q.answer).ok) bad(k,"標準答案不被接受",q);
+        if(!F.judgeFill(q,"  "+q.answer+"  ").ok) bad(k,"前後空白應算對",q);
+        (F.equivalents(q.answer)||[]).forEach(function(s){
+          if(!F.judgeFill(q,s).ok) bad(k,"等價形式不被接受 「"+s+"」",q);
+        });
+        if(F.judgeFill(q,"__IMPOSSIBLE_99999__").ok) bad(k,"明顯錯答卻算對",q);
+      }
+    }
     texts[q.q]=1; }
   console.log(k, "不同題目數/200 =", Object.keys(texts).length); });
 function g(a,b){ return b?g(b,a%b):Math.abs(a); }
@@ -32,9 +44,27 @@ for(i=0;i<300;i++){ var q=G.make("avg_prob"); if(/平均分數是 (\d+) 分，�
 var OLY=["oly_digit","oly_chicken","oly_tree","oly_age","oly_seq","oly_divisors"];
 OLY.forEach(function(k){ if(G.list.indexOf(k)<0) bad(k,"產生器沒有註冊"); });
 for(var i=0;i<500;i++){ OLY.forEach(function(k){ var q=G.make(k);
-  if(q.type!=="num" && q.type!=="fill") bad(k,"應為數字／填充題",q);
+  if(q.type!=="num" && q.type!=="fill" && q.type!=="mc") bad(k,"題型應為填充或選擇",q);
+  if(q.type==="mc" && (!q.options||q.options.indexOf(String(q.answer))<0)) bad(k,"選擇題答案不在選項",q);
   if(q.check!==undefined && String(eval(q.check))!==String(q.answer)) bad(k,"答案算錯 "+q.check,q);
 }); }
+var F=window.PRACTICE_FILL;
+if(!F){ bad("PRACTICE_FILL","沒有匯出判分函式"); }
+else {
+  function expect(ok,a,b,msg){ var r=F.fillSame(a,b); if(!!r!==ok) bad("fillSame",msg+" （"+a+" vs "+b+" → "+r+"）"); }
+  expect(true,"1又1/2","3/2","帶分數與假分數");
+  expect(true,"1 1/2","3/2","空格帶分數與假分數");
+  expect(true,"1又1/2","1.5","帶分數與小數");
+  expect(true,"0.50","0.5","小數尾 0");
+  expect(true," .5","0.5","省略的 0");
+  expect(true," 1/2 ","2/4","等價分數＋空白");
+  expect(true,"90度","90","去掉單位");
+  expect(true,"5邊形","5","邊形單位");
+  expect(true,"5 公分","5","公分單位");
+  expect(false,"1/3","0.33","三分之一不是 0.33");
+  expect(false,"1/2","1/3","不同分數");
+}
+
 console.log("產生器 "+G.list.length+" 個，共產生 "+made+" 題");
 console.log(err?err+" 個錯誤":"全部通過 ✅");
 process.exit(err?1:0);

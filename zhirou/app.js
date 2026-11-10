@@ -91,39 +91,10 @@ function wDraw(pool,k){
 // 打字題：比對（不分大小寫、去頭尾空白、多個空白算一個）
 function normT(a){ return String(a).toLowerCase().trim().replace(/\s+/g," "); }
 
-function toHalfWidth(s){
-  return String(s==null?"":s).replace(/[０-９]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)-65280+32); })
-    .replace(/[／⁄∕]/g,"/").replace(/[：﹕]/g,":").replace(/[－—–−]/g,"-")
-    .replace(/[，]/g,",").replace(/[（]/g,"(").replace(/[）]/g,")").replace(/[＝=]/g,"=").replace(/[×ｘxX]/g,"x");
-}
-function fillCompact(s){
-  return toHalfWidth(s).replace(/\s+/g,"").replace(/度/g,"").replace(/°/g,"")
-    .replace(/個$/g,"").replace(/人$/g,"").replace(/元$/g,"").replace(/題$/g,"");
-}
-function fillFrac(s){
-  s=fillCompact(s);
-  var m=/^(\-?\d+)又(\d+)\/(\d+)$/.exec(s); if(m) return [+m[1]*+m[3]+ +m[2], +m[3]];
-  m=/^(\-?\d+)\/(\d+)$/.exec(s); if(m) return [+m[1], +m[2]];
-  return null;
-}
-function fillSame(a,b){
-  a=fillCompact(a); b=fillCompact(b);
-  if(!a||!b) return false;
-  if(a===b) return true;
-  if(a.toLowerCase()===b.toLowerCase()) return true;
-  var fa=fillFrac(a), fb=fillFrac(b);
-  if(fa&&fb&&fa[1]&&fb[1]&&fa[0]*fb[1]===fb[0]*fa[1]) return true;
-  // 11月9日20:30 ↔ 11/9 20:30
-  var da=a.replace(/月/g,"/").replace(/日/g,""), db=b.replace(/月/g,"/").replace(/日/g,"");
-  if(da===db) return true;
-  // 比大小 d<c<b<a 允許去掉空格已處理
-  return false;
-}
 function judgeFill(q,a){
-  var cands=[String(q.answer)].concat(q.accept||[]), all=[];
-  cands.forEach(function(s){ String(s).split(/\s*或\s*/).forEach(function(p){ if(p.trim()) all.push(p.trim()); }); });
-  for(var i=0;i<all.length;i++) if(fillSame(a, all[i])) return {ok:true};
-  return {ok:false};
+  var F=window.PRACTICE_FILL;
+  if(F&&F.judgeFill) return F.judgeFill(q,a);
+  return {ok:String(a).trim()===String(q.answer).trim()};
 }
 function judgeText(q,a){
   var x=normT(a), acc=[q.answer].concat(q.accept||[]).map(normT);
@@ -211,7 +182,7 @@ function bindFillPad(){
     if(k==="Enter"){ e.preventDefault(); submitFill(); return; }
     if(k==="Backspace"){ e.preventDefault(); applyFillKey(e.ctrlKey||e.metaKey?"清除":"⌫"); return; }
     if(k==="Escape"){ e.preventDefault(); applyFillKey("清除"); return; }
-    var map={":":"：","：":"：",".":".","/":"/","-":"-","(":"(",")":")"," ":" ","、":"、"};
+    var map={":":"：","：":"：",".":".","/":"/","-":"-","(":"(",")":")"," ":" ","、":"、","又":"又"};
     if(/^[0-9]$/.test(k)){ e.preventDefault(); applyFillKey(k); return; }
     if(map[k]){ e.preventDefault(); applyFillKey(map[k]); }
   };
@@ -239,8 +210,8 @@ function showQ(){
     h+='<form id="tform" class="tform fillform" autocomplete="off"><div id="filldisp" class="filldisp" role="textbox" aria-readonly="true" aria-label="輸入答案" aria-live="polite" data-val=""></div><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
     h+='<div id="fb"></div>';
     h+='<div class="keypad fillpad" aria-label="答案快捷鍵">';
-    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","、","(",")","空白","⌫","清除"].forEach(function(k){
-      var lab=k==="⌫"?"刪除（長按清除）":k==="空白"?"空格":k==="："?"冒號":k==="清除"?"全部清除":k;
+    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","又","(",")","空白","⌫","清除"].forEach(function(k){
+      var lab=k==="⌫"?"刪除（長按清除）":k==="空白"?"空格":k==="："?"冒號":k==="又"?"又（帶分數，例如 1又1/2）":k==="清除"?"全部清除":k;
       h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'">'+k+'</button>';
     });
     h+='</div>';

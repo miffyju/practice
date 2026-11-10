@@ -385,6 +385,7 @@ body.sp-open main{padding-bottom:56vh}
 .fillpad button{min-height:56px;font-size:1.25rem;font-weight:800;border-radius:14px;background:#fff;color:var(--ink);border:var(--stroke) solid var(--brown);box-shadow:0 var(--shadow) 0 var(--brown);}
 .fillpad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brown)}
 .fillpad button[data-fk="清除"]{font-size:.95rem;background:var(--yellow)}
+.fillpad button[data-fk="又"]{font-size:1.05rem}
 #fb:empty{display:none;margin:0}
 #fb{margin:.7rem 0 .2rem}
 .fb-title{display:block;font-size:1.15rem;margin-bottom:.2rem}

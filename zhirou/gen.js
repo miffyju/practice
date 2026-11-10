@@ -394,6 +394,189 @@ G.oly_divisors=function(){
     [a+" 和 "+b+" 的最小公倍數是 "+L+"。","糖果數＝ "+L+" 的倍數＋"+r+"。不超過 "+cap+" 的最大是 "+ans+"。"], k+"*"+L+"+"+r);
 };
 
+
+// ===== 填充題判分（等價分數／帶分數／小數／空白／單位）＋ 六成改填空 =====
+function toHalfWidth(s){
+  return String(s==null?"":s).replace(/[０-９]/g,function(c){ return String.fromCharCode(c.charCodeAt(0)-65280+32); })
+    .replace(/[／⁄∕]/g,"/").replace(/[：﹕]/g,":").replace(/[－—–−]/g,"-")
+    .replace(/[，]/g,",").replace(/[（]/g,"(").replace(/[）]/g,")").replace(/[＝=]/g,"=").replace(/[×ｘxX]/g,"x");
+}
+var UNIT_SUF=["平方公分","立方公分","平方公里","公分","公尺","公升","分鐘","邊形","頂點","顆","棵","隻","面","邊","條","對","個","元","題","度","分","人","旗"];
+function stripUnitSuffix(s){
+  s=String(s).trim();
+  for(var i=0;i<UNIT_SUF.length;i++){
+    var u=UNIT_SUF[i];
+    if(s.length>u.length && s.slice(-u.length)===u) return s.slice(0,-u.length).trim();
+  }
+  return s;
+}
+function parseNumeric(s){
+  s=toHalfWidth(s).trim();
+  if(!s || /月/.test(s)) return null;
+  var tm=/^(\d{1,2}):(\d{2})$/.exec(s.replace(/\s/g,""));
+  if(tm && +tm[2]<60) return {kind:"time", h:+tm[1], m:+tm[2]};
+  var u=stripUnitSuffix(s);
+  var m=/^(-?\d+)\s*又\s*(\d+)\s*\/\s*(\d+)$/.exec(u);
+  if(m && +m[3]) return {kind:"frac", n:+m[1]*+m[3]+ +m[2], d:+m[3]};
+  m=/^(-?\d+)\s+(\d+)\s*\/\s*(\d+)$/.exec(u);
+  if(m && +m[3]) return {kind:"frac", n:+m[1]*+m[3]+ +m[2], d:+m[3]};
+  m=/^(-?\d+)\s*\/\s*(\d+)$/.exec(u);
+  if(m && +m[2]) return {kind:"frac", n:+m[1], d:+m[2]};
+  var d=u.replace(/\s+/g,"");
+  if(/^-?\d+\.\d+$/.test(d)) return {kind:"dec", v:d};
+  if(/^-?\d+$/.test(d)) return {kind:"int", v:d};
+  if(/^\.\d+$/.test(d)) return {kind:"dec", v:"0"+d};
+  if(/^-\.\d+$/.test(d)) return {kind:"dec", v:"-0"+d.slice(1)};
+  return null;
+}
+function asRat(p){
+  if(!p) return null;
+  if(p.kind==="frac") return {n:p.n, d:p.d};
+  if(p.kind==="int") return {n:+p.v, d:1};
+  if(p.kind==="dec"){
+    var s=p.v, neg=s.charAt(0)==="-"; if(neg) s=s.slice(1);
+    var parts=s.split("."), i=parts[0]||"0", f=parts[1]||"";
+    var n=+(i+f), den=1; for(var k=0;k<f.length;k++) den*=10;
+    return {n:neg?-n:n, d:den};
+  }
+  return null;
+}
+function fillCompact(s){
+  return toHalfWidth(s).replace(/\s+/g,"").replace(/度/g,"").replace(/°/g,"")
+    .replace(/個$/g,"").replace(/人$/g,"").replace(/元$/g,"").replace(/題$/g,"");
+}
+function fillSame(a,b){
+  var sa=toHalfWidth(a).trim(), sb=toHalfWidth(b).trim();
+  if(!sa||!sb) return false;
+  if(sa.replace(/\s+/g,"")===sb.replace(/\s+/g,"")) return true;
+  if(sa.replace(/\s+/g,"").toLowerCase()===sb.replace(/\s+/g,"").toLowerCase()) return true;
+  var pa=parseNumeric(sa), pb=parseNumeric(sb);
+  if(pa&&pb){
+    if(pa.kind==="time"&&pb.kind==="time") return pa.h===pb.h && pa.m===pb.m;
+    var ra=asRat(pa), rb=asRat(pb);
+    if(ra&&rb&&ra.d&&rb.d&&ra.n*rb.d===rb.n*ra.d) return true;
+  }
+  var da=fillCompact(sa).replace(/月/g,"/").replace(/日/g,""), db=fillCompact(sb).replace(/月/g,"/").replace(/日/g,"");
+  if(da===db) return true;
+  return false;
+}
+function judgeFill(q,a){
+  var cands=[String(q.answer)].concat(q.accept||[]), all=[];
+  cands.forEach(function(s){ String(s).split(/\s*或\s*/).forEach(function(p){ if(p.trim()) all.push(p.trim()); }); });
+  for(var i=0;i<all.length;i++) if(fillSame(a, all[i])) return {ok:true};
+  return {ok:false};
+}
+function isTerminating(d){
+  d=Math.abs(d); if(!d) return false;
+  while(d%2===0) d/=2; while(d%5===0) d/=5;
+  return d===1;
+}
+function equivalents(ans){
+  var s=String(ans).trim(), out=[" "+s+" ", "\t"+s, s+"  "];
+  var p=parseNumeric(s);
+  if(!p) return uniq(out);
+  if(p.kind==="int"){ out.push(String(+p.v), p.v+".0"); }
+  if(p.kind==="dec"){
+    var v=+p.v;
+    out.push(String(v), v.toFixed(2), v.toFixed(3));
+    if(/^0\./.test(String(v))) out.push(String(v).replace(/^0/,""));
+    var rat=asRat(p), g=gcd(rat.n,rat.d)||1;
+    out.push((rat.n/g)+"/"+(rat.d/g));
+  }
+  if(p.kind==="frac"){
+    var g=gcd(p.n,p.d)||1, n=p.n/g, d=p.d/g;
+    out.push(n+"/"+d, (n*2)+"/"+(d*2), (n*3)+"/"+(d*3), " "+n+" / "+d+" ");
+    if(d!==1 && n>d){ out.push(Math.floor(n/d)+"又"+(n%d)+"/"+d, Math.floor(n/d)+" "+(n%d)+"/"+d); }
+    if(d!==1 && isTerminating(d)) out.push(String(n/d));
+  }
+  if(p.kind==="time"){
+    var mm=(p.m<10?"0":"")+p.m;
+    out.push(p.h+":"+mm);
+    if(p.h<10) out.push("0"+p.h+":"+mm);
+  }
+  var core=stripUnitSuffix(toHalfWidth(s).trim());
+  if(core && core!==s) out.push(core);
+  return uniq(out);
+}
+function uniq(a){ var s={}, r=[]; a.forEach(function(x){ if(s[x]==null){ s[x]=1; r.push(x); } }); return r; }
+
+function isFillableAnswer(ans){
+  var s=String(ans).trim();
+  if(/^\d{1,2}:\d{2}$/.test(s)) return true;
+  if(/^\d+又\d+\/\d+$/.test(s) || /^-?\d+\/\d+$/.test(s)) return true;
+  if(/^-?\d+(\.\d+)?$/.test(s)) return true;
+  if(/^-?\d+(\.\d+)?\s*(公分|平方公分|立方公分|公尺|公升|度|條|個|元|分|題|邊形|對|顆|棵)$/.test(s)) return true;
+  if(/^\d+\s*(條|邊形|度|個|對)/.test(s)) return true;
+  return false;
+}
+function inferUnit(qtext){
+  var t=String(qtext);
+  if(/平方公分/.test(t)) return "平方公分";
+  if(/立方公分/.test(t)) return "立方公分";
+  if(/公升/.test(t)) return "公升";
+  if(/幾公尺|多少公尺|公尺？/.test(t)) return "公尺";
+  if(/幾公分|多少公分|相距幾|高是幾|長幾公分/.test(t)) return "公分";
+  if(/幾邊形/.test(t)) return "邊形";
+  if(/幾對/.test(t)) return "對";
+  if(/對稱軸/.test(t) || /有幾條|幾條？/.test(t)) return "條";
+  if(/找回多少元|多少元？/.test(t)) return "元";
+  if(/最後一科是幾分|是幾分？/.test(t)) return "分";
+  if(/幾顆|有幾顆/.test(t)) return "顆";
+  if(/幾棵/.test(t)) return "棵";
+  if(/幾面旗/.test(t)) return "面";
+  if(/有幾個面|幾個邊|幾個頂點|有幾個/.test(t)) return "個";
+  if(/是幾度|幾度？/.test(t)) return "度";
+  if(/幾隻/.test(t)) return "隻";
+  if(/幾年後/.test(t)) return "年";
+  return "";
+}
+function addUnitHint(q, unit){
+  if(!unit || /答案填/.test(q)) return q;
+  return q+"（答案填數字，單位："+unit+"）";
+}
+function canonFill(raw){
+  var s=String(raw).trim();
+  var m=/^(\d+)\s*邊形/.exec(s); if(m) return {answer:m[1], accept:[m[1]+"邊形", m[1]+" 邊形"]};
+  m=/^(\d+)\s*條/.exec(s); if(m) return {answer:m[1], accept:[m[1]+"條", m[1]+" 條", m[1]+" 條（不是線對稱圖形）"]};
+  m=/^(\d+)\s*對/.exec(s); if(m) return {answer:m[1], accept:[m[1]+"對", m[1]+" 對"]};
+  m=/^(\d+)\s*個/.exec(s); if(m) return {answer:m[1], accept:[m[1]+"個"]};
+  return {answer:s, accept:[]};
+}
+function mcToFill(q){
+  var c=canonFill(q.answer);
+  q.type="fill";
+  q.answer=c.answer;
+  q.accept=(q.accept||[]).concat(c.accept);
+  delete q.options;
+  var u=inferUnit(q.q);
+  q.q=addUnitHint(q.q,u);
+  return q;
+}
+function numToMc(q){
+  var ans=String(q.answer), A=+ans;
+  var cands=/^\d+$/.test(ans)?[A+1,Math.max(0,A-1),A+2,A+10,A*2,Math.max(0,A-2)]:[];
+  q.type="mc";
+  q.options=opts(ans,cands, function(){ return Math.max(0, (/^\d+$/.test(ans)?A:0)+ri(-9,12)); });
+  return q;
+}
+function maybeFill(q){
+  if(q.type==="mc"){
+    if(!isFillableAnswer(q.answer)) return q;
+    if(Math.random()>=0.6) return q;
+    return mcToFill(q);
+  }
+  if(q.type==="num"){
+    if(Math.random()>=0.6) return numToMc(q);
+    q.type="fill";
+    var u=inferUnit(q.q);
+    q.q=addUnitHint(q.q,u);
+    return q;
+  }
+  return q;
+}
+window.PRACTICE_FILL={judgeFill:judgeFill, fillSame:fillSame, equivalents:equivalents, parseNumeric:parseNumeric, maybeFill:maybeFill, isFillableAnswer:isFillableAnswer};
+
+
 // ===== 單元設定（數學按六～十單元分開；期末衝刺再做綜合）=====
 var MATH_C="#ff9f68", EN_C="#b48ee0";
 var G6=["frac_addsub","frac_word","frac_mix","frac_reduce","frac_compare"];
@@ -403,6 +586,9 @@ var G9=["area","area_rev","area_compound"];
 var G10=["solid","solid_net","solid_rel","sphere"];
 var G610=G6.concat(G7,G8,G9,G10);
 var GX=["frac_mix","frac_between","frac_addsub","area_rev","area_compound","order_ops","dist_law","avg_prob","solid","solid_rel","sym_prop"];
+var OLY_G=["oly_digit","oly_chicken","oly_tree","oly_age","oly_seq","oly_divisors"];
+var FILL_GENS={};
+G610.concat(GX,OLY_G).forEach(function(k){ FILL_GENS[k]=1; });
 function MU(id,name,gen,round){ return {id:id,name:name,color:MATH_C,scratch:true,round:round||10,gen:gen,questions:[]}; }
 var MATH_UNITS=[
   MU("mg6","🎲 第六單元 異分母分數的加減",G6),
@@ -415,7 +601,7 @@ var MATH_UNITS=[
 var EN_UNITS=[
   {id:"egA", name:"🎲 英文期末隨機練習（星期・科目・新年・句型）", color:EN_C, round:10, gen:["en_zh2en","en_en2zh","en_blank","en_pat"], questions:[]}
 ];
-function make(gid){ var q=G[gid](); q.gid=gid; return q; }
+function make(gid){ var q=G[gid](); q.gid=gid; if(FILL_GENS[gid]) q=maybeFill(q); return q; }
 function sub(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
 function unitById(id){ var r=null; D.subjects.forEach(function(s){ s.units.forEach(function(u){ if(u.id===id) r=u; }); }); return r; }
 MATH_UNITS.forEach(function(u){ sub("math").units.push(u); });
