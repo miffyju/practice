@@ -20,6 +20,10 @@
   var customOpen = false;
 
   var ctx = null;
+  var silentEl = null;
+  var ctxStateHooked = false;
+  var wakeLock = null;
+  var wakeWanted = false;
   var metroOn = false;
   var currentBeat = 0;
   var nextNoteTime = 0;
@@ -182,13 +186,165 @@
     metroOnlyBtn.textContent = metroOn ? "停節拍器" : "只開節拍器";
   }
 
-  /* ---------- Web Audio ---------- */
+  /* ---------- Web Audio（iOS 靜音模式也要出聲） ---------- */
+  function silentWavUri() {
+    var rate = 8000;
+    var frames = 400;
+    var buf = new ArrayBuffer(44 + frames);
+    var v = new DataView(buf);
+    function str(off, s) {
+      for (var i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i));
+    }
+    str(0, "RIFF");
+    v.setUint32(4, 36 + frames, true);
+    str(8, "WAVE");
+    str(12, "fmt ");
+    v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true);
+    v.setUint16(22, 1, true);
+    v.setUint32(24, rate, true);
+    v.setUint32(28, rate, true);
+    v.setUint16(32, 1, true);
+    v.setUint16(34, 8, true);
+    str(36, "data");
+    v.setUint32(40, frames, true);
+    for (var i = 0; i < frames; i++) v.setUint8(44 + i, 128);
+    var bytes = new Uint8Array(buf);
+    var bin = "";
+    for (i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return "data:audio/wav;base64," + btoa(bin);
+  }
+
+  function setPlaybackSession() {
+    try {
+      if (navigator.audioSession) navigator.audioSession.type = "playback";
+    } catch (err) {}
+  }
+
+  function ensureSilentAudio() {
+    if (silentEl) return silentEl;
+    silentEl = document.createElement("audio");
+    silentEl.src = silentWavUri();
+    silentEl.loop = true;
+    silentEl.preload = "auto";
+    silentEl.volume = 1;
+    silentEl.muted = false;
+    silentEl.playsInline = true;
+    silentEl.setAttribute("playsinline", "");
+    silentEl.setAttribute("webkit-playsinline", "");
+    silentEl.setAttribute("aria-hidden", "true");
+    silentEl.style.cssText = "position:absolute;width:0;height:0;opacity:0;pointer-events:none";
+    document.body.appendChild(silentEl);
+    return silentEl;
+  }
+
+  function startSilentAudio() {
+    try {
+      var el = ensureSilentAudio();
+      var p = el.play();
+      if (p && p.catch) p.catch(function () {});
+    } catch (err) {}
+  }
+
+  function primeSilentBuffer(audioCtx) {
+    if (!audioCtx) return;
+    try {
+      var buf = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+      var src = audioCtx.createBufferSource();
+      src.buffer = buf;
+      var gain = audioCtx.createGain();
+      gain.gain.value = 0;
+      src.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start(0);
+    } catch (err) {}
+  }
+
+  function hookCtxState(audioCtx) {
+    if (!audioCtx || ctxStateHooked) return;
+    ctxStateHooked = true;
+    audioCtx.addEventListener("statechange", function () {
+      if (audioCtx.state === "running") {
+        resyncScheduler();
+        return;
+      }
+      if (audioCtx.state === "suspended" || audioCtx.state === "interrupted") {
+        /* 背景回來時先試；若被拒，下次點擊會再 resume */
+        try { audioCtx.resume(); } catch (err) {}
+      }
+    });
+  }
+
+  function resyncScheduler() {
+    if (!metroOn || !ctx) return;
+    if (nextNoteTime < ctx.currentTime - 0.05) {
+      nextNoteTime = ctx.currentTime + 0.04;
+    }
+  }
+
+  function resumeContext() {
+    if (!ctx) return;
+    if (ctx.state !== "suspended" && ctx.state !== "interrupted") return;
+    try {
+      var p = ctx.resume();
+      if (p && p.then) {
+        p.then(function () { resyncScheduler(); }).catch(function () {});
+      }
+    } catch (err) {}
+  }
+
+  function resumeAfterBackground() {
+    setPlaybackSession();
+    if (!ctx) return;
+    startSilentAudio();
+    primeSilentBuffer(ctx);
+    resumeContext();
+  }
+
   function unlockAudio() {
+    /* 必須在同一個點擊手勢裡同步建立／resume，並切到 playback */
+    setPlaybackSession();
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return null;
     if (!ctx) ctx = new AC();
-    if (ctx.state === "suspended") ctx.resume();
+    hookCtxState(ctx);
+    startSilentAudio();
+    primeSilentBuffer(ctx);
+    resumeContext();
     return ctx;
+  }
+
+  /* 節拍器進行中保持螢幕不關；不支援（舊版 iOS）就略過，不影響發聲 */
+  function requestWakeLock() {
+    wakeWanted = true;
+    if (!navigator.wakeLock || !navigator.wakeLock.request) return;
+    if (document.hidden) return;
+    try {
+      var p = navigator.wakeLock.request("screen");
+      if (p && p.then) {
+        p.then(function (sent) {
+          if (!wakeWanted) {
+            try { sent.release(); } catch (err) {}
+            return;
+          }
+          wakeLock = sent;
+          sent.addEventListener("release", function () {
+            if (wakeLock === sent) wakeLock = null;
+          });
+        }).catch(function () {});
+      }
+    } catch (err) {}
+  }
+
+  function releaseWakeLock() {
+    wakeWanted = false;
+    if (!wakeLock) return;
+    try {
+      var sent = wakeLock;
+      wakeLock = null;
+      var p = sent.release();
+      if (p && p.catch) p.catch(function () {});
+    } catch (err) {}
   }
 
   function envGain(audioCtx, time, peak, dur) {
@@ -363,6 +519,7 @@
     nextNoteTime = ctx.currentTime + 0.06;
     scheduler();
     syncStartUi();
+    requestWakeLock();
   }
 
   function stopMetro() {
@@ -373,6 +530,7 @@
     clearVisuals();
     clearActiveBeat();
     syncStartUi();
+    releaseWakeLock();
   }
 
   /* ---------- Timer ---------- */
@@ -567,6 +725,9 @@
     pickMins(m);
   });
 
+  startBtn.addEventListener("pointerdown", function () { unlockAudio(); });
+  metroOnlyBtn.addEventListener("pointerdown", function () { unlockAudio(); });
+
   startBtn.addEventListener("click", function () {
     unlockAudio();
     if (metroOn || timerOn) {
@@ -604,8 +765,13 @@
       if (timerOn) lastTick = performance.now();
     } else {
       if (timerOn) lastTick = performance.now();
-      if (metroOn && ctx && ctx.state === "suspended") ctx.resume();
+      resumeAfterBackground();
+      if (metroOn) requestWakeLock();
     }
+  });
+  window.addEventListener("pageshow", function () {
+    resumeAfterBackground();
+    if (metroOn) requestWakeLock();
   });
 
   /* First user gesture: try to unlock audio (iOS) */
