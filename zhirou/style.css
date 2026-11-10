@@ -359,9 +359,43 @@ body.sp-open main{padding-bottom:56vh}
 }
 
 .fillform{flex-direction:column;align-items:stretch;max-width:520px;margin:0 auto;}
-.fillform .filltin{width:100%;flex:1 1 auto;letter-spacing:0;text-align:center;font-size:1.15rem;}
+.filldisp{
+  width:100%;min-height:64px;font-size:1.6rem;font-weight:800;
+  text-align:center;padding:.55rem .8rem;line-height:1.4;
+  border:var(--stroke) solid var(--brown);border-radius:16px;
+  background:#fff;color:var(--ink);box-shadow:0 3px 0 var(--brown);
+  display:flex;align-items:center;justify-content:center;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:manipulation;cursor:default;
+}
+.filldisp.empty{font-weight:600}
+.filldisp.is-done .fillcaret{display:none}
+.fillph{color:var(--muted);font-weight:600;font-size:1.15rem;}
+.fillcaret{
+  display:inline-block;width:2px;height:1.15em;margin-left:2px;
+  background:var(--ink);border-radius:1px;vertical-align:-.15em;
+  animation:fillblink 1s step-end infinite;
+}
+@keyframes fillblink{50%{opacity:0}}
 .fillpad{display:grid;grid-template-columns:repeat(5,1fr);gap:.45rem;max-width:520px;margin:.55rem auto 0;}
+.fillpad,.fillpad button{
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+  touch-action:manipulation;
+}
 .fillpad button{min-height:56px;font-size:1.25rem;font-weight:800;border-radius:14px;background:#fff;color:var(--ink);border:var(--stroke) solid var(--brown);box-shadow:0 var(--shadow) 0 var(--brown);}
 .fillpad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--brown)}
+.fillpad button[data-fk="清除"]{font-size:.95rem;background:var(--yellow)}
+#fb:empty{display:none;margin:0}
+#fb{margin:.7rem 0 .2rem}
+.fb-title{display:block;font-size:1.15rem;margin-bottom:.2rem}
+.fb-ans{font-size:1.12rem;margin:.35rem 0;font-weight:700}
+.fb-note{margin:.3rem 0}
+.fb-exp{margin-top:.35rem}
+.fb-exp-h{font-weight:800;margin-bottom:.1rem}
+@media (max-width:720px){
+  .feedback{font-size:1.08rem;padding:1rem 1rem 1.05rem}
+  .fb-title{font-size:1.22rem}
+  .fb-ans{font-size:1.18rem}
+}
 .qfig{margin:.7rem auto .2rem;max-width:100%;text-align:center;}
 .qfig svg{max-width:100%;height:auto;}

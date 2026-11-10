@@ -7,7 +7,7 @@ function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v 
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function el(html){ SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
+function el(html){ unbindFillKeys(); SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
 function subj(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
 function unit(s,id){ return s.units.filter(function(u){return u.id===id;})[0]; }
 function today(){ var d=new Date(); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
@@ -146,6 +146,77 @@ function itCopy(w){ var o={sid:w.sid,uid:w.uid}; if(w.q){ o.q=w.q; o.uname=w.una
 
 // ---------- 作答 ----------
 var R;
+var fillVal="", fillKeysBound=null, fillBkTimer=null;
+function unbindFillKeys(){
+  if(fillKeysBound){ document.removeEventListener("keydown", fillKeysBound, true); fillKeysBound=null; }
+  if(fillBkTimer){ clearTimeout(fillBkTimer); fillBkTimer=null; }
+}
+function renderFill(){
+  var d=document.getElementById("filldisp");
+  if(!d) return;
+  d.dataset.val=fillVal;
+  var caret=R && R.cur && !R.cur.done ? '<span class="fillcaret" aria-hidden="true"></span>' : "";
+  d.innerHTML=(fillVal?esc(fillVal):'<span class="fillph">請輸入答案</span>')+caret;
+  d.classList.toggle("empty", !fillVal);
+}
+function applyFillKey(k){
+  if(!R || !R.cur || R.cur.done) return;
+  if(k==="⌫") fillVal=fillVal.slice(0,-1);
+  else if(k==="清除") fillVal="";
+  else if(k==="空白"){ if(fillVal.length<32) fillVal+=" "; }
+  else if(fillVal.length<32) fillVal+=k;
+  renderFill();
+}
+function submitFill(){
+  if(!R || !R.cur || R.cur.done) return;
+  if(!String(fillVal).trim()){ toast("先輸入答案喔"); return; }
+  answer(fillVal, null);
+}
+function bindFillPad(){
+  fillVal="";
+  renderFill();
+  document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); submitFill(); };
+  app.querySelectorAll("[data-fk]").forEach(function(b){
+    var last=0, hold=null;
+    function swallow(e){ e.preventDefault(); e.stopPropagation(); }
+    function fire(k){
+      var n=performance.now();
+      if(n-last<70) return;
+      last=n;
+      applyFillKey(k);
+    }
+    b.addEventListener("pointerdown", function(e){
+      swallow(e);
+      if(e.button>0 || e.isPrimary===false) return;
+      var k=b.dataset.fk;
+      if(k==="⌫"){
+        if(hold) clearTimeout(hold);
+        hold=setTimeout(function(){ hold=null; last=0; applyFillKey("清除"); }, 550);
+        fillBkTimer=hold;
+      } else fire(k);
+    });
+    function endHold(e){
+      swallow(e);
+      if(b.dataset.fk==="⌫" && hold){ clearTimeout(hold); hold=null; fillBkTimer=null; fire("⌫"); }
+    }
+    b.addEventListener("pointerup", endHold);
+    b.addEventListener("pointercancel", function(e){ swallow(e); if(hold){ clearTimeout(hold); hold=null; fillBkTimer=null; } });
+    b.addEventListener("click", swallow);
+  });
+  fillKeysBound=function(e){
+    if(!R || !R.cur || R.cur.done) return;
+    var t=e.target;
+    if(t && (t.tagName==="INPUT" || t.tagName==="TEXTAREA" || t.isContentEditable)) return;
+    var k=e.key;
+    if(k==="Enter"){ e.preventDefault(); submitFill(); return; }
+    if(k==="Backspace"){ e.preventDefault(); applyFillKey(e.ctrlKey||e.metaKey?"清除":"⌫"); return; }
+    if(k==="Escape"){ e.preventDefault(); applyFillKey("清除"); return; }
+    var map={":":"：","：":"：",".":".","/":"/","-":"-","(":"(",")":")"," ":" ","、":"、"};
+    if(/^[0-9]$/.test(k)){ e.preventDefault(); applyFillKey(k); return; }
+    if(map[k]){ e.preventDefault(); applyFillKey(map[k]); }
+  };
+  document.addEventListener("keydown", fillKeysBound, true);
+}
 function start(sname, uname, items, isWB){
   items=items.filter(getQ);
   if(!items.length){ toast("沒有題目喔"); return home(); }
@@ -165,10 +236,11 @@ function showQ(){
   } else if(q.type==="text"){
     h+='<form id="tform" class="tform" autocomplete="off"><input id="tin" class="tin" type="text" aria-label="輸入英文" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="在這裡輸入英文"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
   } else if(q.type==="fill"){
-    h+='<form id="tform" class="tform fillform" autocomplete="off"><input id="tin" class="tin filltin" type="text" inputmode="text" aria-label="輸入答案" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="請輸入答案"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
+    h+='<form id="tform" class="tform fillform" autocomplete="off"><div id="filldisp" class="filldisp" role="textbox" aria-readonly="true" aria-label="輸入答案" aria-live="polite" data-val=""></div><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
+    h+='<div id="fb"></div>';
     h+='<div class="keypad fillpad" aria-label="答案快捷鍵">';
-    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","、","(",")","空白","⌫"].forEach(function(k){
-      var lab=k==="⌫"?"刪除":k==="空白"?"空格":k==="："?"冒號":k;
+    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","、","(",")","空白","⌫","清除"].forEach(function(k){
+      var lab=k==="⌫"?"刪除（長按清除）":k==="空白"?"空格":k==="："?"冒號":k==="清除"?"全部清除":k;
       h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'">'+k+'</button>';
     });
     h+='</div>';
@@ -179,24 +251,20 @@ function showQ(){
       h+='<button data-k="'+k+'" aria-label="'+lab+'"'+(k==="✔"?' class="ok"':'')+'>'+k+'</button>'; });
     h+='</div>';
   }
-  h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
+  if(q.type!=="fill") h+='<div id="fb"></div>';
+  h+='<div class="row" id="nextRow"></div></div></div>';
   el(h);
   var pg=app.querySelector(".progress"); if(pg){ if(prevPct===curPct) pg.style.setProperty("--p",curPct+"%"); else requestAnimationFrame(function(){ requestAnimationFrame(function(){ pg.style.setProperty("--p",curPct+"%"); pg.classList.add("walking"); setTimeout(function(){ pg.classList.remove("walking"); },600); }); }); }
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.innerHTML="📝 計算紙"; tap(spb, SP.toggle); document.querySelector(".quiz .card").appendChild(spb); }
   if(q.type==="mc"){
     app.querySelectorAll(".opt").forEach(function(b){ b.onclick=function(){ if(R.cur.done||b.disabled) return; answer(b.dataset.o, b); }; });
-  } else if(q.type==="text"||q.type==="fill"){
+  } else if(q.type==="text"){
     var tin=document.getElementById("tin");
-    document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); if(R.cur.done) return; if(!tin.value.trim()){ toast(q.type==="fill"?"先輸入答案喔":"先輸入英文喔"); return; } answer(tin.value, null); };
-    app.querySelectorAll("[data-fk]").forEach(function(b){ b.onclick=function(){
-      if(R.cur.done) return; var k=b.dataset.fk;
-      if(k==="⌫") tin.value=tin.value.slice(0,-1);
-      else if(k==="空白") tin.value+=" ";
-      else if(tin.value.length<32) tin.value+=k;
-      tin.focus();
-    }; });
+    document.getElementById("tform").onsubmit=function(e){ e.preventDefault(); if(R.cur.done) return; if(!tin.value.trim()){ toast("先輸入英文喔"); return; } answer(tin.value, null); };
     tin.focus();
+  } else if(q.type==="fill"){
+    bindFillPad();
   } else {
     var disp=document.getElementById("disp"), val="";
     app.querySelectorAll("[data-k]").forEach(function(b){ b.onclick=function(){
@@ -215,23 +283,44 @@ function answer(a, btn){
     R.cur.done=true; if(btn) btn.classList.add("right");
     if(q.type==="num") document.getElementById("disp").textContent=a;
     celebrate();
-    fb.innerHTML='<div class="feedback good pop"><b>🎉 '+pick(CHEER)+'</b>'+(jt.note?'<br>📌 '+esc(jt.note):'')+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback good pop"><b class="fb-title">🎉 '+pick(CHEER)+'</b>'+(jt.note?'<p class="fb-note">📌 '+esc(jt.note)+'</p>':'')+'<div class="fb-exp"><div class="fb-exp-h">說明</div>'+explainHTML(q)+'</div></div>';
     finishQ(true);
+    revealFb();
   } else if(R.cur.tries.length===1){
     if(btn){ btn.classList.add("wrong"); btn.disabled=true; }
-    fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+(q.type==="text"?'<br>你寫的：'+diffHTML(a,q.answer)+'<br><span class="muted">紅色是寫錯的字母</span>':'')+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
+    fb.innerHTML='<div class="feedback hint"><b class="fb-title">💪 '+pick(ENC)+'</b>'+(q.type==="text"?'<p>你寫的：'+diffHTML(a,q.answer)+'</p><p class="muted">紅色是寫錯的字母</p>':q.type==="fill"?'<p>你寫的：<b>'+esc(a)+'</b></p>':'')+'<p>💡 提示：'+esc(q.hint)+'</p><p class="muted">（再試一次）</p></div>';
     if(q.type==="num") document.getElementById("disp").textContent="";
-    if(q.type==="text"||q.type==="fill"){ var ti=document.getElementById("tin"); ti.value=""; ti.focus(); }
+    if(q.type==="text"){ var ti=document.getElementById("tin"); ti.value=""; ti.focus(); }
+    if(q.type==="fill"){ fillVal=""; renderFill(); }
+    revealFb();
   } else {
     R.cur.done=true; if(btn) btn.classList.add("wrong");
     app.querySelectorAll(".opt").forEach(function(b){ if(b.dataset.o===String(q.answer)) b.classList.add("right"); });
     if(q.type==="num") document.getElementById("disp").textContent=a+" → "+q.answer;
-    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>'+(q.type==="text"?'你寫的：'+diffHTML(a,q.answer)+'<br>':q.type==="fill"?'你寫的：<b>'+esc(a)+'</b><br>':'')+'正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback explain"><b class="fb-title">🌈 答錯了，我們一起看說明</b>'+(q.type==="text"?'<p>你寫的：'+diffHTML(a,q.answer)+'</p>':q.type==="fill"?'<p>你寫的：<b>'+esc(a)+'</b></p>':'')+'<p class="fb-ans">正確答案是 <b>'+esc(q.answer)+'</b></p><div class="fb-exp"><div class="fb-exp-h">說明</div>'+explainHTML(q)+'</div></div>';
     finishQ(false);
+    revealFb();
   }
 }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
-function finishQ(correct){ var tf=document.getElementById("tin"); if(tf){ tf.disabled=true; var tk=document.getElementById("tok"); if(tk) tk.disabled=true; } var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
+function revealFb(){
+  var fb=document.getElementById("fb");
+  if(!fb || !fb.firstChild) return;
+  var reduced=false;
+  try{ reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  requestAnimationFrame(function(){
+    if(!window.matchMedia("(max-width:720px)").matches) return;
+    var bar=document.querySelector(".topbar");
+    var pad=(bar?bar.getBoundingClientRect().height:0)+8;
+    var r=fb.getBoundingClientRect(), vh=window.innerHeight, dy=0;
+    if(r.height>vh-pad) dy=r.top-pad;
+    else if(r.top<pad) dy=r.top-pad;
+    else if(r.bottom>vh-8) dy=r.bottom-(vh-8);
+    if(Math.abs(dy)<1) return;
+    window.scrollTo({top:Math.max(0,window.scrollY+dy), behavior:reduced?"auto":"smooth"});
+  });
+}
+function finishQ(correct){ var tf=document.getElementById("tin"); if(tf) tf.disabled=true; var tk=document.getElementById("tok"); if(tk) tk.disabled=true; var fd=document.getElementById("filldisp"); if(fd) fd.classList.add("is-done"); var pad=app.querySelector(".fillpad"); if(pad) pad.hidden=true; var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
@@ -243,7 +332,7 @@ function finishQ(correct){ var tf=document.getElementById("tin"); if(tf){ tf.dis
   var last=R.i===R.items.length-1;
   var nr=document.getElementById("nextRow");
   nr.innerHTML='<button class="big primary" id="next">'+(last?"看成績 🏁":"下一題 ➡")+'</button>';
-  var nb=document.getElementById("next"); nb.focus();
+  var nb=document.getElementById("next"); try{ nb.focus({preventScroll:true}); }catch(e){ nb.focus(); }
   nb.onclick=function(){ if(last) end(); else { R.i++; showQ(); } };
 }
 
