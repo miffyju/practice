@@ -7,6 +7,8 @@
   var DEFAULT_BPM = 80;
   var DEFAULT_SIG = "4/4";
   var DEFAULT_MINS = 10;
+  var DEFAULT_SOUND = "beep";
+  var SOUNDS = { beep: 1, wood: 1, tick: 1, chirp: 1 };
   var BEATS = { "2/4": 2, "3/4": 3, "4/4": 4, "6/8": 6 };
   var LOOKAHEAD_MS = 25;
   var SCHEDULE_AHEAD = 0.1;
@@ -14,6 +16,7 @@
   var bpm = DEFAULT_BPM;
   var sig = DEFAULT_SIG;
   var mins = DEFAULT_MINS;
+  var sound = DEFAULT_SOUND;
   var customOpen = false;
 
   var ctx = null;
@@ -31,7 +34,6 @@
 
   var $ = function (id) { return document.getElementById(id); };
   var bpmInput = $("bpmInput");
-  var tempoName = $("tempoName");
   var beatsEl = $("beats");
   var sigHint = $("sigHint");
   var progressEl = $("progress");
@@ -60,15 +62,6 @@
     return n;
   }
 
-  function tempoLabel(b) {
-    if (b < 60) return "Largo 很慢";
-    if (b < 76) return "Adagio 慢板";
-    if (b < 108) return "Andante 走路";
-    if (b < 120) return "Moderato 不快不慢";
-    if (b < 168) return "Allegro 快快";
-    return "Presto 非常快";
-  }
-
   function pad(n) { return n < 10 ? "0" + n : String(n); }
 
   function fmtTime(ms) {
@@ -82,6 +75,7 @@
       localStorage.setItem(STORAGE + "bpm", String(bpm));
       localStorage.setItem(STORAGE + "sig", sig);
       localStorage.setItem(STORAGE + "mins", String(mins));
+      localStorage.setItem(STORAGE + "sound", sound);
     } catch (e) { /* ignore */ }
   }
 
@@ -93,6 +87,8 @@
       if (BEATS[s]) sig = s;
       var m = parseInt(localStorage.getItem(STORAGE + "mins"), 10);
       if (m >= 1 && m <= 120) mins = m;
+      var so = localStorage.getItem(STORAGE + "sound");
+      if (SOUNDS[so]) sound = so;
     } catch (e) { /* ignore */ }
   }
 
@@ -132,12 +128,6 @@
 
   function syncBpmUi() {
     bpmInput.value = String(bpm);
-    tempoName.textContent = tempoLabel(bpm);
-    var chips = document.querySelectorAll("#tempoPresets .chip");
-    for (var i = 0; i < chips.length; i++) {
-      var v = parseInt(chips[i].getAttribute("data-bpm"), 10);
-      chips[i].classList.toggle("on", v === bpm);
-    }
   }
 
   function syncSigUi() {
@@ -147,6 +137,13 @@
     }
     sigHint.hidden = sig !== "6/8";
     renderBeats();
+  }
+
+  function syncSoundUi() {
+    var chips = document.querySelectorAll("#soundBtns .chip");
+    for (var i = 0; i < chips.length; i++) {
+      chips[i].classList.toggle("on", chips[i].getAttribute("data-sound") === sound);
+    }
   }
 
   function isPresetMin(m) {
@@ -194,24 +191,126 @@
     return ctx;
   }
 
-  function playTone(time, freq, vol, dur) {
-    if (!ctx) return;
-    var osc = ctx.createOscillator();
-    var gain = ctx.createGain();
-    osc.type = "triangle";
-    osc.frequency.setValueAtTime(freq, time);
-    gain.gain.setValueAtTime(Math.max(0.0001, vol), time);
+  function envGain(audioCtx, time, peak, dur) {
+    var gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(Math.max(0.0001, peak), time);
     gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(audioCtx.destination);
+    return gain;
+  }
+
+  function playToneOn(audioCtx, time, freq, vol, dur, type) {
+    if (!audioCtx) return;
+    var osc = audioCtx.createOscillator();
+    osc.type = type || "triangle";
+    osc.frequency.setValueAtTime(freq, time);
+    osc.connect(envGain(audioCtx, time, vol, dur));
     osc.start(time);
     osc.stop(time + dur + 0.02);
   }
 
+  /* 完成音效用既有嗶聲（三角形），不受音效選擇影響 */
+  function playTone(time, freq, vol, dur) {
+    playToneOn(ctx, time, freq, vol, dur, "triangle");
+  }
+
+  function fillNoise(data, seed) {
+    var s = seed || 1;
+    for (var i = 0; i < data.length; i++) {
+      s = (s * 16807) % 2147483647;
+      data[i] = (s / 2147483647) * 2 - 1;
+    }
+  }
+
+  function playNoiseBurst(audioCtx, time, freq, q, vol, dur, seed) {
+    var len = Math.max(1, Math.floor(audioCtx.sampleRate * (dur + 0.02)));
+    var buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    fillNoise(buf.getChannelData(0), seed);
+    var src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    var bp = audioCtx.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.setValueAtTime(freq, time);
+    bp.Q.setValueAtTime(q, time);
+    var gain = envGain(audioCtx, time, vol, dur);
+    src.connect(bp);
+    bp.connect(gain);
+    src.start(time);
+    src.stop(time + dur + 0.02);
+  }
+
+  function playBeep(audioCtx, time, kind) {
+    if (kind === "accent") playToneOn(audioCtx, time, 1320, 0.32, 0.09, "triangle");
+    else if (kind === "sub") playToneOn(audioCtx, time, 880, 0.22, 0.07, "triangle");
+    else playToneOn(audioCtx, time, 587, 0.12, 0.055, "triangle");
+  }
+
+  /* 木魚／木塊：帶通濾波噪音 + 短正弦撞擊衰減 */
+  function playWood(audioCtx, time, kind) {
+    var freq, sineF, nVol, sVol, dur, q, seed;
+    if (kind === "accent") { freq = 1750; sineF = 980; nVol = 0.55; sVol = 0.28; dur = 0.085; q = 7.5; seed = 11; }
+    else if (kind === "sub") { freq = 1250; sineF = 740; nVol = 0.38; sVol = 0.2; dur = 0.07; q = 7; seed = 23; }
+    else { freq = 880; sineF = 520; nVol = 0.28; sVol = 0.15; dur = 0.06; q = 6.5; seed = 37; }
+    playNoiseBurst(audioCtx, time, freq, q, nVol, dur, seed);
+    playToneOn(audioCtx, time, sineF, sVol, dur * 0.7, "sine");
+  }
+
+  /* 機械節拍器：很短的高頻 click；重音略低、較飽滿（tock） */
+  function playTick(audioCtx, time, kind) {
+    var hi, lo, hiVol, loVol, dur, nVol, nFreq;
+    if (kind === "accent") { hi = 2100; lo = 780; hiVol = 0.22; loVol = 0.2; dur = 0.014; nVol = 0.28; nFreq = 1800; }
+    else if (kind === "sub") { hi = 2600; lo = 0; hiVol = 0.16; loVol = 0; dur = 0.009; nVol = 0.18; nFreq = 2400; }
+    else { hi = 3200; lo = 0; hiVol = 0.16; loVol = 0; dur = 0.007; nVol = 0.18; nFreq = 2800; }
+    playToneOn(audioCtx, time, hi, hiVol, dur, "sine");
+    if (lo) playToneOn(audioCtx, time, lo, loVol, dur * 1.3, "sine");
+    playNoiseBurst(audioCtx, time, nFreq, 4.5, nVol, dur * 1.2, kind === "accent" ? 51 : 67);
+  }
+
+  /* 小雞啾啾：快速上滑的短正弦 chirp；重音兩聲、較高 */
+  function playChirpOnce(audioCtx, time, f0, f1, vol, dur) {
+    var osc = audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(f0, time);
+    osc.frequency.exponentialRampToValueAtTime(f1, time + dur);
+    var gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.0001, time);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), time + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + dur + 0.02);
+  }
+
+  function playChirp(audioCtx, time, kind) {
+    if (kind === "accent") {
+      playChirpOnce(audioCtx, time, 1500, 2600, 0.28, 0.07);
+      playChirpOnce(audioCtx, time + 0.085, 1700, 3000, 0.26, 0.07);
+    } else if (kind === "sub") {
+      playChirpOnce(audioCtx, time, 1300, 2100, 0.2, 0.065);
+    } else {
+      playChirpOnce(audioCtx, time, 980, 1680, 0.16, 0.06);
+    }
+  }
+
+  function playOn(audioCtx, time, kind, soundType) {
+    if (!audioCtx) return;
+    var s = soundType || sound;
+    if (s === "wood") playWood(audioCtx, time, kind);
+    else if (s === "tick") playTick(audioCtx, time, kind);
+    else if (s === "chirp") playChirp(audioCtx, time, kind);
+    else playBeep(audioCtx, time, kind);
+  }
+
   function playClick(time, kind) {
-    if (kind === "accent") playTone(time, 1320, 0.32, 0.09);
-    else if (kind === "sub") playTone(time, 880, 0.22, 0.07);
-    else playTone(time, 587, 0.12, 0.055);
+    playOn(ctx, time, kind, sound);
+  }
+
+  function previewSound(type) {
+    if (!unlockAudio()) return;
+    var t0 = ctx.currentTime + 0.05;
+    playOn(ctx, t0, "accent", type);
+    playOn(ctx, t0 + 0.38, "normal", type);
   }
 
   function playFanfare() {
@@ -412,12 +511,6 @@
     if (e.key === "Enter") { e.preventDefault(); bpmInput.blur(); }
   });
 
-  $("tempoPresets").addEventListener("click", function (e) {
-    var btn = e.target.closest("[data-bpm]");
-    if (!btn) return;
-    setBpm(btn.getAttribute("data-bpm"));
-  });
-
   $("sigBtns").addEventListener("click", function (e) {
     var btn = e.target.closest("[data-sig]");
     if (!btn) return;
@@ -427,6 +520,17 @@
     clearActiveBeat();
     save();
     syncSigUi();
+  });
+
+  $("soundBtns").addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-sound]");
+    if (!btn) return;
+    var next = btn.getAttribute("data-sound");
+    if (!SOUNDS[next]) return;
+    sound = next;
+    save();
+    syncSoundUi();
+    previewSound(sound);
   });
 
   function pickMins(m) {
@@ -522,8 +626,24 @@
         timerOn: timerOn,
         remainingMs: remainingMs,
         durationMs: durationMs,
-        currentBeat: currentBeat
+        currentBeat: currentBeat,
+        sound: sound
       };
+    },
+    setSound: function (s) {
+      if (!SOUNDS[s]) return;
+      sound = s;
+      save();
+      syncSoundUi();
+    },
+    previewSound: previewSound,
+    renderPair: function (soundType) {
+      var sr = 44100;
+      var seconds = 1.15;
+      var off = new OfflineAudioContext(1, Math.ceil(sr * seconds), sr);
+      playOn(off, 0.08, "accent", soundType);
+      playOn(off, 0.58, "normal", soundType);
+      return off.startRendering();
     },
     setRemaining: function (ms) {
       remainingMs = Math.max(0, Math.min(durationMs, ms));
@@ -553,6 +673,7 @@
   remainingMs = durationMs;
   syncBpmUi();
   syncSigUi();
+  syncSoundUi();
   syncMinUi();
   if (!isPresetMin(mins)) {
     customMin.value = String(mins);

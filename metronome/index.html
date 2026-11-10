@@ -40,15 +40,8 @@
       <div class="bpm-field">
         <input id="bpmInput" type="number" inputmode="numeric" min="30" max="240" value="80" aria-label="每分鐘拍數">
         <span class="bpm-unit">BPM</span>
-        <span id="tempoName" class="tempo-name">Andante 走路</span>
       </div>
       <button type="button" id="bpmUp" class="iconbtn bpm-btn" aria-label="變快一拍">＋</button>
-    </div>
-    <div class="chips" id="tempoPresets" role="group" aria-label="常用速度">
-      <button type="button" class="chip" data-bpm="56">Largo 很慢</button>
-      <button type="button" class="chip" data-bpm="80">Andante 走路</button>
-      <button type="button" class="chip" data-bpm="108">Moderato 不快不慢</button>
-      <button type="button" class="chip" data-bpm="132">Allegro 快快</button>
     </div>
   </section>
 
@@ -62,6 +55,15 @@
     </div>
     <p id="sigHint" class="muted sig-hint" hidden>6/8：以八分音符為一拍，第 1 拍重音、第 4 拍次重音</p>
     <div id="beats" class="beats" role="presentation"></div>
+    <div class="sound-row">
+      <p class="sound-label muted" id="soundTitle">音效</p>
+      <div class="chips sounds" id="soundBtns" role="group" aria-labelledby="soundTitle">
+        <button type="button" class="chip on" data-sound="beep">🔔 嗶</button>
+        <button type="button" class="chip" data-sound="wood">🪵 木魚</button>
+        <button type="button" class="chip" data-sound="tick">⏱️ 滴答</button>
+        <button type="button" class="chip" data-sound="chirp">🐥 啾啾</button>
+      </div>
+    </div>
   </section>
 
   <section class="card" aria-labelledby="timerTitle">

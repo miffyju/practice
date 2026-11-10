@@ -107,12 +107,12 @@ a.iconbtn{box-sizing:border-box}
   padding:.72rem 1rem .8rem;
   border:var(--stroke) solid var(--brown);
   box-shadow:0 var(--shadow) 0 var(--brown);
-  margin-bottom:.7rem;
+  margin-bottom:.6rem;
 }
 .card h2{margin:0 0 .4rem;font-size:1.08rem;font-weight:800;letter-spacing:.02em;color:var(--ink)}
 .bpm-row{
   display:flex;align-items:center;justify-content:center;gap:.7rem;
-  margin:.05rem 0 .45rem;
+  margin:.15rem 0 0;
 }
 .bpm-btn{
   flex:0 0 64px;width:64px;height:64px;min-width:64px;min-height:64px;
@@ -131,8 +131,6 @@ a.iconbtn{box-sizing:border-box}
 #bpmInput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
 #bpmInput:focus{outline:none}
 .bpm-unit{display:block;font-weight:800;font-size:.95rem;letter-spacing:.08em;color:var(--muted);margin-top:.05rem}
-.tempo-name{display:block;font-weight:700;font-size:.95rem;color:var(--ink);margin-top:.1rem}
-
 .chips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
 .chip{
   min-height:44px;padding:.22rem .65rem;
@@ -150,7 +148,7 @@ a.iconbtn{box-sizing:border-box}
 
 .beats{
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
-  gap:.65rem;margin:.55rem 0 .05rem;min-height:2.2rem;
+  gap:.65rem;margin:.45rem 0 0;min-height:2.2rem;
 }
 .beat{
   width:1.55rem;height:1.55rem;
@@ -167,6 +165,11 @@ a.iconbtn{box-sizing:border-box}
   transform:scale(1.28);
 }
 .beat.accent.on{background:var(--coral-deep)}
+
+.sound-row{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.35rem .5rem;margin:.4rem 0 .05rem}
+.sound-label{margin:0;font-size:.88rem;flex:0 0 auto}
+.sounds{margin:0}
+.sounds .chip{min-height:40px;font-size:.9rem;padding:.18rem .5rem}
 
 .custom-row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.7rem 0 .2rem;align-items:center}
 .tin{
@@ -185,7 +188,7 @@ a.iconbtn{box-sizing:border-box}
   border:var(--stroke) solid var(--brown);
   border-radius:999px;
   overflow:visible;
-  margin:1.95rem 0 .4rem;
+  margin:1.85rem 0 .35rem;
 }
 .progress>div{
   height:100%;
@@ -231,7 +234,7 @@ a.iconbtn{box-sizing:border-box}
 }
 
 .remain{
-  text-align:center;font-size:1.35rem;font-weight:800;margin:.05rem 0 .45rem;
+  text-align:center;font-size:1.35rem;font-weight:800;margin:.15rem 0 0;
 }
 .remain span{letter-spacing:.04em}
 .row{display:flex;gap:.7rem;flex-wrap:wrap}
