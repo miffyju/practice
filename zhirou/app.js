@@ -207,14 +207,22 @@ function showQ(){
   } else if(q.type==="text"){
     h+='<form id="tform" class="tform" autocomplete="off"><input id="tin" class="tin" type="text" aria-label="輸入英文" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" enterkeyhint="done" placeholder="在這裡輸入英文"><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
   } else if(q.type==="fill"){
-    h+='<form id="tform" class="tform fillform" autocomplete="off"><div id="filldisp" class="filldisp" role="textbox" aria-readonly="true" aria-label="輸入答案" aria-live="polite" data-val=""></div><button type="submit" class="big primary" id="tok">✔ 送出</button></form>';
+    h+='<form id="tform" class="tform fillform" autocomplete="off"><div class="dispwrap"><div id="filldisp" class="filldisp" role="textbox" aria-readonly="true" aria-label="輸入答案" aria-live="polite" data-val=""></div><button type="submit" class="ok sideok" id="tok" aria-label="送出">✔</button></div></form>';
     h+='<div id="fb"></div>';
+    h+='<div class="fillkeys">';
     h+='<div class="keypad fillpad" aria-label="答案快捷鍵">';
-    ["1","2","3","4","5","6","7","8","9","0",".","/","：","-","又","(",")","空白","⌫","清除"].forEach(function(k){
-      var lab=k==="⌫"?"刪除（長按清除）":k==="空白"?"空格":k==="："?"冒號":k==="又"?"又（帶分數，例如 1又1/2）":k==="清除"?"全部清除":k;
-      h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'">'+k+'</button>';
+    ["1","2","3","4","5","6","7","8","9","⌫","0","清除"].forEach(function(k){
+      var lab=k==="⌫"?"刪除（長按清除）":k==="清除"?"全部清除":k;
+      var cls=k==="清除"?' class="wipe"':'';
+      h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'"'+cls+'>'+k+'</button>';
     });
     h+='</div>';
+    h+='<div class="keypad fillpad fill-extra" aria-label="其他符號">';
+    [".","/","：","-","又","、","(",")","空白"].forEach(function(k){
+      var lab=k==="空白"?"空格":k==="："?"冒號":k==="又"?"又（帶分數，例如 1又1/2）":k==="."?"小數點":k==="/"?"分數線":k;
+      h+='<button type="button" data-fk="'+k+'" aria-label="'+lab+'">'+k+'</button>';
+    });
+    h+='</div></div>';
   } else {
     h+='<div class="display" id="disp" aria-live="polite" aria-label="你的答案"></div><div class="keypad">';
     ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
@@ -291,7 +299,7 @@ function revealFb(){
     window.scrollTo({top:Math.max(0,window.scrollY+dy), behavior:reduced?"auto":"smooth"});
   });
 }
-function finishQ(correct){ var tf=document.getElementById("tin"); if(tf) tf.disabled=true; var tk=document.getElementById("tok"); if(tk) tk.disabled=true; var fd=document.getElementById("filldisp"); if(fd) fd.classList.add("is-done"); var pad=app.querySelector(".fillpad"); if(pad) pad.hidden=true; var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
+function finishQ(correct){ var tf=document.getElementById("tin"); if(tf) tf.disabled=true; var tk=document.getElementById("tok"); if(tk){ tk.disabled=true; tk.hidden=true; } var fd=document.getElementById("filldisp"); if(fd) fd.classList.add("is-done"); var keys=app.querySelector(".fillkeys"); if(keys) keys.hidden=true; else { var pad=app.querySelector(".fillpad"); if(pad) pad.hidden=true; } var sbt=document.getElementById("sayBtn"); if(sbt) sbt.hidden=false;
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本

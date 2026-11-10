@@ -78,6 +78,15 @@ def main():
             # No native text input — keypad-only display
             n_inputs = page.locator("input, textarea").count()
             assert n_inputs == 0, f"expected no text inputs, found {n_inputs}"
+            # layout: answer + side ✔ on one row; no full-width 送出 bar
+            assert page.locator(".dispwrap #filldisp").count() == 1
+            assert page.locator(".dispwrap #tok").count() == 1
+            assert page.locator("#tok").inner_text().strip() == "✔"
+            assert page.locator("button.big.primary#tok").count() == 0
+            # 3-column number pad + compact extras
+            assert page.locator(".fillpad:not(.fill-extra) button").count() == 12
+            assert page.locator(".fill-extra button").count() == 9
+
             assert page.locator("#filldisp").count() == 1
             assert disp_val(page) == ""
 
@@ -122,7 +131,7 @@ def main():
             page.wait_for_selector(".feedback.good", timeout=5000)
             assert "說明" in page.inner_text("#fb")
             # keypad hidden after submit
-            assert page.locator(".fillpad").is_hidden() or page.locator(".fillpad").get_attribute("hidden") is not None
+            assert page.locator(".fillkeys").is_hidden() or page.locator(".fillkeys").get_attribute("hidden") is not None
             print("PASS physical keyboard + submit 729, keypad hidden, 答對 feedback")
             ctx.close()
 
@@ -173,7 +182,7 @@ def main():
             text = pg.inner_text("#fb")
             assert "答錯了" in text and "正確答案是" in text and "說明" in text and "729" in text
             # keypad hidden so it cannot cover 說明
-            hidden = pg.locator(".fillpad").is_hidden()
+            hidden = pg.locator(".fillkeys").is_hidden()
             assert hidden, "keypad still visible after final 答錯"
             # no red banner / shake classes we didn't add
             assert pg.locator(".shake, .toast-bad, .banner-red").count() == 0
