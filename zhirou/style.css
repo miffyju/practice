@@ -142,22 +142,46 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
   border:var(--stroke) solid var(--brown);
   border-radius:999px;
   overflow:visible;
-  margin:1.55rem 0 1.15rem;
+  margin:2.2rem 0 1.15rem;
 }
 .progress>div{
   height:100%;
+  width:var(--p,0%);
   border-radius:999px;
   background:repeating-linear-gradient(-45deg,#f07070 0 8px,#f4a0a0 8px 16px);
-  transition:width .4s;
+  transition:width .45s ease-out;
   min-width:0;
 }
-.progress::after{
-  content:"🐥";
+/* 小雞站在進度條上緣：外層只負責定位（left＋translateX(-50%)），搖擺彈跳都在內層 */
+.pchick{
   position:absolute;
-  right:-2px;top:-20px;
-  font-size:1.25rem;line-height:1;
+  left:clamp(.9rem,var(--p,0%),calc(100% - .9rem));
+  bottom:calc(100% + 3px);   /* 外層底邊＝進度條外框頂邊，腳踩在上緣、不蓋住條內斜紋 */
+  width:1.8rem;height:1.5rem;
+  transform:translateX(-50%);
+  transition:left .45s ease-out;
   pointer-events:none;
+  z-index:1;
 }
+.pchick-i{
+  display:block;width:1.5rem;height:100%;margin:0 auto;
+  font-size:1.35rem;line-height:1.5rem;text-align:center;
+  transform-origin:50% 100%;
+  filter:drop-shadow(0 2px 0 rgba(74,58,50,.15));
+  animation:chick-idle 1.3s ease-in-out infinite;
+}
+.progress.walking .pchick-i{animation:chick-walk .32s ease-in-out infinite}
+@keyframes chick-idle{
+  0%,100%{transform:translateY(0) rotate(-5deg)}
+  25%,75%{transform:translateY(-3px) rotate(0)}
+  50%{transform:translateY(0) rotate(5deg)}
+}
+@keyframes chick-walk{
+  0%,100%{transform:translateY(0) rotate(-10deg)}
+  25%,75%{transform:translateY(-7px) rotate(0)}
+  50%{transform:translateY(0) rotate(10deg)}
+}
+@media (prefers-reduced-motion:reduce){.pchick-i,.progress.walking .pchick-i{animation:none!important}.pchick{transition:none}}
 .qtext{font-size:1.3rem;font-weight:800;margin:.3rem 0 1rem;white-space:pre-wrap;color:var(--ink)}
 .passage{
   background:var(--blue);

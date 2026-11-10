@@ -119,7 +119,8 @@ function start(sname, uname, items, isWB){
 function showQ(){
   var it=R.items[R.i], g=getQ(it), q=g.q, n=R.items.length;
   R.cur={tries:[],done:false};
-  var h='<div class="muted'+(g.u.color?' tag" style="--uc:'+g.u.color:'')+'">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'"><div style="width:'+(R.i/n*100)+'%"></div></div><div class="quiz"'+(g.u.color?' style="--uc:'+g.u.color+'"':'')+'><div>';
+  var curPct=Math.max(0,Math.min(100,R.i/n*100)), prevPct=R.i>0?Math.max(0,Math.min(100,(R.i-1)/n*100)):0;
+  var h='<div class="muted'+(g.u.color?' tag" style="--uc:'+g.u.color:'')+'">'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'" style="--p:'+prevPct+'%"><div></div><span class="pchick" aria-hidden="true"><span class="pchick-i">🐥</span></span></div><div class="quiz"'+(g.u.color?' style="--uc:'+g.u.color+'"':'')+'><div>';
   var pg=q.passage||g.u.passage; if(pg) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(pg)+'</div>';
   h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽"'+(q.sayAfter?' hidden':'')+'>🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
@@ -137,6 +138,7 @@ function showQ(){
   }
   h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
   el(h);
+  var pg=app.querySelector(".progress"); if(pg){ if(prevPct===curPct) pg.style.setProperty("--p",curPct+"%"); else requestAnimationFrame(function(){ requestAnimationFrame(function(){ pg.style.setProperty("--p",curPct+"%"); pg.classList.add("walking"); setTimeout(function(){ pg.classList.remove("walking"); },600); }); }); }
   var sb=document.getElementById("sayBtn"); if(sb) sb.onclick=function(){ speak(q.say); };
   SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.innerHTML="📝 計算紙"; tap(spb, SP.toggle); document.querySelector(".quiz .card").appendChild(spb); }
   if(q.type==="mc"){

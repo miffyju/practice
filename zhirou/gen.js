@@ -113,12 +113,14 @@ G.sym_axes=function(){ if(Math.random()<.6){ var s=pk(SYM); return Q(s[0]+"有�
   var d=ri(2,9), side=pk(["左","右"]);
   return Q("⭐ 在線對稱圖形中，A 點到對稱軸的距離是 "+d+" 公分。A 的對稱點 A' 和 A 相距幾公分？", d*2, [d,d+2,d*4], null, "對稱點到對稱軸的距離相等。", ["A 和 A' 到對稱軸都是 "+d+" 公分","AA' = "+d+" × 2 = "+(d*2)+" 公分","連線 AA' 會和對稱軸垂直"]); };
 // ===== 八、整數四則運算 =====
-G.order_ops=function(){ var t=ri(0,3), e, ans, ltr;
-  if(t===0){ var c=ri(2,9), d=ri(2,9), b=c*d*ri(1,3), a=ri(b/d*c,b/d*c+200); a=ri(Math.max(50,b*c/d+1),400); ans=a-b*c/d; e=a+" − "+b+" × "+c+" ÷ "+d; ltr=(a-b)*c/d; }
-  else if(t===1){ var a1=ri(12,60), b1=ri(5,40), c1=ri(3,9), d1=ri(10,99); ans=(a1+b1)*c1-d1; e="("+a1+" + "+b1+") × "+c1+" − "+d1; ltr=a1+b1*c1-d1; }
-  else if(t===2){ var a2=ri(3,9), b2=ri(20,60), c2=ri(2,19), d2=pk([2,3,4,5,6]); while((a2*(b2-c2))%d2) c2=ri(2,19); ans=a2*(b2-c2)/d2; e=a2+" × ("+b2+" − "+c2+") ÷ "+d2; ltr=a2*b2-c2/d2; }
-  else { var x=ri(11,49), y=ri(2,9), z=ri(11,49); ans=x*y+z*y; e=x+" × "+y+" + "+z+" × "+y; ltr=(x*y+z)*y; }
-  return Q("計算："+e+" = ？", ans, [ltr, ans+10, ans-1, ans+100].filter(function(v){return v===Math.floor(v)&&v>=0;}), function(){ return ans+ri(2,30); },
+G.order_ops=function(){ var t, e, ans, ltr, a1, b1, c1, d1, x, y, z, guard=0;
+  do { t=ri(0,3);
+    if(t===0){ var c=ri(2,9), d=ri(2,9), b=c*d*ri(1,3), lo=Math.max(50,b*c/d+1), a=ri(lo,Math.max(lo,400)); ans=a-b*c/d; e=a+" − "+b+" × "+c+" ÷ "+d; ltr=(a-b)*c/d; }
+    else if(t===1){ a1=ri(12,60); b1=ri(5,40); c1=ri(3,9); var cap=(a1+b1)*c1; d1=ri(10,Math.min(99,cap)); ans=cap-d1; e="("+a1+" + "+b1+") × "+c1+" − "+d1; ltr=a1+b1*c1-d1; }
+    else if(t===2){ var a2=ri(3,9), b2=ri(20,60), c2=ri(2,b2-1), d2=pk([2,3,4,5,6]), n=0; while((a2*(b2-c2))%d2 && n++<40) c2=ri(2,b2-1); ans=a2*(b2-c2)/d2; e=a2+" × ("+b2+" − "+c2+") ÷ "+d2; ltr=a2*b2-c2/d2; }
+    else { x=ri(11,49); y=ri(2,9); z=ri(11,49); ans=x*y+z*y; e=x+" × "+y+" + "+z+" × "+y; ltr=(x*y+z)*y; }
+  } while(!(ans>=0 && ans===Math.floor(ans)) && ++guard<40);
+  return Q("計算："+e+" = ？", ans, [ltr, ans+10, ans-1, ans+100].filter(function(v){return v===Math.floor(v)&&v>=0&&v!==ans;}), function(){ return ans+ri(2,30); },
    "先算括號，再算乘除，最後算加減；同級運算由左往右。", [e+" = "+ans].concat(t===3?["也可以用分配律：("+x+" + "+z+") × "+y+" = "+ans]:[])); };
 G.ops_word=function(){ var p=ri(25,60), n=ri(3,8), q=ri(15,40), m=ri(2,6), pay=Math.ceil((p*n+q*m)/100)*100+pk([0,100,500]);
   var cost=p*n+q*m, ans=pay-cost;
