@@ -7,7 +7,7 @@ function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v 
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function el(html){ SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
+function el(html){ unbindNumKeys(); SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
 function subj(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
 function unit(s,id){ return s.units.filter(function(u){return u.id===id;})[0]; }
 function today(){ var d=new Date(); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
@@ -98,6 +98,72 @@ function orderOptions(opts){ var free=opts.filter(function(o){return !PIN.test(o
 
 // ---------- 作答 ----------
 var R;
+var numVal="", numKeysBound=null, numBkTimer=null;
+function unbindNumKeys(){
+  if(numKeysBound){ document.removeEventListener("keydown", numKeysBound, true); numKeysBound=null; }
+  if(numBkTimer){ clearTimeout(numBkTimer); numBkTimer=null; }
+}
+function renderNum(){
+  var d=document.getElementById("disp");
+  if(!d) return;
+  d.textContent=numVal;
+  d.classList.toggle("empty", !numVal);
+}
+function applyNumKey(k){
+  if(!R || !R.cur || R.cur.done) return;
+  if(k==="⌫") numVal=numVal.slice(0,-1);
+  else if(k==="清除") numVal="";
+  else if(k==="✔"){ submitNum(); return; }
+  else if(numVal.length<6) numVal=(numVal==="0"?"":numVal)+k;
+  renderNum();
+}
+function submitNum(){
+  if(!R || !R.cur || R.cur.done) return;
+  if(!numVal){ toast("先按數字喔"); return; }
+  answer(String(parseInt(numVal,10)), null);
+}
+function bindNumPad(){
+  numVal="";
+  renderNum();
+  app.querySelectorAll("[data-k]").forEach(function(b){
+    var last=0, hold=null;
+    function swallow(e){ e.preventDefault(); e.stopPropagation(); }
+    function fire(k){
+      var n=performance.now();
+      if(n-last<70) return;
+      last=n;
+      applyNumKey(k);
+    }
+    b.addEventListener("pointerdown", function(e){
+      swallow(e);
+      if(e.button>0 || e.isPrimary===false) return;
+      var k=b.dataset.k;
+      if(k==="⌫"){
+        if(hold) clearTimeout(hold);
+        hold=setTimeout(function(){ hold=null; last=0; applyNumKey("清除"); }, 550);
+        numBkTimer=hold;
+      } else fire(k);
+    });
+    function endHold(e){
+      swallow(e);
+      if(b.dataset.k==="⌫" && hold){ clearTimeout(hold); hold=null; numBkTimer=null; fire("⌫"); }
+    }
+    b.addEventListener("pointerup", endHold);
+    b.addEventListener("pointercancel", function(e){ swallow(e); if(hold){ clearTimeout(hold); hold=null; numBkTimer=null; } });
+    b.addEventListener("click", swallow);
+  });
+  numKeysBound=function(e){
+    if(!R || !R.cur || R.cur.done) return;
+    var t=e.target;
+    if(t && (t.tagName==="INPUT" || t.tagName==="TEXTAREA" || t.isContentEditable)) return;
+    var k=e.key;
+    if(k==="Enter"){ e.preventDefault(); submitNum(); return; }
+    if(k==="Backspace"){ e.preventDefault(); applyNumKey(e.ctrlKey||e.metaKey?"清除":"⌫"); return; }
+    if(k==="Escape"){ e.preventDefault(); applyNumKey("清除"); return; }
+    if(/^[0-9]$/.test(k)){ e.preventDefault(); applyNumKey(k); }
+  };
+  document.addEventListener("keydown", numKeysBound, true);
+}
 function start(sname, uname, items, isWB, src){
   items=items.filter(getQ);
   if(!items.length){ toast("沒有題目喔"); return home(); }
@@ -122,13 +188,17 @@ function showQ(){
     pool.forEach(function(c,i){ h+='<button class="tile" data-t="'+i+'" data-c="'+c+'" aria-label="'+c+'">'+c+'</button>'; });
     h+='</div><div class="row"><button class="big secondary" id="spBack" aria-label="退格">⌫ 退格</button><button class="big primary" id="spOk" aria-label="送出">✔ 送出</button></div>';
   } else {
-    h+='<div class="display" id="disp" aria-live="polite" aria-label="你的答案"></div><div class="keypad">';
+    h+='<div class="dispwrap"><div class="display empty" id="disp" role="textbox" aria-readonly="true" aria-label="你的答案" aria-live="polite"></div>';
+    h+='<button type="button" class="wipe" data-k="清除" aria-label="全部清除">清除</button></div>';
+    h+='<div id="fb"></div>';
+    h+='<div class="keypad" aria-label="數字鍵盤">';
     ["1","2","3","4","5","6","7","8","9","⌫","0","✔"].forEach(function(k){
-      var lab = k==="⌫"?"刪除":k==="✔"?"送出":k;
-      h+='<button data-k="'+k+'" aria-label="'+lab+'"'+(k==="✔"?' class="ok"':'')+'>'+k+'</button>'; });
+      var lab = k==="⌫"?"刪除（長按清除）":k==="✔"?"送出":k;
+      h+='<button type="button" data-k="'+k+'" aria-label="'+lab+'"'+(k==="✔"?' class="ok"':'')+'>'+k+'</button>'; });
     h+='</div>';
   }
-  h+='<div id="fb"></div><div class="row" id="nextRow"></div></div></div>';
+  if(q.type!=="num") h+='<div id="fb"></div>';
+  h+='<div class="row" id="nextRow"></div></div></div>';
   var spWas=SP.isOpen(); el(h);
   var pg=app.querySelector(".progress"); if(pg){ if(prevPct===curPct) pg.style.setProperty("--p",curPct+"%"); else requestAnimationFrame(function(){ requestAnimationFrame(function(){ pg.style.setProperty("--p",curPct+"%"); pg.classList.add("walking"); setTimeout(function(){ pg.classList.remove("walking"); },600); }); }); }
   SP.reset(); if(g.u.scratch){ var spb=document.createElement("button"); spb.className="big secondary spbtn"; spb.id="spBtn"; spb.setAttribute("aria-expanded","false"); spb.innerHTML="📝 計算紙"; tap(spb, SP.toggle); document.querySelector(".quiz .card").appendChild(spb); if(spWas) SP.open(); }
@@ -144,14 +214,7 @@ function showQ(){
     document.getElementById("spOk").onclick=function(){ if(R.cur.done) return; if(used.length<W){ toast("還有空格喔，把格子填滿再送出"); return; } answer(used.map(function(t){return t.dataset.c;}).join(""), null); };
     paint();
   } else {
-    var disp=document.getElementById("disp"), val="";
-    app.querySelectorAll("[data-k]").forEach(function(b){ b.onclick=function(){
-      if(R.cur.done) return; var k=b.dataset.k;
-      if(k==="⌫") val=val.slice(0,-1);
-      else if(k==="✔"){ if(!val){ toast("先按數字喔"); return; } answer(String(parseInt(val,10)), null); val=""; }
-      else if(val.length<6) val=(val==="0"?"":val)+k;
-      if(!R.cur.done) disp.textContent=val;
-    }; });
+    bindNumPad();
   }
 }
 function answer(a, btn){
@@ -159,27 +222,44 @@ function answer(a, btn){
   R.cur.tries.push(a);
   if(ok){
     R.cur.done=true; if(btn) btn.classList.add("right");
-    if(q.type==="num") document.getElementById("disp").textContent=a;
+    if(q.type==="num"){ numVal=String(a); renderNum(); }
     celebrate();
-    fb.innerHTML='<div class="feedback good pop"><b>🎉 '+pick(CHEER)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback good pop"><b class="fb-title">🎉 '+pick(CHEER)+'</b><div class="fb-exp"><div class="fb-exp-h">說明</div>'+explainHTML(q)+'</div></div>';
     finishQ(true);
+    revealFb();
   } else if(R.cur.tries.length===1){
     if(btn){ btn.classList.add("wrong"); btn.disabled=true; }
-    fb.innerHTML='<div class="feedback hint">💪 '+pick(ENC)+'<br>💡 提示：'+esc(q.hint)+'<br><span class="muted">（再試一次）</span></div>';
-    if(q.type==="num") document.getElementById("disp").textContent="";
+    fb.innerHTML='<div class="feedback hint"><b class="fb-title">💪 '+pick(ENC)+'</b><p>💡 提示：'+esc(q.hint)+'</p><p class="muted">（再試一次）</p></div>';
+    if(q.type==="num"){ numVal=""; renderNum(); }
     if(q.type==="spell"){ document.getElementById("spdiff").innerHTML='你拼的：'+diffHTML(a,q.answer); R.cur.spReset(); }
+    revealFb();
   } else {
     R.cur.done=true; if(btn) btn.classList.add("wrong");
     app.querySelectorAll(".opt").forEach(function(b){ if(b.dataset.o===String(q.answer)) b.classList.add("right"); });
-    if(q.type==="num") document.getElementById("disp").textContent=a+" → "+q.answer;
+    if(q.type==="num"){ var d=document.getElementById("disp"); if(d){ d.textContent=a+" → "+q.answer; d.classList.remove("empty"); } }
     if(q.type==="spell") document.getElementById("spdiff").innerHTML='你拼的：'+diffHTML(a,q.answer)+'　正確：<b class="good-w">'+esc(q.answer)+'</b>';
-    fb.innerHTML='<div class="feedback explain">🌈 沒關係，我們一起看看怎麼想：<br>正確答案是 <b>'+esc(q.answer)+'</b>'+explainHTML(q)+'</div>';
+    fb.innerHTML='<div class="feedback explain"><b class="fb-title">🌈 沒關係，我們一起看看怎麼想</b><p class="fb-ans">正確答案是 <b>'+esc(q.answer)+'</b></p><div class="fb-exp"><div class="fb-exp-h">說明</div>'+explainHTML(q)+'</div></div>';
     finishQ(false);
+    revealFb();
   }
+}
+function revealFb(){
+  var fb=document.getElementById("fb");
+  if(!fb || !fb.firstChild) return;
+  var reduced=false;
+  try{ reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches; }catch(e){}
+  requestAnimationFrame(function(){
+    if(!window.matchMedia("(max-width:720px)").matches) return;
+    var bar=document.querySelector(".topbar");
+    var pad=(bar?bar.getBoundingClientRect().height:0)+8;
+    var tall=fb.getBoundingClientRect().height>(window.innerHeight-pad);
+    fb.scrollIntoView({block:tall?"start":"nearest", inline:"nearest", behavior:reduced?"auto":"smooth"});
+  });
 }
 function diffHTML(a,ans){ var s=String(ans).toLowerCase(); return '<span class="diff">'+a.split("").map(function(c,i){ return c.toLowerCase()===s[i]?esc(c):'<span class="bad">'+esc(c)+'</span>'; }).join("")+'</span>'; }
 function explainHTML(q){ return '<ol>'+q.explain.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'; }
 function finishQ(correct){
+  var pad=app.querySelector(".keypad"); if(pad) pad.hidden=true; var wipe=app.querySelector(".wipe"); if(wipe) wipe.hidden=true; var d=document.getElementById("disp"); if(d) d.classList.add("is-done");
   var it=R.items[R.i], g=getQ(it), firstTry=correct&&R.cur.tries.length===1;
   R.results.push({it:it, q:g.q.q, unit:g.u.name, tries:R.cur.tries.slice(), answer:String(g.q.answer), correct:correct, firstTry:firstTry});
   // 錯題本
@@ -191,7 +271,7 @@ function finishQ(correct){
   var last=R.i===R.items.length-1;
   var nr=document.getElementById("nextRow");
   nr.innerHTML='<button class="big primary" id="next">'+(last?"看成績 🏁":"下一題 ➡")+'</button>';
-  var nb=document.getElementById("next"); nb.focus();
+  var nb=document.getElementById("next"); try{ nb.focus({preventScroll:true}); }catch(e){ nb.focus(); }
   nb.onclick=function(){ if(last) end(); else { R.i++; showQ(); } };
 }
 
@@ -406,5 +486,6 @@ function migrateWB(){
 }
 migrateWB();
 flushOutbox();
+window.__p3Test={start:start, answer:answer, applyNumKey:applyNumKey, renderNum:renderNum};
 home();
 })();
