@@ -64,7 +64,9 @@ body{
   -webkit-box-decoration-break:clone;
 }
 .spacer{width:56px;flex:0 0 56px;display:flex;align-items:center;justify-content:center}
-.chick{font-size:1.55rem;line-height:1;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(74,58,50,.12))}
+.chick{pointer-events:none}
+.chick .chick-svg{width:1.85rem;height:1.75rem;display:block;overflow:visible}
+.chick .ck-hop{transform-origin:50% 100%;transform-box:fill-box;animation:chick-idle 1.6s ease-in-out infinite}
 main{max-width:900px;margin:0 auto;padding:1rem 1rem 1.4rem;outline:none}
 button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
 button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
@@ -136,7 +138,7 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
 .greet{font-size:1.28rem;margin:.15rem 0 1.1rem;font-weight:700;color:var(--ink)}
 .greet::before{content:"✏️ ";}
 
-/* 珊瑚斜紋進度條，右側停一隻小雞 */
+/* 珊瑚斜紋進度條，上緣走一隻圓滾滾小雞 */
 .progress{
   position:relative;
   height:22px;
@@ -144,8 +146,9 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
   border:var(--stroke) solid var(--brown);
   border-radius:999px;
   overflow:visible;
-  margin:2.2rem 0 1.15rem;
+  margin:3rem 0 1.15rem;
 }
+.progress.finished{margin-top:3.2rem}
 .progress>div{
   height:100%;
   width:var(--p,0%);
@@ -157,22 +160,25 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
 /* 小雞站在進度條上緣：外層只負責定位（left＋translateX(-50%)），搖擺彈跳都在內層 */
 .pchick{
   position:absolute;
-  left:clamp(.9rem,var(--p,0%),calc(100% - .9rem));
-  bottom:calc(100% + 3px);   /* 外層底邊＝進度條外框頂邊，腳踩在上緣、不蓋住條內斜紋 */
-  width:1.8rem;height:1.5rem;
+  left:clamp(1.15rem,var(--p,0%),calc(100% - 1.15rem));
+  bottom:calc(100% + 2px);   /* 外層底邊＝進度條外框頂邊，腳踩在上緣、不蓋住條內斜紋 */
+  width:2.55rem;height:2.4rem;
   transform:translateX(-50%);
   transition:left .45s ease-out;
   pointer-events:none;
   z-index:1;
+  overflow:visible;
 }
 .pchick-i{
-  display:block;width:1.5rem;height:100%;margin:0 auto;
-  font-size:1.35rem;line-height:1.5rem;text-align:center;
+  display:block;width:2.45rem;height:2.35rem;margin:0 auto;
   transform-origin:50% 100%;
-  filter:drop-shadow(0 2px 0 rgba(74,58,50,.15));
   animation:chick-idle 1.3s ease-in-out infinite;
+  overflow:visible;
 }
+.pchick-i .chick-svg{width:100%;height:100%;display:block;overflow:visible}
 .progress.walking .pchick-i{animation:chick-walk .32s ease-in-out infinite}
+.progress.finished .pchick-i,
+.progress.finished.walking .pchick-i{animation:chick-celeb .7s ease-in-out infinite}
 @keyframes chick-idle{
   0%,100%{transform:translateY(0) rotate(-5deg)}
   25%,75%{transform:translateY(-3px) rotate(0)}
@@ -183,7 +189,65 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
   25%,75%{transform:translateY(-7px) rotate(0)}
   50%{transform:translateY(0) rotate(10deg)}
 }
-@media (prefers-reduced-motion:reduce){.pchick-i,.progress.walking .pchick-i{animation:none!important}.pchick{transition:none}}
+@keyframes chick-celeb{
+  0%,100%{transform:translateY(0) rotate(-4deg)}
+  40%{transform:translateY(-8px) rotate(3deg)}
+  65%{transform:translateY(-1px) rotate(0)}
+}
+
+/* 內嵌 SVG：翅膀、旗子、腳、星星（外層 hop 已負責整體搖擺，條上不再叠內層 hop） */
+.chick-svg{overflow:visible}
+.ck-flag,.ck-sparks{visibility:hidden;opacity:0}
+.is-celeb .ck-flag,.is-celeb .ck-sparks{visibility:visible;opacity:1}
+.pchick .ck-hop{animation:none}
+.ck-wing-l,.ck-wing-r,.ck-cloth-wave,.ck-foot-l,.ck-foot-r,.ck-spark,.ck-hop,.ck-tuft{
+  transform-box:fill-box;
+}
+.chick-svg:not(.is-celeb) .ck-wing-l{animation:wing-l 1.3s ease-in-out infinite}
+.chick-svg:not(.is-celeb) .ck-wing-r{animation:wing-r 1.3s ease-in-out infinite}
+.progress.walking .chick-svg:not(.is-celeb) .ck-wing-l,
+.progress.walking .chick-svg:not(.is-celeb) .ck-wing-r{animation-duration:.32s}
+@keyframes wing-l{0%,100%{transform:rotate(8deg)}50%{transform:rotate(-10deg)}}
+@keyframes wing-r{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(10deg)}}
+.progress.walking .ck-foot-l{animation:foot-l .32s ease-in-out infinite}
+.progress.walking .ck-foot-r{animation:foot-r .32s ease-in-out infinite}
+@keyframes foot-l{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes foot-r{0%,100%{transform:translateY(-2px)}50%{transform:translateY(0)}}
+/* 慶祝：木棍與右翅同一組、位置固定；只有旗布從貼杆的那一側飄動 */
+.is-celeb .ck-cloth-wave{
+  animation:cloth-flutter .7s ease-in-out infinite;
+  transform-origin:0% 0%;
+  transform-box:fill-box;
+}
+@keyframes cloth-flutter{
+  0%,100%{transform:rotate(0deg) scaleX(1)}
+  25%{transform:rotate(6deg) scaleX(1.06)}
+  50%{transform:rotate(-4deg) scaleX(.97)}
+  75%{transform:rotate(3deg) scaleX(1.03)}
+}
+.is-celeb .ck-hop{animation:celeb-hop .7s ease-in-out infinite;transform-origin:50% 100%}
+@keyframes celeb-hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}65%{transform:translateY(-1px)}}
+.pchick .is-celeb .ck-hop{animation:none} /* 條上 hop 已由 .pchick-i 負責 */
+.is-celeb .ck-spark{animation:sparkle 1s ease-in-out infinite;transform-origin:50% 50%}
+.is-celeb .ck-spark:nth-child(2){animation-delay:.2s}
+.is-celeb .ck-spark:nth-child(3){animation-delay:.45s}
+.is-celeb .ck-spark:nth-child(4){animation-delay:.15s}
+@keyframes sparkle{0%,100%{opacity:.25;transform:scale(.7) rotate(0)}50%{opacity:1;transform:scale(1.15) rotate(18deg)}}
+
+/* 結算頁：小雞拿旗慶祝 */
+.result-card{padding-top:1.05rem;overflow:visible}
+.result-chick{
+  display:flex;justify-content:center;align-items:flex-end;
+  height:7.1rem;margin:.1rem 0 .15rem;
+  overflow:visible;pointer-events:none;
+}
+.result-chick .chick-svg{width:6.6rem;height:6.3rem;display:block;overflow:visible;margin-right:1.2rem}
+
+@media (prefers-reduced-motion:reduce){
+  .pchick-i,.progress.walking .pchick-i,.progress.finished .pchick-i,
+  .chick-svg *,.chick .ck-hop{animation:none!important}
+  .pchick{transition:none}
+}
 .qtext{font-size:1.3rem;font-weight:800;margin:.3rem 0 1rem;white-space:pre-wrap;color:var(--ink)}
 .passage{
   background:var(--blue);
