@@ -312,7 +312,7 @@ function finishQ(correct){ var tf=document.getElementById("tin"); if(tf) tf.disa
   var nr=document.getElementById("nextRow");
   nr.innerHTML='<button class="big primary" id="next">'+(last?"看成績 🏁":"下一題 ➡")+'</button>';
   var nb=document.getElementById("next"); try{ nb.focus({preventScroll:true}); }catch(e){ nb.focus(); }
-  nb.onclick=function(){ if(last) end(); else { R.i++; showQ(); } };
+  nb.onclick=function(){ captureScratchIfNeeded(); if(last) end(); else { R.i++; showQ(); } };
 }
 
 // ---------- 送給媽媽（Google 表單；離線先排進 p5zr_outbox） ----------
@@ -450,6 +450,33 @@ function parent(){
   document.getElementById("clr").onclick=function(){ if(confirm("確定要清除所有紀錄和錯題本嗎？")){ save(KEY_H,[]); save(KEY_W,[]); parent(); } };
 }
 
+// ---------- 奧數計算紙自動存檔（換題前同步擷取筆跡，組圖與上傳不擋畫面） ----------
+function captureScratchIfNeeded(){
+  try{
+    if(!R || !R.cur || !R.cur.done) return;
+    if(R.cur.scratchQueued) return;
+    var it=R.items[R.i], g=getQ(it);
+    if(!g || !window.PRACTICE_SCRATCH || !PRACTICE_SCRATCH.isOlympiad(g, R)) return;
+    if(!SP.hasInk || !SP.hasInk()) return;
+    var ink=SP.cloneInk();
+    if(!ink) return;
+    R.cur.scratchQueued=true;
+    var last=R.results[R.results.length-1];
+    var payload={
+      q:g.q,
+      unitName:g.u && g.u.name,
+      subjectName:(g.s && g.s.name) || R.sname,
+      herAnswer:herAnswer(last || {tries:R.cur.tries, correct:false}),
+      correct:!!(last && last.correct),
+      answer:String(g.q.answer || ""),
+      fig:g.q.fig || "",
+      ink:ink,
+      now:new Date()
+    };
+    if(PRACTICE_SCRATCH.queueComposed) PRACTICE_SCRATCH.queueComposed(payload);
+  }catch(e){}
+}
+
 // ---------- 計算紙（數學題用；只存在記憶體，換題就清空，不寫入 localStorage） ----------
 var SP=(function(){
   var panel=null, cv, ctx, strokes=[], cur=null, color="#222", mode="pen", openState=false, ro;
@@ -497,10 +524,31 @@ var SP=(function(){
   function close(){ if(!panel) return; panel.hidden=true; openState=false; document.body.classList.remove("sp-open"); disarmSelGuard(); var b=document.getElementById("spBtn"); if(b){ b.textContent="📝 計算紙"; b.setAttribute("aria-expanded","false"); } }
   function toggle(){ openState?close():open(); }
   function reset(){ strokes=[]; cur=null; if(cv) redraw(); }
-  return {open:open, close:close, toggle:toggle, reset:reset, _strokes:function(){return strokes.length;}};
+  function hasInk(){
+    if(!cv || !strokes.length) return false;
+    var hasPen=strokes.some(function(s){ return s.mode!=="eraser" && s.pts && s.pts.length; });
+    if(!hasPen) return false;
+    try{
+      var d=window.devicePixelRatio||1;
+      if(window.PRACTICE_SCRATCH && PRACTICE_SCRATCH.pixelsHaveInk)
+        return PRACTICE_SCRATCH.pixelsHaveInk(ctx, cv.width, cv.height);
+    }catch(e){}
+    return true;
+  }
+  function cloneInk(){
+    if(!cv || !hasInk()) return null;
+    var d=window.devicePixelRatio||1;
+    var w=Math.max(1, Math.round(cv.width/d)), h=Math.max(1, Math.round(cv.height/d));
+    var out=document.createElement("canvas");
+    out.width=w; out.height=h;
+    out.getContext("2d").drawImage(cv, 0, 0, w, h);
+    return out;
+  }
+  return {open:open, close:close, toggle:toggle, reset:reset, hasInk:hasInk, cloneInk:cloneInk, _strokes:function(){return strokes.length;}};
 })();
 
-document.getElementById("homeBtn").onclick=home;
+document.getElementById("homeBtn").onclick=function(){ captureScratchIfNeeded(); home(); };
 flushOutbox();
+if(window.PRACTICE_SCRATCH && PRACTICE_SCRATCH.boot) PRACTICE_SCRATCH.boot();
 home();
 })();
