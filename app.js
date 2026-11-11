@@ -6,6 +6,19 @@ var GEN = window.PRACTICE_GEN || null;
 function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+
+function chickSVG(mode){
+  var tpl=document.getElementById("chick-tpl");
+  var html=tpl?String(tpl.innerHTML).trim():"";
+  if(!html) return "";
+  if(mode==="celeb") html=html.replace('class="chick-svg"','class="chick-svg is-celeb"');
+  return html;
+}
+function mountTopChick(){
+  var slot=document.querySelector(".topbar .chick");
+  if(!slot||slot.querySelector("svg")) return;
+  slot.innerHTML=chickSVG();
+}
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
 function el(html){ unbindNumKeys(); SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
 function subj(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
@@ -283,7 +296,7 @@ function showQ(){
   R.cur={tries:[],done:false};
   var uc=g.s.color?' style="--uc:'+g.s.color+'"':'';
   var curPct=Math.max(0,Math.min(100,R.i/n*100)), prevPct=R.i>0?Math.max(0,Math.min(100,(R.i-1)/n*100)):0; // 小雞和進度條從上一題的位置滑到這一題
-  var h='<div class="muted tag"'+uc+'>'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'" style="--p:'+prevPct+'%"><div></div><span class="pchick" aria-hidden="true"><span class="pchick-i">🐥</span></span></div><div class="quiz"'+uc+'><div>';
+  var h='<div class="muted tag"'+uc+'>'+esc(g.s.name)+'・'+esc(g.u.name)+'　第 '+(R.i+1)+' / '+n+' 題</div><div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="'+n+'" aria-valuenow="'+R.i+'" style="--p:'+prevPct+'%"><div></div><span class="pchick" aria-hidden="true"><span class="pchick-i">'+chickSVG()+'</span></span></div><div class="quiz"'+uc+'><div>';
   if(g.u.passage) h+='<div class="passage" tabindex="0" aria-label="短文">'+esc(g.u.passage)+'</div>';
   h+='<div class="card"><div class="qtext" id="qt">'+esc(q.q)+'</div>'+(q.say&&canSpeak()?'<button class="big secondary say" id="sayBtn" aria-label="唸給我聽">🔊 唸給我聽</button>':'')+'</div></div><div>';
   if(q.type==="mc"){
@@ -380,6 +393,19 @@ function finishQ(correct){
   if(firstTry && R.isWB && pos>=0) wb.splice(pos,1);
   save(KEY_W,wb);
   var last=R.i===R.items.length-1;
+  if(last){
+    var bar=app.querySelector(".progress");
+    if(bar){
+      bar.setAttribute("aria-valuenow", R.items.length);
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        bar.style.setProperty("--p","100%");
+        bar.classList.add("walking","finished");
+        var svg=bar.querySelector(".chick-svg");
+        if(svg) svg.classList.add("is-celeb");
+        setTimeout(function(){ bar.classList.remove("walking"); },700);
+      }); });
+    }
+  }
   var nr=document.getElementById("nextRow");
   nr.innerHTML='<button class="big primary" id="next">'+(last?"看成績 🏁":"下一題 ➡")+'</button>';
   var nb=document.getElementById("next"); try{ nb.focus({preventScroll:true}); }catch(e){ nb.focus(); }
@@ -457,7 +483,7 @@ function end(){
   var rec={date:today(), subject:R.sname, unit:R.uname, total:n, right:right, first:first, stars:stars,
     wrong:wrong.map(function(r){return {q:r.q,tries:r.tries,answer:r.answer,unit:r.unit};})};
   var hist=load(KEY_H,[]); hist.unshift(rec); save(KEY_H,hist.slice(0,50));
-  var h='<div class="card" style="text-align:center"><h2>'+(stars>=2?"🎊 做得好！":"👍 繼續加油！")+'</h2><div class="stars pop" aria-label="'+stars+'顆星">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'+
+  var h='<div class="card result-card" style="text-align:center"><div class="result-chick" aria-hidden="true">'+chickSVG("celeb")+'</div><h2>'+(stars>=2?"🎊 做得好！":"👍 繼續加油！")+'</h2><div class="stars pop" aria-label="'+stars+'顆星">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'+
     '<div class="score">'+right+' / '+n+'</div><p class="muted">第一次就答對 '+first+' 題</p><p class="muted" id="sendStat"></p></div>';
   if(wrong.length){
     h+='<div class="card"><h3>要再練習的題目</h3><ol>';
@@ -598,5 +624,6 @@ function migrateWB(){
 migrateWB();
 flushOutbox();
 window.__p3Test={start:start, answer:answer, applyNumKey:applyNumKey, renderNum:renderNum, isPadable:isPadable, answersEqual:answersEqual, numericCore:numericCore, assignPresentTypes:assignPresentTypes, buildRound:buildRound, subj:subj, unit:unit, results:function(){return R&&R.results;}, mistakeLines:function(){return R?mistakeLines(R.results):"";}, startUnit:function(sid,uid){ var s=subj(sid), u=unit(s,uid); start(s.name,u.name,buildRound(s,u),false,{sid:s.id,uid:u.id}); }};
+mountTopChick();
 home();
 })();
