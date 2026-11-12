@@ -284,6 +284,59 @@ def test_ui_capture_and_skip(page, origin):
     assert after == n0 == 0, f"blank pad should not be saved, got {after} captures (start {n0})"
     print("ok  blank scratchpad skipped on next/end")
 
+    # ink + first-try correct should not be saved
+    boot("APMOPS2023-#12")
+    page.locator("#spBtn").click()
+    page.wait_for_selector("#spCanvas", state="visible", timeout=5000)
+    box = page.locator("#spCanvas").bounding_box()
+    x, y = box["x"] + 80, box["y"] + 80
+    page.mouse.move(x, y)
+    page.mouse.down()
+    page.mouse.move(x + 90, y + 40, steps=8)
+    page.mouse.up()
+    page.locator("#spClose").click()
+    page.wait_for_selector("#spPanel", state="hidden")
+    page.keyboard.press("5")
+    submit_fill(page)
+    page.wait_for_selector("#next", timeout=8000)
+    n_ok = page.evaluate("() => window.__captured.length")
+    page.locator("#next").click()
+    page.wait_for_timeout(400)
+    n_after = page.evaluate("() => window.__captured.length")
+    assert n_ok == 0 and n_after == 0, f"correct answer should not save scratch, got {n_after} (before next {n_ok})"
+    print("ok  first-try correct with ink skipped")
+
+    # ink + wrong then correct should also not be saved
+    boot("APMOPS2023-#12")
+    page.locator("#spBtn").click()
+    page.wait_for_selector("#spCanvas", state="visible", timeout=5000)
+    box = page.locator("#spCanvas").bounding_box()
+    x, y = box["x"] + 80, box["y"] + 80
+    page.mouse.move(x, y)
+    page.mouse.down()
+    page.mouse.move(x + 90, y + 40, steps=8)
+    page.mouse.up()
+    page.locator("#spClose").click()
+    page.wait_for_selector("#spPanel", state="hidden")
+    page.keyboard.press("4")
+    submit_fill(page)
+    page.wait_for_selector(".feedback.hint", timeout=5000)
+    page.wait_for_timeout(80)
+    page.keyboard.press("5")
+    val = page.locator("#filldisp").get_attribute("data-val")
+    if val != "5":
+        tap_key(page, "5")
+        val = page.locator("#filldisp").get_attribute("data-val")
+    assert val == "5", val
+    submit_fill(page)
+    page.wait_for_selector("#next", timeout=8000)
+    n_ok2 = page.evaluate("() => window.__captured.length")
+    page.locator("#next").click()
+    page.wait_for_timeout(400)
+    n_after2 = page.evaluate("() => window.__captured.length")
+    assert n_ok2 == 0 and n_after2 == 0, f"second-try correct should not save scratch, got {n_after2} (before next {n_ok2})"
+    print("ok  second-try correct with ink skipped")
+
 def main():
     proc, port = start_server(ROOT)
     origin = f"http://127.0.0.1:{port}"

@@ -287,6 +287,9 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
 .row{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem}
 .row>*{flex:1 1 200px}
 .row .big{text-align:center;white-space:nowrap;justify-content:center;padding-left:.7rem;padding-right:.7rem}
+/* 結算頁只剩兩顆按鈕：1024 與 375 都並排、等寬 */
+.result-nav{flex-wrap:nowrap;gap:.7rem}
+.result-nav>*{flex:1 1 0;min-width:0}
 .stars{font-size:2.4rem;text-align:center;letter-spacing:.2em;margin:.2rem 0}
 .score{font-size:2.2rem;text-align:center;font-weight:800;color:var(--coral-deep);margin:.15rem 0 .3rem}
 .card h2{margin:.15rem 0 .35rem}
@@ -307,11 +310,6 @@ button:focus-visible,.tin:focus-visible,.iconbtn:focus-visible{
   z-index:40;
 }
 #toast.show{opacity:1}
-textarea{
-  width:100%;min-height:200px;font:inherit;font-size:1rem;
-  border:var(--stroke) solid var(--brown);border-radius:16px;
-  padding:.7rem .8rem;background:#fffdf9;color:var(--ink);
-}
 table{width:100%;border-collapse:collapse;font-size:.95rem}
 td,th{padding:.45rem .4rem;border-bottom:1px solid #ead9c8;text-align:left}
 th{font-weight:800}
@@ -409,6 +407,7 @@ body.sp-open main{padding-bottom:56vh}
   html{font-size:18px}
   main{padding:.75rem}
   .title-hl{padding:.05em .1em 0}
+  .result-nav .big{font-size:1rem;padding:.6rem .4rem}
 }
 
 @media (orientation:landscape) and (max-height:800px){

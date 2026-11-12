@@ -420,10 +420,9 @@ function end(){
     wrong.forEach(function(r){ h+='<li>'+esc(r.q)+'<br><span class="muted">你的答案：'+esc(r.tries.join("、"))+'　正確答案：'+esc(r.answer)+'</span></li>'; });
     h+='</ol></div>';
   }
-  h+='<div class="row"><button class="big primary" id="copy">📋 複製結果給教練</button><button class="big secondary" id="again">🔁 再玩一次</button><button class="big secondary" id="hm">🏠 回首頁</button></div><div id="fallback"></div>';
+  h+='<div class="row result-nav"><button class="big primary" id="again">🔁 再玩一次</button><button class="big secondary" id="hm">🏠 回首頁</button></div>';
   el(h); if(stars>=2) celebrate();
   enqueueAndSend(roundFields(right, n)).then(showSendStatus, function(){ showSendStatus(false); });
-  document.getElementById("copy").onclick=function(){ copyText(summary(rec)); };
   document.getElementById("hm").onclick=home;
   document.getElementById("again").onclick=function(){
     if(R.isWB) return wrongbook();
@@ -431,24 +430,6 @@ function end(){
     start(s.name,u.name,drawItems(s,u),false);
   };
 }
-function summary(r){
-  var t="【芷媃的五年級加油站 練習結果】\n日期："+r.date+"\n科目："+r.subject+"\n單元："+r.unit+"\n成績："+r.right+" / "+r.total+"（第一次就答對 "+r.first+" 題，"+r.stars+" 顆星）\n";
-  if(r.wrong.length){ t+="\n需要加強的題目：\n"; r.wrong.forEach(function(w,i){ t+=(i+1)+". "+w.q+"\n   孩子的答案："+w.tries.join("、")+"\n   正確答案："+w.answer+"\n"; }); }
-  else t+="\n全部第一次就答對！\n";
-  return t;
-}
-function copyText(t){
-  function fallback(){
-    var f=document.getElementById("fallback");
-    f.innerHTML='<div class="card"><p>沒辦法自動複製，請長按下面的文字全選後複製：</p><textarea id="ta" readonly aria-label="結果文字"></textarea></div>';
-    var ta=document.getElementById("ta"); ta.value=t; ta.focus(); ta.select();
-    try{ if(document.execCommand("copy")) toast("已複製！"); }catch(e){}
-  }
-  if(navigator.clipboard && window.isSecureContext){
-    navigator.clipboard.writeText(t).then(function(){ toast("已複製！可以貼給教練了 📋"); }, fallback);
-  } else fallback();
-}
-
 // ---------- 錯題本 ----------
 function wrongbook(){
   var wb=load(KEY_W,[]).filter(function(w){return getQ(w);});
@@ -467,27 +448,28 @@ function parent(){
   var h='<h2>👪 家長區</h2><div class="card"><h3>最近練習紀錄</h3>';
   if(!hist.length) h+='<p>還沒有紀錄。</p>';
   else { h+='<table><thead><tr><th>日期</th><th>科目・單元</th><th>成績</th></tr></thead><tbody>';
-    hist.slice(0,20).forEach(function(r,i){ h+='<tr><td>'+esc(r.date)+'</td><td>'+esc(r.subject)+'・'+esc(r.unit)+'</td><td>'+r.right+'/'+r.total+' '+"⭐".repeat(r.stars)+' <button class="iconbtn" data-c="'+i+'" aria-label="複製這次結果">📋</button></td></tr>'; });
+    hist.slice(0,20).forEach(function(r){ h+='<tr><td>'+esc(r.date)+'</td><td>'+esc(r.subject)+'・'+esc(r.unit)+'</td><td>'+r.right+'/'+r.total+' '+"⭐".repeat(r.stars)+'</td></tr>'; });
     h+='</tbody></table>'; }
-  h+='<p class="muted">紀錄存在這台裝置的瀏覽器裡。每一回合的成績和錯題會送給媽媽；沒網路時先暫存，下次開啟再送。</p><div id="fallback"></div></div><div class="row"><button class="big secondary" id="clr">🗑 清除所有紀錄與錯題本</button><button class="big secondary" id="hm">🏠 回首頁</button></div>';
+  h+='<p class="muted">紀錄存在這台裝置的瀏覽器裡。每一回合的成績和錯題會送給媽媽；沒網路時先暫存，下次開啟再送。</p></div><div class="row"><button class="big secondary" id="clr">🗑 清除所有紀錄與錯題本</button><button class="big secondary" id="hm">🏠 回首頁</button></div>';
   el(h);
-  app.querySelectorAll("[data-c]").forEach(function(b){ b.onclick=function(){ copyText(summary(hist[+b.dataset.c])); }; });
   document.getElementById("hm").onclick=home;
   document.getElementById("clr").onclick=function(){ if(confirm("確定要清除所有紀錄和錯題本嗎？")){ save(KEY_H,[]); save(KEY_W,[]); parent(); } };
 }
 
-// ---------- 奧數計算紙自動存檔（換題前同步擷取筆跡，組圖與上傳不擋畫面） ----------
+// ---------- 奧數計算紙自動存檔（僅在有送出過錯誤答案時；換題前同步擷取筆跡，組圖與上傳不擋畫面） ----------
 function captureScratchIfNeeded(){
   try{
     if(!R || !R.cur || !R.cur.done) return;
     if(R.cur.scratchQueued) return;
     var it=R.items[R.i], g=getQ(it);
     if(!g || !window.PRACTICE_SCRATCH || !PRACTICE_SCRATCH.isOlympiad(g, R)) return;
+    var last=R.results[R.results.length-1];
+    // 只在這題最後仍答錯時存，方便對照哪裡算錯；答對的（含第二次才對）不存
+    if(!last || last.correct) return;
     if(!SP.hasInk || !SP.hasInk()) return;
     var ink=SP.cloneInk();
     if(!ink) return;
     R.cur.scratchQueued=true;
-    var last=R.results[R.results.length-1];
     var payload={
       q:g.q,
       unitName:g.u && g.u.name,

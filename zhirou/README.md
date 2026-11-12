@@ -13,7 +13,7 @@
 
 作答紀錄與錯題本存在該裝置瀏覽器的 localStorage。每一回合結束（含錯題本重做）會把成績送到媽媽的 Google 表單：孩子固定為芷媃、送出時間、科目、題組、分數，以及錯題明細（沒有錯題就寫「全對」）。離線時先排進 localStorage 的 `p5zr_outbox`（最多 50 筆），下次開啟再送。舊錯題本若仍指向已下架的期中單元，會從 `archive.js` 查出原題，不會壞掉。
 
-奧林匹克數學作答時，若計算紙有書寫，按「下一題」或「看成績」會把「題目＋她的答案＋對錯＋計算紙」組成一張 PNG，離線先排進 `p5zr_scratch_outbox`，再送到媽媽的「奧數計算紙」雲端資料夾（經 Apps Script 網頁應用程式）。計算紙是空白就不存。端點網址在 `scratch-save.js` 的 `PRACTICE_SCRATCH.URL`（已填入佩如部署的 Apps Script `/exec`）。
+奧林匹克數學作答時，若這題最後仍答錯、且計算紙有書寫，按「下一題」或「看成績」會把「題目＋她的答案＋對錯＋計算紙」組成一張 PNG，離線先排進 `p5zr_scratch_outbox`，再送到媽媽的「奧數計算紙」雲端資料夾（經 Apps Script 網頁應用程式）。答對的、或計算紙是空白，就不存。端點網址在 `scratch-save.js` 的 `PRACTICE_SCRATCH.URL`（已填入佩如部署的 Apps Script `/exec`）。
 
 
 ## 檔案
