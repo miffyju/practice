@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>台南比賽小旅行 2026/11/21–11/22</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --washi: #FFFCF6;
+      --ink: #3E3A39;
+      --coral: #F2A497;
+      --yellow: #F6D27A;
+      --blue: #A8D3E6;
+      --green: #B9DAA5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "Huninn", "Noto Sans TC", sans-serif;
+      background: var(--washi);
+      color: var(--ink);
+      line-height: 1.75;
+      font-size: 17px;
+    }
+
+    a { color: var(--ink); }
+
+    a:focus-visible,
+    button:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .wrap {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 12px 10px 56px;
+    }
+
+    .hero {
+      border: 3px solid var(--ink);
+      border-radius: 28px;
+      overflow: hidden;
+      background: var(--washi);
+      margin-bottom: 16px;
+    }
+
+    .hero-art {
+      display: block;
+      width: 100%;
+      background: var(--blue);
+      overflow: hidden;
+    }
+
+    .hero-art svg,
+    .illust svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .hero-text {
+      border-top: 3px solid var(--ink);
+      background: var(--washi);
+      padding: 20px 14px 22px;
+      text-align: center;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      display: inline-block;
+      border: 3px solid var(--ink);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .chip-coral { background: var(--coral); }
+    .chip-yellow { background: var(--yellow); }
+    .chip-blue { background: var(--blue); }
+    .chip-green { background: var(--green); }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      line-height: 1.25;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 1.05rem;
+    }
+
+    .route {
+      margin: 14px auto 0;
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      background: var(--green);
+      padding: 10px 14px;
+      font-size: 0.95rem;
+    }
+
+    /* Tabs: mobile-first, at least 44px tall */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 0 0 16px;
+    }
+
+    .tab {
+      min-height: 48px;
+      width: 100%;
+      padding: 8px 8px;
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      background: var(--washi);
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 1rem;
+      line-height: 1.3;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .tab small {
+      display: block;
+      font-size: 0.82rem;
+      margin-top: 2px;
+    }
+
+    .tab[aria-selected="true"] { background: var(--coral); }
+    .tab[data-tab="day2"][aria-selected="true"] { background: var(--blue); }
+
+    .section {
+      border: 3px solid var(--ink);
+      border-radius: 28px;
+      padding: 20px 14px 22px;
+      margin-bottom: 16px;
+      background: var(--washi);
+    }
+
+    .panel[hidden] { display: none !important; }
+
+    .panel.is-active {
+      animation: bounce-in 0.55s ease;
+    }
+
+    @keyframes bounce-in {
+      0% { opacity: 0; transform: translateY(18px) scale(0.96); }
+      55% { opacity: 1; transform: translateY(-8px) scale(1.02); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes fade-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .day-head {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .day-badge {
+      flex: 0 0 auto;
+      width: 62px;
+      height: 62px;
+      border: 3px solid var(--ink);
+      border-radius: 50%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.15;
+      font-size: 0.8rem;
+    }
+
+    .day-badge strong {
+      font-size: 1.3rem;
+      font-weight: 400;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      line-height: 1.35;
+      margin-top: 2px;
+    }
+
+    .day-lead { margin-top: 4px; font-size: 1rem; }
+
+    .illust {
+      border: 3px solid var(--ink);
+      border-radius: 24px;
+      overflow: hidden;
+      margin: 0 0 18px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      align-items: start;
+      padding: 14px 0;
+      border-top: 3px solid var(--ink);
+    }
+
+    .item:first-of-type { border-top: 0; padding-top: 0; }
+
+    .time {
+      display: inline-block;
+      width: fit-content;
+      max-width: 100%;
+      background: var(--yellow);
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      padding: 6px 10px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .item.coral .time { background: var(--coral); }
+    .item.blue .time { background: var(--blue); }
+    .item.green .time { background: var(--green); }
+
+    .body p + p { margin-top: 8px; }
+
+    .code {
+      display: inline-block;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      padding: 1px 10px 2px;
+      background: var(--yellow);
+      letter-spacing: 0.03em;
+      margin: 4px 4px 0 0;
+    }
+
+    .hint {
+      margin-top: 10px;
+      border: 3px solid var(--ink);
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: var(--green);
+      font-size: 0.95rem;
+    }
+
+    .hint.warn { background: var(--yellow); }
+    .hint.coral { background: var(--coral); }
+
+    .notice {
+      margin-top: 8px;
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 14px 14px;
+      background: var(--yellow);
+    }
+
+    h3 {
+      font-size: 1.3rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .checks {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .checks li {
+      border: 3px solid var(--ink);
+      border-radius: 18px;
+      padding: 12px 14px 12px 48px;
+      position: relative;
+      background: var(--washi);
+    }
+
+    .checks li::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 14px;
+      width: 22px;
+      height: 22px;
+      border: 3px solid var(--ink);
+      border-radius: 7px;
+      background: var(--green);
+    }
+
+    .links {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .link-card {
+      display: block;
+      text-decoration: none;
+      border: 3px solid var(--ink);
+      border-radius: 20px;
+      padding: 14px 16px;
+      background: var(--blue);
+      line-height: 1.45;
+    }
+
+    .link-card:nth-child(4n+2) { background: var(--green); }
+    .link-card:nth-child(4n+3) { background: var(--yellow); }
+    .link-card:nth-child(4n+4) { background: var(--coral); }
+
+    .link-card:hover,
+    .tab:hover { background: var(--washi); }
+
+    .tab[aria-selected="true"]:hover { background: var(--coral); }
+    .tab[data-tab="day2"][aria-selected="true"]:hover { background: var(--blue); }
+
+    .link-card strong {
+      display: block;
+      font-weight: 400;
+      font-size: 1.05rem;
+    }
+
+    .link-card span {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.88rem;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 8px;
+      font-size: 0.95rem;
+    }
+
+    /* looping illustration motions — kept gentle */
+    .train-move {
+      animation: chug 14s ease-in-out infinite alternate;
+    }
+    .cloud-float {
+      animation: float-y 6s ease-in-out infinite;
+    }
+    .cloud-float.delay { animation-delay: -3s; }
+    .tree-sway {
+      animation: sway 4.5s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+    }
+    .tree-sway.slow {
+      animation-duration: 5.5s;
+      animation-delay: -1.2s;
+    }
+    .wave-arm {
+      animation: wave 1.8s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: left center;
+    }
+    .card-tilt {
+      animation: tilt 5s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+    }
+    .card-tilt.alt { animation-duration: 6s; animation-delay: -2s; }
+    .trophy-float {
+      animation: float-y 3.6s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center bottom;
+    }
+    .car-bob {
+      animation: car-hop 2.4s ease-in-out infinite;
+    }
+    .steam {
+      animation: steam-up 2.8s ease-in-out infinite;
+    }
+    .steam.d2 { animation-delay: -0.9s; }
+    .steam.d3 { animation-delay: -1.6s; }
+    .droplet {
+      animation: drip 2.2s ease-in infinite;
+    }
+    .droplet.d2 { animation-delay: -0.7s; }
+    .droplet.d3 { animation-delay: -1.4s; }
+    .droplet.d4 { animation-delay: -0.3s; }
+    .jet {
+      animation: jet 2s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: top center;
+    }
+    .jet.d2 { animation-delay: -1s; }
+
+    @keyframes chug {
+      from { transform: translateX(-24px); }
+      to { transform: translateX(80px); }
+    }
+    @keyframes float-y {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes sway {
+      0%, 100% { transform: rotate(-2.2deg); }
+      50% { transform: rotate(2.6deg); }
+    }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-22deg); }
+    }
+    @keyframes tilt {
+      0%, 100% { transform: rotate(-2deg); }
+      50% { transform: rotate(2deg); }
+    }
+    @keyframes car-hop {
+      0%, 100% { transform: translate(0, 0); }
+      50% { transform: translate(6px, -3px); }
+    }
+    @keyframes steam-up {
+      0% { transform: translateY(0); opacity: 0; }
+      30% { opacity: 1; }
+      100% { transform: translateY(-14px); opacity: 0; }
+    }
+    @keyframes drip {
+      0% { transform: translateY(0); opacity: 0.9; }
+      75% { opacity: 0.9; }
+      100% { transform: translateY(20px); opacity: 0; }
+    }
+    @keyframes jet {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.86); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .train-move,
+      .cloud-float,
+      .tree-sway,
+      .wave-arm,
+      .card-tilt,
+      .trophy-float,
+      .car-bob,
+      .steam,
+      .droplet,
+      .jet {
+        animation: none !important;
+      }
+      .panel.is-active {
+        animation: fade-in 0.15s ease !important;
+      }
+    }
+
+    @media (min-width: 640px) {
+      body { font-size: 18px; }
+      .wrap { padding: 24px 20px 72px; }
+      .hero,
+      .section { border-radius: 32px; }
+      .hero-text { padding: 28px 24px 30px; }
+      h1 { font-size: 2.5rem; }
+      h2 { font-size: 1.7rem; }
+      .section { padding: 26px 22px 28px; margin-bottom: 24px; }
+      .tabs { gap: 12px; margin-bottom: 22px; }
+      .tab {
+        min-height: 56px;
+        padding: 10px 16px;
+        font-size: 1.05rem;
+        border-radius: 22px;
+      }
+      .tab small { font-size: 0.92rem; }
+      .day-badge { width: 70px; height: 70px; }
+      .item {
+        grid-template-columns: 10.2em 1fr;
+        gap: 8px 16px;
+        padding: 16px 0;
+      }
+      .time { width: 100%; }
+      .links { grid-template-columns: 1fr 1fr; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="hero-art">
+        <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="繪本風主視覺：陽光下山丘與椰子樹間，台灣高鐵列車從月台旁緩緩通過，遠方有白色圓頂建築，月台上有一家四口在揮手。">
+          <rect width="1000" height="460" fill="#A8D3E6"/>
+          <g stroke="#3E3A39" stroke-width="4" stroke-linecap="round">
+            <line x1="886" y1="22" x2="886" y2="42"/>
+            <line x1="886" y1="126" x2="886" y2="146"/>
+            <line x1="822" y1="84" x2="842" y2="84"/>
+            <line x1="930" y1="84" x2="950" y2="84"/>
+            <line x1="842" y1="42" x2="856" y2="56"/>
+            <line x1="916" y1="112" x2="930" y2="126"/>
+            <line x1="842" y1="126" x2="856" y2="112"/>
+            <line x1="916" y1="56" x2="930" y2="42"/>
+          </g>
+          <circle cx="886" cy="84" r="40" fill="#F6D27A" stroke="#3E3A39" stroke-width="4"/>
+
+          <g class="cloud-float" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round">
+            <ellipse cx="128" cy="86" rx="36" ry="22"/>
+            <ellipse cx="168" cy="74" rx="44" ry="28"/>
+            <ellipse cx="210" cy="88" rx="34" ry="20"/>
+          </g>
+          <g class="cloud-float delay" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round">
+            <ellipse cx="430" cy="58" rx="32" ry="18"/>
+            <ellipse cx="466" cy="50" rx="40" ry="24"/>
+            <ellipse cx="502" cy="60" rx="30" ry="17"/>
+          </g>
+          <g class="cloud-float" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" style="animation-delay:-4.5s">
+            <ellipse cx="680" cy="92" rx="28" ry="16"/>
+            <ellipse cx="712" cy="84" rx="36" ry="22"/>
+            <ellipse cx="744" cy="94" rx="26" ry="15"/>
+          </g>
+
+          <path d="M-20 250 C 80 200, 170 214, 280 198 C 400 180, 470 230, 620 208 C 760 186, 850 226, 1020 196 L 1020 460 L -20 460 Z" fill="#B9DAA5" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round"/>
+
+          <g stroke="#3E3A39" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="96" y="198" width="52" height="36" fill="#FFFCF6"/>
+            <rect x="200" y="198" width="52" height="36" fill="#FFFCF6"/>
+            <rect x="140" y="176" width="68" height="58" fill="#FFFCF6"/>
+            <polygon points="140,176 174,150 208,176" fill="#FFFCF6"/>
+            <ellipse cx="174" cy="148" rx="22" ry="16" fill="#FFFCF6"/>
+            <rect x="170" y="128" width="8" height="10" fill="#FFFCF6"/>
+            <circle cx="174" cy="124" r="4" fill="#F6D27A"/>
+            <rect x="150" y="198" width="6" height="28" fill="#A8D3E6"/>
+            <rect x="164" y="198" width="6" height="28" fill="#A8D3E6"/>
+            <rect x="178" y="198" width="6" height="28" fill="#A8D3E6"/>
+            <rect x="192" y="198" width="6" height="28" fill="#A8D3E6"/>
+          </g>
+
+          <path d="M-20 328 C 160 292, 340 322, 520 300 C 700 278, 860 318, 1020 296 L 1020 460 L -20 460 Z" fill="#F6D27A" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round"/>
+
+          <g class="tree-sway" stroke="#3E3A39" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M812 360 C 818 300, 808 250, 822 200" fill="none" stroke="#3E3A39" stroke-width="10"/>
+            <path d="M812 360 C 818 300, 808 250, 822 200" fill="none" stroke="#F2A497" stroke-width="6"/>
+            <path d="M822 204 Q 760 170 730 196 Q 780 196 822 204 Z" fill="#B9DAA5"/>
+            <path d="M822 204 Q 790 140 750 128 Q 800 170 822 204 Z" fill="#B9DAA5"/>
+            <path d="M822 204 Q 860 136 910 128 Q 850 170 822 204 Z" fill="#B9DAA5"/>
+            <path d="M822 204 Q 890 176 930 210 Q 870 198 822 204 Z" fill="#B9DAA5"/>
+            <path d="M822 204 Q 860 230 900 250 Q 850 220 822 204 Z" fill="#B9DAA5"/>
+            <circle cx="810" cy="210" r="6" fill="#F2A497"/>
+            <circle cx="824" cy="214" r="6" fill="#F2A497"/>
+            <circle cx="836" cy="208" r="5" fill="#F2A497"/>
+          </g>
+          <g class="tree-sway slow" stroke="#3E3A39" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M934 368 C 940 310, 948 268, 938 214" fill="none" stroke="#3E3A39" stroke-width="10"/>
+            <path d="M934 368 C 940 310, 948 268, 938 214" fill="none" stroke="#F2A497" stroke-width="6"/>
+            <path d="M938 216 Q 880 188 852 214 Q 900 210 938 216 Z" fill="#B9DAA5"/>
+            <path d="M938 216 Q 910 156 872 142 Q 916 184 938 216 Z" fill="#B9DAA5"/>
+            <path d="M938 216 Q 980 152 1020 150 Q 970 186 938 216 Z" fill="#B9DAA5"/>
+            <path d="M938 216 Q 1000 200 1030 230 Q 980 214 938 216 Z" fill="#B9DAA5"/>
+            <circle cx="928" cy="222" r="6" fill="#F2A497"/>
+            <circle cx="944" cy="224" r="5" fill="#F2A497"/>
+          </g>
+
+          <rect x="-20" y="392" width="1040" height="50" fill="#F2A497" stroke="#3E3A39" stroke-width="4"/>
+          <g fill="#3E3A39">
+            <rect x="8" y="400" width="16" height="30" rx="2"/>
+            <rect x="48" y="400" width="16" height="30" rx="2"/>
+            <rect x="88" y="400" width="16" height="30" rx="2"/>
+            <rect x="128" y="400" width="16" height="30" rx="2"/>
+            <rect x="168" y="400" width="16" height="30" rx="2"/>
+            <rect x="208" y="400" width="16" height="30" rx="2"/>
+            <rect x="248" y="400" width="16" height="30" rx="2"/>
+            <rect x="288" y="400" width="16" height="30" rx="2"/>
+            <rect x="328" y="400" width="16" height="30" rx="2"/>
+            <rect x="368" y="400" width="16" height="30" rx="2"/>
+            <rect x="408" y="400" width="16" height="30" rx="2"/>
+            <rect x="448" y="400" width="16" height="30" rx="2"/>
+            <rect x="488" y="400" width="16" height="30" rx="2"/>
+            <rect x="528" y="400" width="16" height="30" rx="2"/>
+            <rect x="568" y="400" width="16" height="30" rx="2"/>
+            <rect x="608" y="400" width="16" height="30" rx="2"/>
+            <rect x="648" y="400" width="16" height="30" rx="2"/>
+            <rect x="688" y="400" width="16" height="30" rx="2"/>
+            <rect x="728" y="400" width="16" height="30" rx="2"/>
+            <rect x="768" y="400" width="16" height="30" rx="2"/>
+            <rect x="808" y="400" width="16" height="30" rx="2"/>
+            <rect x="848" y="400" width="16" height="30" rx="2"/>
+            <rect x="888" y="400" width="16" height="30" rx="2"/>
+            <rect x="928" y="400" width="16" height="30" rx="2"/>
+            <rect x="968" y="400" width="16" height="30" rx="2"/>
+          </g>
+          <line x1="-20" y1="406" x2="1020" y2="406" stroke="#3E3A39" stroke-width="4"/>
+          <line x1="-20" y1="424" x2="1020" y2="424" stroke="#3E3A39" stroke-width="4"/>
+
+          <g stroke="#3E3A39" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <rect x="10" y="356" width="150" height="36" rx="6" fill="#FFFCF6"/>
+            <circle cx="36" cy="318" r="13" fill="#F6D27A"/>
+            <rect x="23" y="332" width="26" height="30" rx="10" fill="#F2A497"/>
+            <path class="wave-arm" d="M49 340 L66 322" fill="none" stroke-width="4"/>
+            <circle cx="72" cy="330" r="11" fill="#A8D3E6"/>
+            <rect x="61" y="342" width="22" height="22" rx="8" fill="#B9DAA5"/>
+            <circle cx="108" cy="316" r="13" fill="#F2A497"/>
+            <rect x="95" y="330" width="26" height="32" rx="10" fill="#A8D3E6"/>
+            <path class="wave-arm" d="M121 338 L138 320" fill="none" stroke-width="4" style="animation-delay:-0.6s"/>
+            <circle cx="144" cy="334" r="10" fill="#F6D27A"/>
+            <rect x="134" y="344" width="20" height="20" rx="8" fill="#F2A497"/>
+          </g>
+
+          <g class="train-move"><g transform="translate(80,0)" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <circle cx="300" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="360" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="455" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="515" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="610" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="670" cy="428" r="11" fill="#3E3A39"/>
+            <circle cx="300" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <circle cx="360" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <circle cx="455" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <circle cx="515" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <circle cx="610" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <circle cx="670" cy="428" r="5" fill="#F6D27A" stroke="none"/>
+            <rect x="586" y="348" width="152" height="78" rx="14" fill="#FFFCF6"/>
+            <rect x="586" y="392" width="152" height="14" fill="#F2A497"/>
+            <rect x="606" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="646" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="686" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="734" y="370" width="10" height="16" rx="3" fill="#F6D27A"/>
+            <rect x="422" y="348" width="156" height="78" rx="14" fill="#FFFCF6"/>
+            <rect x="422" y="392" width="156" height="14" fill="#F2A497"/>
+            <rect x="442" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="484" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="526" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="572" y="372" width="20" height="18" rx="3" fill="#3E3A39" stroke="none"/>
+            <rect x="406" y="372" width="22" height="18" rx="3" fill="#3E3A39" stroke="none"/>
+            <path d="M268 348 L400 348 Q414 348 414 362 L414 426 L268 426 Z" fill="#FFFCF6"/>
+            <path d="M268 348 C 200 348, 148 362, 122 390 C 112 404, 118 426, 168 426 L268 426 Z" fill="#FFFCF6"/>
+            <path d="M122 392 L414 392 L414 406 L126 406 Q118 406 122 392 Z" fill="#F2A497"/>
+            <rect x="280" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="322" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <rect x="364" y="362" width="32" height="22" rx="6" fill="#A8D3E6"/>
+            <path d="M200 360 C 176 362, 158 372, 146 386 L 196 386 L 230 386 L 230 362 Q 230 360 200 360 Z" fill="#A8D3E6"/>
+            <circle cx="150" cy="400" r="6" fill="#F6D27A"/>
+            <path d="M330 348 L330 336 L352 324 L374 336 L374 348" fill="none"/>
+            <line x1="320" y1="324" x2="386" y2="324"/>
+          </g></g>
+        </svg>
+      </div>
+      <div class="hero-text">
+        <div class="chips">
+          <span class="chip chip-coral">一家四口</span>
+          <span class="chip chip-yellow">2026/11/21–11/22</span>
+          <span class="chip chip-blue">台南 · 屏東</span>
+        </div>
+        <h1>台南比賽小旅行</h1>
+        <p class="subtitle">2026 年 11 月 21 日（六）<br>至 11 月 22 日（日）</p>
+        <p class="route">板橋 → 台南比賽 → 屏東過夜 → 奇美博物館 → 返回板橋</p>
+      </div>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="行程日期">
+      <button class="tab" id="tab-day1" role="tab" aria-selected="true" aria-controls="panel-day1" data-tab="day1" type="button">
+        Day 1
+        <small>11/21（六）比賽日</small>
+      </button>
+      <button class="tab" id="tab-day2" role="tab" aria-selected="false" aria-controls="panel-day2" data-tab="day2" tabindex="-1" type="button">
+        Day 2
+        <small>11/22（日）奇美博物館</small>
+      </button>
+    </div>
+
+    <section class="section panel is-active" id="panel-day1" role="tabpanel" aria-labelledby="tab-day1">
+      <div class="day-head">
+        <div class="day-badge chip-coral" aria-hidden="true"><span>Day</span><strong>1</strong></div>
+        <div>
+          <h2>11/21（六）比賽日</h2>
+          <p class="day-lead">搭高鐵到台南比賽，晚上開車前往屏東花園帝寶休息。</p>
+        </div>
+      </div>
+
+      <div class="illust">
+        <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="比賽插圖：黃色獎盃和幾張幾何圖案卡牌放在桌上，沒有使用任何官方角色或商標。">
+          <rect width="640" height="300" fill="#B9DAA5"/>
+          <ellipse cx="320" cy="250" rx="230" ry="28" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4"/>
+          <g class="card-tilt">
+            <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" transform="rotate(-18 170 160)">
+              <rect x="110" y="80" width="120" height="168" rx="14" fill="#FFFCF6"/>
+              <rect x="122" y="92" width="96" height="144" rx="8" fill="#A8D3E6"/>
+              <circle cx="170" cy="164" r="28" fill="#FFFCF6"/>
+              <circle cx="170" cy="164" r="14" fill="#F2A497"/>
+            </g>
+          </g>
+          <g class="card-tilt alt">
+            <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" transform="rotate(-6 230 170)">
+              <rect x="170" y="90" width="120" height="168" rx="14" fill="#FFFCF6"/>
+              <rect x="182" y="102" width="96" height="144" rx="8" fill="#F2A497"/>
+              <rect x="206" y="150" width="48" height="48" transform="rotate(45 230 174)" fill="#F6D27A"/>
+            </g>
+          </g>
+          <g class="trophy-float" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M268 86 L372 86 Q386 86 386 102 L386 128 C386 168 356 190 320 190 C284 190 254 168 254 128 L254 102 Q254 86 268 86 Z" fill="#F6D27A"/>
+            <path d="M254 110 C 220 110, 216 156, 250 160" fill="none"/>
+            <path d="M386 110 C 420 110, 424 156, 390 160" fill="none"/>
+            <rect x="304" y="190" width="32" height="28" fill="#F6D27A"/>
+            <path d="M276 246 L364 246 L352 218 L288 218 Z" fill="#F6D27A"/>
+            <polygon points="320,118 328,138 350,140 334,154 338,176 320,164 302,176 306,154 290,140 312,138" fill="#FFFCF6"/>
+          </g>
+          <g class="card-tilt" style="animation-delay:-1s">
+            <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" transform="rotate(10 430 170)">
+              <rect x="370" y="88" width="120" height="168" rx="14" fill="#FFFCF6"/>
+              <rect x="382" y="100" width="96" height="144" rx="8" fill="#F6D27A"/>
+              <polygon points="430,140 442,164 470,168 448,186 454,214 430,198 406,214 412,186 390,168 418,164" fill="#FFFCF6"/>
+            </g>
+          </g>
+          <g class="card-tilt alt" style="animation-delay:-2.5s">
+            <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" transform="rotate(22 500 180)">
+              <rect x="440" y="100" width="120" height="168" rx="14" fill="#FFFCF6"/>
+              <rect x="452" y="112" width="96" height="144" rx="8" fill="#A8D3E6"/>
+              <circle cx="500" cy="160" r="16" fill="#F2A497"/>
+              <circle cx="500" cy="208" r="16" fill="#B9DAA5"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <div class="timeline">
+        <article class="item coral">
+          <div class="time">06:38–08:01</div>
+          <div class="body">
+            <p>高鐵 203 車次，板橋 → 台南。</p>
+            <p><span class="code">訂位代號 01202767</span><span class="code">記得取票</span></p>
+            <p class="hint">早餐在高鐵上吃。</p>
+          </div>
+        </article>
+        <article class="item blue">
+          <div class="time">08:01 抵達</div>
+          <div class="body">
+            <p>到達高鐵台南站後，從 2 號出口走大約 5 分鐘，到大臺南會展中心 3F 熱蘭遮廳A。</p>
+          </div>
+        </article>
+        <article class="item">
+          <div class="time">08:30–19:00</div>
+          <div class="body">
+            <p>2026-27 臺灣高級球聯盟賽 賽季 1-4（官方公告的舉辦時段）。</p>
+            <p class="hint warn">牌組要在 11/21 06:00 前登錄完成。</p>
+            <p class="hint coral">入場費 NT$600，只收現金。</p>
+          </div>
+        </article>
+        <article class="item green">
+          <div class="time">約 19:00 晚餐</div>
+          <div class="body">
+            <p>會場旁邊的台南三井 Outlet，用走的就到，營業到 21:30。</p>
+          </div>
+        </article>
+        <article class="item coral">
+          <div class="time">20:00–20:30 出發</div>
+          <div class="body">
+            <p>開車到屏東花園帝寶（屏東市瑞華街）。</p>
+            <p>車程大約 45–70 分鐘（估計）。到了就早點休息。</p>
+          </div>
+        </article>
+      </div>
+
+      <div class="illust" style="margin-top:22px;margin-bottom:18px;">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="傍晚開車前往屏東：陽光、椰子樹和一輛圓潤的小汽車在路上行駛。">
+          <rect width="640" height="280" fill="#A8D3E6"/>
+          <circle cx="210" cy="50" r="32" fill="#F6D27A" stroke="#3E3A39" stroke-width="4"/>
+          <g stroke="#3E3A39" stroke-width="4" stroke-linecap="round">
+            <line x1="210" y1="8" x2="210" y2="20"/>
+            <line x1="210" y1="86" x2="210" y2="98"/>
+            <line x1="162" y1="50" x2="174" y2="50"/>
+            <line x1="246" y1="50" x2="258" y2="50"/>
+          </g>
+          <path d="M-20 186 C 140 150, 280 176, 420 158 C 520 146, 580 170, 660 160 L 660 280 L -20 280 Z" fill="#B9DAA5" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M-20 222 L 660 222 L 660 280 L -20 280 Z" fill="#F6D27A" stroke="#3E3A39" stroke-width="4"/>
+          <line x1="-20" y1="250" x2="660" y2="250" stroke="#3E3A39" stroke-width="4" stroke-dasharray="18 14" stroke-linecap="round"/>
+          <g class="tree-sway" stroke="#3E3A39" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M78 222 C 82 180, 70 140, 84 108" fill="none" stroke-width="10"/>
+            <path d="M78 222 C 82 180, 70 140, 84 108" fill="none" stroke="#F2A497" stroke-width="6"/>
+            <path d="M84 110 Q 40 88 20 110 Q 56 108 84 110 Z" fill="#B9DAA5"/>
+            <path d="M84 110 Q 60 68 36 58 Q 70 88 84 110 Z" fill="#B9DAA5"/>
+            <path d="M84 110 Q 110 66 150 60 Q 110 90 84 110 Z" fill="#B9DAA5"/>
+            <path d="M84 110 Q 130 100 160 122 Q 116 110 84 110 Z" fill="#B9DAA5"/>
+            <circle cx="74" cy="116" r="5" fill="#F2A497"/>
+            <circle cx="88" cy="118" r="5" fill="#F2A497"/>
+          </g>
+          <g class="tree-sway slow" stroke="#3E3A39" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M560 226 C 568 170, 552 130, 566 86" fill="none" stroke-width="11"/>
+            <path d="M560 226 C 568 170, 552 130, 566 86" fill="none" stroke="#F2A497" stroke-width="7"/>
+            <path d="M566 88 Q 510 62 486 86 Q 530 82 566 88 Z" fill="#B9DAA5"/>
+            <path d="M566 88 Q 536 36 500 24 Q 546 64 566 88 Z" fill="#B9DAA5"/>
+            <path d="M566 88 Q 600 30 650 28 Q 600 66 566 88 Z" fill="#B9DAA5"/>
+            <path d="M566 88 Q 630 78 662 108 Q 610 90 566 88 Z" fill="#B9DAA5"/>
+            <path d="M566 88 Q 600 118 640 128 Q 590 106 566 88 Z" fill="#B9DAA5"/>
+            <circle cx="554" cy="96" r="6" fill="#F2A497"/>
+            <circle cx="570" cy="98" r="6" fill="#F2A497"/>
+            <circle cx="582" cy="92" r="5" fill="#F2A497"/>
+          </g>
+          <g class="car-bob" stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <circle cx="300" cy="214" r="22" fill="#3E3A39"/>
+            <circle cx="424" cy="214" r="22" fill="#3E3A39"/>
+            <circle cx="300" cy="214" r="11" fill="#F6D27A"/>
+            <circle cx="424" cy="214" r="11" fill="#F6D27A"/>
+            <path d="M250 214 L250 176 Q250 164 264 164 L330 164 L352 128 Q360 118 374 118 L450 118 Q468 118 468 138 L468 214 Z" fill="#F2A497"/>
+            <path d="M336 164 L354 132 L444 132 L444 164 Z" fill="#A8D3E6"/>
+            <line x1="386" y1="132" x2="386" y2="164"/>
+            <rect x="236" y="186" width="18" height="16" rx="4" fill="#F6D27A"/>
+            <rect x="452" y="150" width="10" height="12" rx="3" fill="#F6D27A"/>
+            <circle cx="362" cy="150" r="9" fill="#F6D27A"/>
+            <circle cx="414" cy="150" r="9" fill="#FFFCF6"/>
+          </g>
+        </svg>
+      </div>
+      <p class="notice">小提醒：同一天會展中心 1F 有台南國際旅展，停車可能比較擠。如果要租車，建議比賽和晚餐結束後再去取車。</p>
+    </section>
+
+    <section class="section panel" id="panel-day2" role="tabpanel" aria-labelledby="tab-day2" hidden>
+      <div class="day-head">
+        <div class="day-badge chip-blue" aria-hidden="true"><span>Day</span><strong>2</strong></div>
+        <div>
+          <h2>11/22（日）奇美博物館</h2>
+          <p class="day-lead">從屏東出發，以奇美博物館為主，中午吃台南菜，再搭高鐵回家。</p>
+        </div>
+      </div>
+
+      <div class="illust">
+        <svg viewBox="0 0 640 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="奇美博物館插圖：白色歐式宮殿建築、中央圓頂，前方是噴泉與阿波羅廣場。">
+          <rect width="640" height="360" fill="#A8D3E6"/>
+          <path d="M-20 210 L 660 210 L 660 360 L -20 360 Z" fill="#B9DAA5" stroke="#3E3A39" stroke-width="4"/>
+          <ellipse cx="320" cy="300" rx="210" ry="44" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4"/>
+          <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <g class="tree-sway">
+              <circle cx="46" cy="200" r="28" fill="#B9DAA5"/>
+              <rect x="40" y="220" width="12" height="36" fill="#F2A497"/>
+            </g>
+            <g class="tree-sway slow">
+              <circle cx="594" cy="200" r="28" fill="#B9DAA5"/>
+              <rect x="588" y="220" width="12" height="36" fill="#F2A497"/>
+            </g>
+            <rect x="46" y="168" width="150" height="78" fill="#FFFCF6"/>
+            <rect x="46" y="156" width="150" height="16" fill="#FFFCF6"/>
+            <rect x="62" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="94" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="126" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="158" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="70" y="216" width="14" height="30" fill="#F6D27A"/>
+            <rect x="158" y="216" width="14" height="30" fill="#F6D27A"/>
+            <rect x="444" y="168" width="150" height="78" fill="#FFFCF6"/>
+            <rect x="444" y="156" width="150" height="16" fill="#FFFCF6"/>
+            <rect x="460" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="492" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="524" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="556" y="180" width="22" height="28" rx="3" fill="#A8D3E6"/>
+            <rect x="468" y="216" width="14" height="30" fill="#F6D27A"/>
+            <rect x="556" y="216" width="14" height="30" fill="#F6D27A"/>
+            <rect x="196" y="126" width="248" height="120" fill="#FFFCF6"/>
+            <polygon points="196,126 320,78 444,126" fill="#FFFCF6"/>
+            <ellipse cx="320" cy="78" rx="52" ry="36" fill="#FFFCF6"/>
+            <rect x="312" y="36" width="16" height="16" fill="#FFFCF6"/>
+            <circle cx="320" cy="30" r="8" fill="#F6D27A"/>
+            <rect x="220" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="252" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="284" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="340" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="372" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="404" y="150" width="16" height="80" fill="#A8D3E6"/>
+            <rect x="214" y="142" width="212" height="10" fill="#FFFCF6"/>
+            <path d="M300 196 Q300 176 320 176 Q340 176 340 196 L340 230 L300 230 Z" fill="#F2A497"/>
+            <rect x="250" y="246" width="140" height="12" fill="#FFFCF6"/>
+            <rect x="236" y="258" width="168" height="12" fill="#FFFCF6"/>
+          </g>
+          <g stroke="#3E3A39" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+            <ellipse cx="320" cy="318" rx="86" ry="22" fill="#A8D3E6"/>
+            <ellipse cx="320" cy="316" rx="60" ry="14" fill="#FFFCF6"/>
+            <ellipse cx="286" cy="300" rx="22" ry="10" fill="#F6D27A"/>
+            <circle cx="268" cy="294" r="7" fill="#F6D27A"/>
+            <ellipse cx="354" cy="300" rx="22" ry="10" fill="#F6D27A"/>
+            <circle cx="372" cy="294" r="7" fill="#F6D27A"/>
+            <rect x="308" y="292" width="24" height="18" fill="#FFFCF6"/>
+            <rect x="312" y="268" width="16" height="24" fill="#F2A497"/>
+            <circle cx="320" cy="260" r="8" fill="#F2A497"/>
+            <path d="M320 268 L338 252" fill="none" stroke-width="3.5"/>
+            <path class="jet" d="M320 254 Q 280 230 250 262" fill="none" stroke="#A8D3E6" stroke-width="5"/>
+            <path class="jet" d="M320 254 Q 280 230 250 262" fill="none" stroke="#3E3A39" stroke-width="2"/>
+            <path class="jet d2" d="M320 254 Q 360 230 390 262" fill="none" stroke="#A8D3E6" stroke-width="5"/>
+            <path class="jet d2" d="M320 254 Q 360 230 390 262" fill="none" stroke="#3E3A39" stroke-width="2"/>
+            <path class="jet" d="M320 254 Q 300 220 292 268" fill="none" stroke="#A8D3E6" stroke-width="5" style="animation-delay:-0.5s"/>
+            <path class="jet" d="M320 254 Q 300 220 292 268" fill="none" stroke="#3E3A39" stroke-width="2" style="animation-delay:-0.5s"/>
+            <path class="jet d2" d="M320 254 Q 340 220 348 268" fill="none" stroke="#A8D3E6" stroke-width="5"/>
+            <path class="jet d2" d="M320 254 Q 340 220 348 268" fill="none" stroke="#3E3A39" stroke-width="2"/>
+            <circle class="droplet" cx="268" cy="248" r="4" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2"/>
+            <circle class="droplet d2" cx="372" cy="246" r="4" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2"/>
+            <circle class="droplet d3" cx="304" cy="236" r="3.5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2"/>
+            <circle class="droplet d4" cx="336" cy="238" r="3.5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="timeline">
+        <article class="item coral">
+          <div class="time">08:00 出發</div>
+          <div class="body">
+            <p>從屏東出發，開車到奇美博物館大約 1 小時（估計）。</p>
+          </div>
+        </article>
+        <article class="item blue">
+          <div class="time">09:30 開館</div>
+          <div class="body">
+            <p>奇美博物館開館，常設展慢慢逛。</p>
+            <p>常設展 09:30–17:30，最後入場 17:00。</p>
+            <p class="hint warn">7–22 歲的優惠票，要帶有照片和出生日期的證件。</p>
+            <p>法老特展的最後入場是 16:30。</p>
+          </div>
+        </article>
+        <article class="item">
+          <div class="time">中午用餐</div>
+          <div class="body">
+            <p>到仁德府城食府新仁店吃午餐，吃正宗台南菜。</p>
+            <p>週日 11:00–14:00 營業。</p>
+            <p class="hint">建議先打電話問問看能不能訂位。<br><span class="code">06-288-1001</span></p>
+          </div>
+        </article>
+        <article class="item green">
+          <div class="time">下午散步</div>
+          <div class="body">
+            <p>去戶外園區散步拍照。戶外園區免費，09:00–18:30 開放。</p>
+            <p>也可以去附近的奇美食品幸福工廠吃點心（週日營業到 17:00）。</p>
+          </div>
+        </article>
+        <article class="item coral">
+          <div class="time">15:30 離開</div>
+          <div class="body">
+            <p>開車大約 15 分鐘到高鐵台南站（估計）。</p>
+            <p>16:00 前還車或停車，16:30 前進站。</p>
+          </div>
+        </article>
+        <article class="item blue">
+          <div class="time">17:28–18:46</div>
+          <div class="body">
+            <p>高鐵 1246 車次，台南 → 板橋。</p>
+            <p><span class="code">訂位代號 01204052</span><span class="code">記得取票</span></p>
+          </div>
+        </article>
+      </div>
+
+      <div class="illust" style="margin-top:22px;margin-bottom:0;">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="台南美食插圖：一碗碗粿和一盤蝦捲，配上筷子與熱氣。">
+          <rect width="640" height="280" fill="#F6D27A"/>
+          <ellipse cx="320" cy="230" rx="250" ry="30" fill="#FFFCF6" stroke="#3E3A39" stroke-width="4"/>
+          <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <ellipse cx="190" cy="168" rx="110" ry="28" fill="#F2A497"/>
+            <path d="M80 168 Q80 230 190 246 Q300 230 300 168" fill="#F2A497"/>
+            <ellipse cx="190" cy="166" rx="96" ry="22" fill="#FFFCF6"/>
+            <ellipse cx="190" cy="166" rx="50" ry="12" fill="#F2A497"/>
+            <ellipse cx="168" cy="158" rx="10" ry="6" fill="#B9DAA5"/>
+            <ellipse cx="186" cy="154" rx="9" ry="5" fill="#B9DAA5"/>
+            <ellipse cx="206" cy="160" rx="8" ry="5" fill="#B9DAA5"/>
+            <ellipse cx="86" cy="120" rx="16" ry="12" fill="#A8D3E6"/>
+            <rect x="96" y="116" width="70" height="10" rx="4" fill="#A8D3E6" transform="rotate(18 96 116)"/>
+            <path class="steam" d="M150 120 C 146 108, 156 102, 150 90" fill="none"/>
+            <path class="steam d2" d="M178 112 C 174 100, 184 94, 178 82" fill="none"/>
+            <path class="steam d3" d="M206 118 C 202 106, 212 100, 206 88" fill="none"/>
+          </g>
+          <g stroke="#3E3A39" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+            <ellipse cx="460" cy="190" rx="130" ry="50" fill="#FFFCF6"/>
+            <ellipse cx="546" cy="186" rx="28" ry="18" fill="#B9DAA5"/>
+            <ellipse cx="530" cy="172" rx="22" ry="14" fill="#B9DAA5"/>
+            <g transform="rotate(-18 430 176)">
+              <rect x="360" y="150" width="140" height="44" rx="20" fill="#F6D27A"/>
+              <path d="M372 152 Q390 172 372 192" fill="none"/>
+              <path d="M400 152 Q418 172 400 192" fill="none"/>
+              <circle cx="490" cy="172" r="16" fill="#F2A497"/>
+            </g>
+            <g transform="rotate(8 470 200)">
+              <rect x="400" y="178" width="140" height="44" rx="20" fill="#F6D27A"/>
+              <path d="M412 180 Q430 200 412 220" fill="none"/>
+              <path d="M440 180 Q458 200 440 220" fill="none"/>
+              <circle cx="530" cy="200" r="16" fill="#F2A497"/>
+            </g>
+            <rect x="300" y="86" width="150" height="10" rx="4" fill="#F2A497" transform="rotate(-16 300 86)"/>
+            <rect x="312" y="102" width="150" height="10" rx="4" fill="#F2A497" transform="rotate(-10 312 102)"/>
+            <path class="steam" d="M430 120 C 426 108, 436 102, 430 90" fill="none"/>
+            <path class="steam d2" d="M458 114 C 454 102, 464 96, 458 84" fill="none"/>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section" id="checklist">
+      <h3>出發前要確認</h3>
+      <ul class="checks">
+        <li>比賽幾點報到、幾點開賽</li>
+        <li>如果要租車，高鐵站租車櫃台的營業時間</li>
+        <li>奇美的即時停車資訊</li>
+        <li>兩張高鐵票都要記得取票（去程 01202767、回程 01204052）</li>
+        <li>牌組要在 11/21 06:00 前登錄完成；入場費 NT$600 只收現金</li>
+        <li>7–22 歲優惠票要帶有照片和出生日期的證件</li>
+      </ul>
+    </section>
+
+    <section class="section" id="links">
+      <h3>實用連結</h3>
+      <div class="links">
+        <a class="link-card" href="https://asia.pokemon-card.com/tw/event-search/66989/" rel="noopener noreferrer" target="_blank">
+          <strong>比賽官方頁（少年組）</strong>
+          <span>查看活動說明與注意事項</span>
+        </a>
+        <a class="link-card" href="https://asia.pokemon-card.com/tw/event-search/66990/" rel="noopener noreferrer" target="_blank">
+          <strong>比賽官方頁（孩童組）</strong>
+          <span>查看活動說明與注意事項</span>
+        </a>
+        <a class="link-card" href="https://icctainan.com/jiao-tong-zi-xun/" rel="noopener noreferrer" target="_blank">
+          <strong>大臺南會展中心交通</strong>
+          <span>會場交通與停車資訊</span>
+        </a>
+        <a class="link-card" href="https://www.mitsui-shopping-park.com.tw/mop/tainan/tw/index.html" rel="noopener noreferrer" target="_blank">
+          <strong>台南三井 Outlet</strong>
+          <span>晚餐地點，營業到 21:30</span>
+        </a>
+        <a class="link-card" href="https://www.chimeimuseum.org/visit" rel="noopener noreferrer" target="_blank">
+          <strong>奇美博物館參觀資訊</strong>
+          <span>開放時間與購票說明</span>
+        </a>
+        <a class="link-card" href="https://www.chimeimuseum.org/visit/park" rel="noopener noreferrer" target="_blank">
+          <strong>奇美博物館停車</strong>
+          <span>出發前再看一次即時停車</span>
+        </a>
+        <a class="link-card" href="https://www.thsrc.com.tw/ArticleContent/9c5ac6ca-ec89-48f8-aab0-41b738cb1814" rel="noopener noreferrer" target="_blank">
+          <strong>高鐵台南站</strong>
+          <span>車站資訊與出入口</span>
+        </a>
+        <a class="link-card" href="https://www.google.com/maps/search/?api=1&query=%E5%BA%9C%E5%9F%8E%E9%A3%9F%E5%BA%9C%E6%AD%A3%E5%AE%97%E5%8F%B0%E5%8D%97%E6%96%99%E7%90%86-%E6%96%B0%E4%BB%81%E5%BA%97" rel="noopener noreferrer" target="_blank">
+          <strong>府城食府新仁店地圖</strong>
+          <span>午餐餐廳位置</span>
+        </a>
+      </div>
+    </section>
+
+    <footer>
+      <p>台南比賽小旅行 · 一家四口 · 2026/11/21–11/22</p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+      var panels = {
+        "panel-day1": document.getElementById("panel-day1"),
+        "panel-day2": document.getElementById("panel-day2")
+      };
+
+      function activate(id, moveFocus) {
+        tabs.forEach(function (tab) {
+          var on = tab.getAttribute("aria-controls") === id;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.tabIndex = on ? 0 : -1;
+          if (on && moveFocus) tab.focus();
+        });
+        Object.keys(panels).forEach(function (key) {
+          var panel = panels[key];
+          var on = key === id;
+          panel.hidden = !on;
+          panel.classList.remove("is-active");
+          if (on) {
+            void panel.offsetWidth;
+            panel.classList.add("is-active");
+          }
+        });
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          activate(tab.getAttribute("aria-controls"), false);
+        });
+        tab.addEventListener("keydown", function (e) {
+          var i = tabs.indexOf(tab);
+          var next = null;
+          if (e.key === "ArrowRight" || e.key === "ArrowDown") next = tabs[(i + 1) % tabs.length];
+          if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = tabs[(i - 1 + tabs.length) % tabs.length];
+          if (e.key === "Home") next = tabs[0];
+          if (e.key === "End") next = tabs[tabs.length - 1];
+          if (next) {
+            e.preventDefault();
+            activate(next.getAttribute("aria-controls"), true);
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
