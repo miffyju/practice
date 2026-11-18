@@ -120,11 +120,8 @@ m5_corners:function(x){ var t=x.int(0,5), q=x.int(0,4), p=x.int(1,3); if(t+q===0
 m5_kind:function(x){ var k=x.pick([["一張紙的直角","直角"],["打開一點點的剪刀","銳角"],["三角板上最尖的角","銳角"],["時鐘 4 點整兩針形成的角","鈍角"],["正方形的角","直角"],["把扇子打開得很大（還沒成一直線）","鈍角"],["時鐘 2 點整兩針形成的角","銳角"],["時鐘 9 點整兩針形成的角","直角"]]);
   return mc("「"+k[0]+"」是哪一種角？",k[1],["銳角","直角","鈍角"],"拿三角板的直角比一比：比直角小是銳角，比直角大是鈍角。",["和直角比一比","答案是"+k[1]]); }
 };
+// 期中範圍（單元1～4）已移除：只保留產生器（期末衝刺 fm2 的 m2_twostep、m4_save、m4_compare_mul 仍會用到），不再有單元1～4的練習入口
 var UNITS={
- m1:["m1_compose","m1_place","m1_digitdiff","m1_order","m1_make","m1_money","m1_pattern"],
- m2:["m2_add","m2_sub","m2_twostep","m2_compare","m2_missing","m2_estimate"],
- m3:["m3_tomm","m3_tocm","m3_ruler","m3_join","m3_cut","m3_repeat","m3_cmp"],
- m4:["m4_calc","m4_word","m4_change","m4_threestep","m4_save","m4_cmp","m4_compare_mul"],
  m5:["m5_clock","m5_right","m5_corners","m5_kind"]
 };
 function make(name,seed){ var f=G[name]; if(!f) return null; var q=f(R(rng(seed))); q.gid=name+"~"+seed; return q; }

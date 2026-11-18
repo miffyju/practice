@@ -141,5 +141,4 @@ U.m9=["m9_read","m9_count","m9_unit","m9_cmp","m9_order","m9_diff","m9_left","m9
 // 期末衝刺
 U.fm1=["m5_clock","m5_right","m5_cmp","m6_rect","m6_square","m6_findside","m6_L","m6_cmp","m7_share","m7_rem","m7_need","m7_twostep","m7_check","m8_toml","m8_sub","m8_pour","m8_share","m9_read","m9_cmp","m9_diff","m9_meter","m9_two"];
 U.fm2=["f_trip","f_shop","f_tile","f_juice","f_cake","f_three","f_store","f_ribbon","f_area_cost","f_money","m2_twostep","m4_save","m4_compare_mul","m6_wall","m6_remain","m7_twostep","m8_more","m8_pour","m9_two"];
-U.fm3=["m1_compose","m1_money","m2_twostep","m2_compare","m3_join","m3_cut","m4_word","m4_change","m4_threestep","m5_clock","m6_rect","m6_L","m7_share","m7_need","m7_rem","m8_toml","m8_sub","m9_read","m9_cmp","m9_diff","f_shop","f_store"];
 })();

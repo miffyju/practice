@@ -3,6 +3,7 @@
 var D = window.PRACTICE_DATA, app = document.getElementById("app");
 var KEY_H = "p3_history", KEY_W = "p3_wrongbook", KEY_RECENT = "p3_recent", ROUND = 8, RECENT_ROUNDS = 3;
 var GEN = window.PRACTICE_GEN || null;
+var CUSTOM = {}; // 自訂練習（例如 div.js 的直式除法），在 div.js 載入時註冊
 function load(k, d){ try{ var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; }catch(e){ return d; } }
 function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -20,7 +21,7 @@ function mountTopChick(){
   slot.innerHTML=chickSVG();
 }
 function shuffle(a){ a = a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-function el(html){ unbindNumKeys(); SP.close(); app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
+function el(html){ unbindNumKeys(); SP.close(); delete app.dataset.dv; app.innerHTML = html; app.focus(); window.scrollTo(0,0); }
 function subj(id){ return D.subjects.filter(function(s){return s.id===id;})[0]; }
 function unit(s,id){ return s.units.filter(function(u){return u.id===id;})[0]; }
 function today(){ var d=new Date(); return d.getFullYear()+"/"+(d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
@@ -57,10 +58,11 @@ function units(sid){
   s.units.forEach(function(u){
     if(u.group&&u.group!==last){ if(last!==null) h+='</div>'; h+='<h3 class="grp">'+esc((D.groups&&D.groups[u.group])||u.group)+'</h3><div class="grid">'; last=u.group; }
     else if(last===null){ h+='<div class="grid">'; last=u.group||""; }
-    h+='<button class="big unitc" style="--uc:'+s.color+'" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(genList(u).length?'題目無限變化':poolSize(u)+'題，每次抽題')+'）</span></button>'; });
+    h+='<button class="big unitc" style="--uc:'+s.color+'" data-u="'+u.id+'">'+esc(u.name)+' <span class="muted">（'+(u.custom?'一步一步算，題目每次不同':genList(u).length?'題目無限變化':poolSize(u)+'題，每次抽題')+'）</span></button>'; });
   el(h+'</div><div class="row"><button class="big secondary" id="back">⬅ 回首頁</button></div>');
   app.querySelectorAll("[data-u]").forEach(function(b){ b.onclick=function(){
     var u=unit(s,b.dataset.u);
+    if(u.custom){ if(CUSTOM[u.custom]) CUSTOM[u.custom].open(s,u); else toast("這個練習還在準備中"); return; }
     start(s.name, u.name, buildRound(s,u), false, {sid:s.id,uid:u.id});
   }; });
   document.getElementById("back").onclick=home;
@@ -425,6 +427,7 @@ function herAnswer(r){ var tries=r.tries||[]; if(!tries.length) return ""; retur
 function mistakeLines(results){
   var lines=[];
   results.forEach(function(r){ if(r.firstTry) return;
+    if(r.detail){ lines.push(r.it.uid+"#"+(r.it.idx+1)+"｜"+trimQ(r.q)+"｜"+r.detail+"｜正解："+r.answer); return; }
     lines.push(r.it.uid+"#"+(r.it.gen?(r.it.g&&r.it.g.gid)||(r.it.gen+"~"+r.it.seed):(r.it.idx+1))+"｜"+trimQ(r.q)+"｜她答："+herAnswer(r)+"｜正解："+r.answer); });
   return lines.length?lines.join("\n"):"全對";
 }
@@ -481,13 +484,13 @@ function end(){
   var stars = first===n?3 : first/n>=0.7?2 : right/n>=0.5?1 : 0;
   var wrong=R.results.filter(function(r){return !r.firstTry;});
   var rec={date:today(), subject:R.sname, unit:R.uname, total:n, right:right, first:first, stars:stars,
-    wrong:wrong.map(function(r){return {q:r.q,tries:r.tries,answer:r.answer,unit:r.unit};})};
+    wrong:wrong.map(function(r){return {q:r.q,tries:r.tries,answer:r.answer,unit:r.unit,detail:r.detail||""};})};
   var hist=load(KEY_H,[]); hist.unshift(rec); save(KEY_H,hist.slice(0,50));
   var h='<div class="card result-card" style="text-align:center"><div class="result-chick" aria-hidden="true">'+chickSVG("celeb")+'</div><h2>'+(stars>=2?"🎊 做得好！":"👍 繼續加油！")+'</h2><div class="stars pop" aria-label="'+stars+'顆星">'+"⭐".repeat(stars)+"☆".repeat(3-stars)+'</div>'+
     '<div class="score">'+right+' / '+n+'</div><p class="muted">第一次就答對 '+first+' 題</p><p class="muted" id="sendStat"></p></div>';
   if(wrong.length){
     h+='<div class="card"><h3>要再練習的題目</h3><ol>';
-    wrong.forEach(function(r){ h+='<li>'+esc(r.q)+'<br><span class="muted">你的答案：'+esc(r.tries.join("、"))+'　正確答案：'+esc(r.answer)+'</span></li>'; });
+    wrong.forEach(function(r){ h+='<li>'+esc(r.q)+'<br><span class="muted">'+(r.detail?esc(r.detail)+'<br>':'你的答案：'+esc(r.tries.join("、"))+'　')+'正確答案：'+esc(r.answer)+'</span></li>'; });
     h+='</ol></div>';
   }
   h+='<div class="row"><button class="big primary" id="copy">📋 複製結果給教練</button><button class="big secondary" id="again">🔁 再玩一次</button><button class="big secondary" id="hm">🏠 回首頁</button></div><div id="fallback"></div>';
@@ -497,13 +500,14 @@ function end(){
   document.getElementById("hm").onclick=home;
   document.getElementById("again").onclick=function(){
     if(R.isWB) return wrongbook();
+    if(R.src&&R.src.custom&&CUSTOM[R.src.custom]) return CUSTOM[R.src.custom].again(R.src);
     var sr=R.src||{sid:R.items[0].sid,uid:R.items[0].uid}, s=subj(sr.sid), u=unit(s,sr.uid);
     start(s.name,u.name,buildRound(s,u),false,sr);
   };
 }
 function summary(r){
   var t="【紫嫈的三年級加油站 練習結果】\n日期："+r.date+"\n科目："+r.subject+"\n單元："+r.unit+"\n成績："+r.right+" / "+r.total+"（第一次就答對 "+r.first+" 題，"+r.stars+" 顆星）\n";
-  if(r.wrong.length){ t+="\n需要加強的題目：\n"; r.wrong.forEach(function(w,i){ t+=(i+1)+". "+w.q+"\n   孩子的答案："+w.tries.join("、")+"\n   正確答案："+w.answer+"\n"; }); }
+  if(r.wrong.length){ t+="\n需要加強的題目：\n"; r.wrong.forEach(function(w,i){ t+=(i+1)+". "+w.q+"\n   "+(w.detail?w.detail:"孩子的答案："+w.tries.join("、"))+"\n   正確答案："+w.answer+"\n"; }); }
   else t+="\n全部第一次就答對！\n";
   return t;
 }
@@ -621,8 +625,32 @@ function migrateWB(){
   });
   save(KEY_W,out);
 }
+// ---------- 期中範圍題組已移除：舊錯題本／最近出題紀錄裡指到它們的項目，安靜地清掉（不會壞掉、也不會出現空白題） ----------
+function pruneWB(){
+  var rm=(D&&D.removed)||{}, wb=load(KEY_W,[]);
+  if(Array.isArray(wb)){
+    var keep=wb.filter(function(w){
+      if(!w||typeof w!=="object") return false;
+      if((rm[w.sid]||[]).indexOf(w.uid)>=0) return false;           // 指到已移除的期中單元
+      if(w.lg) return !!w.g;                                         // 自足格式（舊題）只要有內容就保留
+      if(w.v===2) return !!getQ(w);                                  // 其他單元指到不存在的題：丟掉
+      return true;                                                   // 未轉換的舊格式交給 migrateWB／錯題本頁面過濾
+    });
+    if(keep.length!==wb.length) save(KEY_W,keep);
+  }
+  var rc=load(KEY_RECENT,{});
+  if(rc&&typeof rc==="object"&&!Array.isArray(rc)){
+    var ch=false;
+    Object.keys(rc).forEach(function(k){ var p=k.split("|"); if((rm[p[0]]||[]).indexOf(p[1])>=0){ delete rc[k]; ch=true; } });
+    if(ch) save(KEY_RECENT,rc);
+  }
+}
 migrateWB();
+pruneWB();
 flushOutbox();
+window.P3_APP={app:app, el:el, esc:esc, toast:toast, celebrate:celebrate, chickSVG:chickSVG, pick:pick, units:units, home:home,
+  registerCustom:function(id,def){ CUSTOM[id]=def; },
+  setRound:function(r){ R=r; }, end:function(){ end(); }};
 window.__p3Test={start:start, answer:answer, applyNumKey:applyNumKey, renderNum:renderNum, isPadable:isPadable, answersEqual:answersEqual, numericCore:numericCore, assignPresentTypes:assignPresentTypes, buildRound:buildRound, subj:subj, unit:unit, results:function(){return R&&R.results;}, mistakeLines:function(){return R?mistakeLines(R.results):"";}, startUnit:function(sid,uid){ var s=subj(sid), u=unit(s,uid); start(s.name,u.name,buildRound(s,u),false,{sid:s.id,uid:u.id}); }};
 mountTopChick();
 home();
