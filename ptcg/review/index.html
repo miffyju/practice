@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PTCG 線上課複習筆記：烈空坐對局重點、小抄、練習題與複習計畫。">
+  <title>PTCG 線上課複習筆記（11/15）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Huninn&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --washi: #FFFCF6;
+      --ink: #3E3A39;
+      --coral: #F2A497;
+      --yama: #F6D27A;
+      --mizu: #A8D3E6;
+      --take: #B9DAA5;
+      --coral-bg: #FDE8E4;
+      --yama-bg: #FBF3D4;
+      --mizu-bg: #E7F3F8;
+      --take-bg: #EAF5E3;
+      --radius: 24px;
+      --border: 3px solid var(--ink);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--washi);
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28'><circle cx='5' cy='8' r='1.1' fill='%233E3A39' opacity='0.07'/><circle cx='20' cy='21' r='1.1' fill='%233E3A39' opacity='0.07'/></svg>");
+      font-family: "Huninn", "PingFang TC", "Hiragino Maru Gothic ProN", "Microsoft JhengHei", sans-serif;
+      font-size: 1.0625rem;
+      line-height: 1.75;
+    }
+    img, svg { max-width: 100%; height: auto; display: block; }
+    a { color: var(--ink); }
+    h1, h2, h3 { line-height: 1.35; margin: 0 0 0.6em; font-weight: 400; }
+    h1 { font-size: clamp(1.7rem, 6vw, 2.25rem); text-align: center; }
+    h2 { font-size: clamp(1.3rem, 4.5vw, 1.6rem); }
+    h3 { font-size: 1.15rem; }
+    p { margin: 0 0 0.8em; }
+    p:last-child { margin-bottom: 0; }
+    .wrap {
+      width: min(760px, calc(100% - 28px));
+      margin: 0 auto;
+      padding-bottom: 3rem;
+    }
+    header.hero {
+      padding: 1.4rem 0 1rem;
+      text-align: center;
+    }
+    .subtitle {
+      margin: 0.4rem auto 1rem;
+      max-width: 38em;
+      font-size: 1rem;
+    }
+    .hero-art {
+      width: 100%;
+      margin: 0.4rem auto 0.2rem;
+    }
+    /* sticky toc */
+    .toc {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: var(--washi);
+      border-bottom: var(--border);
+      padding: 0.55rem 0;
+    }
+    .toc-inner {
+      width: min(760px, calc(100% - 28px));
+      margin: 0 auto;
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+    .toc a {
+      flex: 0 0 auto;
+      display: inline-block;
+      text-decoration: none;
+      border: var(--border);
+      border-radius: 999px;
+      padding: 0.22rem 0.8rem;
+      background: var(--yama);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    .toc a:nth-child(4n+2) { background: var(--mizu); }
+    .toc a:nth-child(4n+3) { background: var(--take); }
+    .toc a:nth-child(4n+4) { background: var(--coral); }
+    .toc a:focus-visible,
+    summary:focus-visible,
+    a:focus-visible {
+      outline: 3px solid var(--ink);
+      outline-offset: 2px;
+    }
+    section {
+      scroll-margin-top: 4.2rem;
+      margin: 1.4rem 0;
+    }
+    .panel {
+      background: var(--washi);
+      border: var(--border);
+      border-radius: var(--radius);
+      padding: 1.15rem 1.1rem 1.2rem;
+    }
+    .panel.yama { background: var(--yama-bg); }
+    .panel.mizu { background: var(--mizu-bg); }
+    .panel.take { background: var(--take-bg); }
+    .panel.coral { background: var(--coral-bg); }
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.85rem;
+    }
+    .sec-head h2, .sec-head h3 { margin: 0; }
+    .sec-head .icon { flex: 0 0 auto; width: 42px; height: 42px; }
+    .note {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+    /* callout */
+    .callout {
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--yama);
+      padding: 1rem 1rem 1.05rem;
+      margin-bottom: 1rem;
+    }
+    .callout .lead {
+      display: inline-block;
+      background: var(--washi);
+      border: var(--border);
+      border-radius: 999px;
+      padding: 0.05rem 0.75rem;
+      margin-bottom: 0.45rem;
+      font-size: 0.95rem;
+    }
+    /* segment */
+    .seg {
+      border: var(--border);
+      border-radius: var(--radius);
+      background: var(--washi);
+      padding: 1rem 0.95rem 0.4rem;
+      margin: 0.9rem 0;
+    }
+    .seg header {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.7rem;
+    }
+    .badge {
+      flex: 0 0 auto;
+      width: 52px;
+      height: 52px;
+      border: var(--border);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      background: var(--mizu);
+    }
+    .seg.c2 .badge { background: var(--take); }
+    .seg.c3 .badge { background: var(--yama); }
+    .seg.c4 .badge { background: var(--coral); }
+    .seg h3 { margin: 0; }
+    .time-list { list-style: none; padding: 0; margin: 0; }
+    .time-list li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0.45rem 0.7rem;
+      padding: 0.7rem 0;
+      border-top: 2px solid var(--ink);
+    }
+    .time {
+      display: inline-block;
+      align-self: start;
+      justify-self: start;
+      width: auto;
+      margin-top: 0.15rem;
+      background: var(--mizu);
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      text-align: center;
+      font-size: 0.88rem;
+      padding: 0.05rem 0.45rem;
+      letter-spacing: 0.02em;
+    }
+    .seg.c2 .time { background: var(--take); }
+    .seg.c3 .time { background: var(--yama); }
+    .seg.c4 .time { background: var(--coral); }
+    .k { font-size: 1.05rem; margin: 0 0 0.15rem; }
+    .d { margin: 0; font-size: 0.98rem; }
+    /* ideas */
+    .ideas { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.75rem; }
+    .ideas li {
+      border: var(--border);
+      border-radius: 20px;
+      background: var(--washi);
+      padding: 0.8rem 0.9rem;
+    }
+    .ideas h3 { margin: 0 0 0.25rem; }
+    .ideas ul { margin: 0; padding-left: 1.2rem; }
+    .ideas li:nth-child(4n+1) { background: var(--yama-bg); }
+    .ideas li:nth-child(4n+2) { background: var(--mizu-bg); }
+    .ideas li:nth-child(4n+3) { background: var(--take-bg); }
+    .ideas li:nth-child(4n+4) { background: var(--coral-bg); }
+    /* cards (matchup / weak) */
+    .cards { display: grid; gap: 0.8rem; }
+    .card {
+      border: var(--border);
+      border-radius: 20px;
+      background: var(--washi);
+      padding: 0.85rem 0.95rem;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .lead-tag {
+      display: inline-block;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      padding: 0.05rem 0.65rem;
+      background: var(--coral);
+      font-size: 0.95rem;
+    }
+    .meta {
+      font-size: 0.88rem;
+      white-space: nowrap;
+    }
+    .card h3 { margin: 0.4rem 0 0.2rem; }
+    .card.mizu .lead-tag { background: var(--mizu); }
+    .card.take .lead-tag { background: var(--take); }
+    .card.yama .lead-tag { background: var(--yama); }
+    /* quiz */
+    .quiz-item {
+      border: var(--border);
+      border-radius: 20px;
+      background: var(--washi);
+      margin: 0.75rem 0;
+      padding: 0.15rem 0.2rem;
+    }
+    .quiz-item summary {
+      cursor: pointer;
+      list-style: none;
+      padding: 0.75rem 0.9rem;
+    }
+    .quiz-item summary::-webkit-details-marker { display: none; }
+    .quiz-item summary::after {
+      content: "看答案 ▾";
+      display: inline-block;
+      margin-top: 0.45rem;
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background: var(--mizu);
+      padding: 0.05rem 0.7rem;
+      font-size: 0.9rem;
+    }
+    .quiz-item[open] summary::after { content: "收起答案 ▴"; background: var(--yama); }
+    .answer {
+      margin: 0 0.7rem 0.85rem;
+      padding: 0.7rem 0.8rem;
+      border: 2px solid var(--ink);
+      border-radius: 16px;
+      background: var(--take-bg);
+    }
+    /* plan */
+    .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.8rem; }
+    .steps li {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 0.75rem;
+      align-items: start;
+      border: var(--border);
+      border-radius: 20px;
+      background: var(--washi);
+      padding: 0.8rem 0.9rem;
+    }
+    .num {
+      width: 48px;
+      height: 48px;
+      border: var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--take);
+      font-size: 1.15rem;
+    }
+    .steps li:nth-child(2) .num { background: var(--mizu); }
+    .steps li:nth-child(3) .num { background: var(--yama); }
+    .steps li:nth-child(4) .num { background: var(--coral); }
+    .steps li:nth-child(5) .num { background: var(--mizu); }
+    .steps li:nth-child(6) .num { background: var(--yama); }
+    .steps h3 { margin: 0 0 0.2rem; }
+    /* tables */
+    .table-wrap {
+      overflow-x: auto;
+      border: var(--border);
+      border-radius: 20px;
+      background: var(--washi);
+      margin: 0.6rem 0 1.1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 280px;
+    }
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 2px solid var(--ink);
+      overflow-wrap: anywhere;
+    }
+    th:first-child, td:first-child {
+      width: 38%;
+      word-break: keep-all;
+    }
+    th { background: var(--mizu); font-weight: 400; }
+    .fixes-unsure th { background: var(--yama); }
+    tr:last-child th, tr:last-child td { border-bottom: 0; }
+    footer {
+      text-align: center;
+      padding: 0.5rem 0 1.5rem;
+      font-size: 0.95rem;
+    }
+    .deco { margin: 0.4rem auto; width: min(280px, 70%); }
+    @media (max-width: 520px) {
+      .time-list li {
+        grid-template-columns: auto 1fr;
+        gap: 0.35rem 0.55rem;
+      }
+      .steps li { grid-template-columns: 40px 1fr; }
+      .num { width: 40px; height: 40px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="ico-star" viewBox="0 0 32 32">
+        <polygon points="16,2.5 19.6,12 29.5,12.3 21.6,18.4 24.7,27.8 16,22.4 7.3,27.8 10.4,18.4 2.5,12.3 12.4,12" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.8" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="ico-card" viewBox="0 0 32 40">
+        <rect x="2" y="1.5" width="28" height="37" rx="6" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2"/>
+        <rect x="6" y="6" width="20" height="13" rx="3" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.4"/>
+        <circle cx="16" cy="28" r="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.4"/>
+      </symbol>
+      <symbol id="ico-deck" viewBox="0 0 40 40">
+        <rect x="8" y="3" width="24" height="30" rx="5" fill="#F2A497" stroke="#3E3A39" stroke-width="2" transform="rotate(-8 20 18)"/>
+        <rect x="8" y="5" width="24" height="30" rx="5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2" transform="rotate(6 20 20)"/>
+        <rect x="8" y="7" width="24" height="30" rx="5" fill="#B9DAA5" stroke="#3E3A39" stroke-width="2"/>
+        <rect x="12" y="12" width="16" height="10" rx="2.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.3"/>
+      </symbol>
+      <symbol id="ico-coin" viewBox="0 0 32 32">
+        <circle cx="16" cy="16" r="13.5" fill="#F6D27A" stroke="#3E3A39" stroke-width="2"/>
+        <circle cx="16" cy="16" r="9.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.5"/>
+        <text x="16" y="20.5" text-anchor="middle" font-size="11" font-family="Huninn, sans-serif" fill="#3E3A39">先</text>
+      </symbol>
+      <symbol id="ico-dice" viewBox="0 0 32 32">
+        <rect x="2.5" y="2.5" width="27" height="27" rx="7" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2"/>
+        <circle cx="10" cy="10" r="2.2" fill="#3E3A39"/>
+        <circle cx="22" cy="10" r="2.2" fill="#3E3A39"/>
+        <circle cx="16" cy="16" r="2.2" fill="#3E3A39"/>
+        <circle cx="10" cy="22" r="2.2" fill="#3E3A39"/>
+        <circle cx="22" cy="22" r="2.2" fill="#3E3A39"/>
+      </symbol>
+      <symbol id="ico-prize" viewBox="0 0 40 28">
+        <rect x="1" y="6" width="10" height="16" rx="2.5" fill="#F2A497" stroke="#3E3A39" stroke-width="1.5"/>
+        <rect x="11" y="4" width="10" height="16" rx="2.5" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.5"/>
+        <rect x="21" y="6" width="10" height="16" rx="2.5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.5"/>
+        <rect x="29" y="5" width="10" height="16" rx="2.5" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.5"/>
+      </symbol>
+      <symbol id="ico-energy" viewBox="0 0 40 18">
+        <circle cx="7" cy="9" r="6" fill="#F2A497" stroke="#3E3A39" stroke-width="1.5"/>
+        <circle cx="16" cy="9" r="6" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.5"/>
+        <circle cx="25" cy="9" r="6" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.5"/>
+        <circle cx="34" cy="9" r="6" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.5"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="hero wrap">
+    <h1>PTCG 線上課複習筆記<br>（11/15）</h1>
+    <p class="subtitle">把 2 個半小時的課整理成 9 段重點、對局小抄、練習題和複習順序。烈空坐的大武器就是速度、裁判＋熔岩洞，還有英雄斗篷。</p>
+    <svg class="hero-art" viewBox="0 0 360 200" role="img" aria-label="卡牌對戰小插圖：卡堆、硬幣、骰子、獎賞卡和能量珠">
+      <!-- playmat -->
+      <rect x="12" y="28" width="336" height="160" rx="32" fill="#B9DAA5" stroke="#3E3A39" stroke-width="3"/>
+      <rect x="26" y="42" width="308" height="132" rx="24" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.5"/>
+      <!-- deck pile left -->
+      <g transform="translate(40,62)">
+        <rect x="6" y="0" width="46" height="66" rx="8" fill="#F2A497" stroke="#3E3A39" stroke-width="2.2" transform="rotate(-10 29 33)"/>
+        <rect x="8" y="4" width="46" height="66" rx="8" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.2" transform="rotate(8 31 37)"/>
+        <rect x="6" y="8" width="46" height="66" rx="8" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.2"/>
+        <rect x="13" y="16" width="32" height="22" rx="4" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.5"/>
+        <polygon points="29,20 31.2,25.2 36.8,25.4 32.4,28.8 34,34 29,31 24,34 25.6,28.8 21.2,25.4 26.8,25.2" fill="#F2A497" stroke="#3E3A39" stroke-width="1"/>
+      </g>
+      <!-- active card center -->
+      <g transform="translate(140,48)">
+        <rect x="0" y="4" width="78" height="108" rx="12" fill="#A8D3E6" stroke="#3E3A39" stroke-width="3"/>
+        <rect x="9" y="14" width="60" height="48" rx="8" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2"/>
+        <!-- abstract star creature, not a pokemon -->
+        <circle cx="39" cy="38" r="14" fill="#F6D27A" stroke="#3E3A39" stroke-width="2"/>
+        <circle cx="34" cy="35" r="1.6" fill="#3E3A39"/>
+        <circle cx="44" cy="35" r="1.6" fill="#3E3A39"/>
+        <path d="M34 43 q5 4 10 0" fill="none" stroke="#3E3A39" stroke-width="1.6" stroke-linecap="round"/>
+        <!-- hp box -->
+        <rect x="10" y="70" width="36" height="16" rx="5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.6"/>
+        <text x="28" y="82" text-anchor="middle" font-size="9" font-family="Huninn, sans-serif" fill="#3E3A39">HP</text>
+        <!-- energy orbs on card -->
+        <circle cx="58" cy="78" r="7" fill="#F2A497" stroke="#3E3A39" stroke-width="1.6"/>
+        <circle cx="58" cy="96" r="7" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.6"/>
+      </g>
+      <!-- prize cards right -->
+      <g transform="translate(236,58)">
+        <rect x="0" y="8" width="28" height="40" rx="5" fill="#F2A497" stroke="#3E3A39" stroke-width="1.8"/>
+        <rect x="24" y="4" width="28" height="40" rx="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.8"/>
+        <rect x="48" y="8" width="28" height="40" rx="5" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.8"/>
+        <rect x="8" y="44" width="28" height="40" rx="5" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.8"/>
+        <rect x="36" y="40" width="28" height="40" rx="5" fill="#F2A497" stroke="#3E3A39" stroke-width="1.8"/>
+        <rect x="62" y="46" width="28" height="40" rx="5" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.8"/>
+        <text x="48" y="108" text-anchor="middle" font-size="9" font-family="Huninn, sans-serif" fill="#3E3A39">獎賞卡</text>
+      </g>
+      <!-- coin in air -->
+      <g transform="translate(112,18)">
+        <circle cx="18" cy="18" r="16" fill="#F6D27A" stroke="#3E3A39" stroke-width="2.3"/>
+        <circle cx="18" cy="18" r="11" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.5"/>
+        <text x="18" y="22.5" text-anchor="middle" font-size="12" font-family="Huninn, sans-serif" fill="#3E3A39">先</text>
+      </g>
+      <!-- second coin small -->
+      <g transform="translate(86,148)">
+        <circle cx="14" cy="14" r="13" fill="#A8D3E6" stroke="#3E3A39" stroke-width="2.1"/>
+        <circle cx="14" cy="14" r="8.5" fill="#FFFCF6" stroke="#3E3A39" stroke-width="1.3"/>
+        <text x="14" y="18" text-anchor="middle" font-size="10" font-family="Huninn, sans-serif" fill="#3E3A39">後</text>
+      </g>
+      <!-- dice -->
+      <g transform="translate(232,148)">
+        <rect x="0" y="0" width="28" height="28" rx="6" fill="#FFFCF6" stroke="#3E3A39" stroke-width="2.1"/>
+        <circle cx="8" cy="8" r="2" fill="#3E3A39"/>
+        <circle cx="20" cy="8" r="2" fill="#3E3A39"/>
+        <circle cx="14" cy="14" r="2" fill="#3E3A39"/>
+        <circle cx="8" cy="20" r="2" fill="#3E3A39"/>
+        <circle cx="20" cy="20" r="2" fill="#3E3A39"/>
+      </g>
+      <!-- energy orbs floating -->
+      <circle cx="48" cy="48" r="7" fill="#F2A497" stroke="#3E3A39" stroke-width="1.6"/>
+      <circle cx="330" cy="48" r="7" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.6"/>
+      <circle cx="318" cy="168" r="6" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.5"/>
+      <!-- sparkle stars -->
+      <polygon points="28,22 29.2,25.4 32.8,25.5 30,27.6 31,31 28,29.2 25,31 26,27.6 23.2,25.5 26.8,25.4" fill="#F6D27A" stroke="#3E3A39" stroke-width="1"/>
+      <polygon points="338,22 339.2,25.4 342.8,25.5 340,27.6 341,31 338,29.2 335,31 336,27.6 333.2,25.5 336.8,25.4" fill="#F2A497" stroke="#3E3A39" stroke-width="1"/>
+    </svg>
+  </header>
+
+  <nav class="toc" aria-label="目錄">
+    <div class="toc-inner">
+      <a href="#top">先看這裡</a>
+      <a href="#segs">各段重點</a>
+      <a href="#ideas">重點觀念</a>
+      <a href="#matchups">對手小抄</a>
+      <a href="#weak">比賽弱點</a>
+      <a href="#quiz">練習題</a>
+      <a href="#plan">複習計畫</a>
+      <a href="#fixes">字幕修正</a>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section id="top" class="panel yama">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-star"/></svg>
+        <h2>先看這裡</h2>
+      </div>
+      <div class="callout">
+        <div class="lead">這堂課最重要的三句話</div>
+        <p>烈空坐的優勢是速度，後攻第一回合就能用烈箭鷹ex打。很多對局的贏法都是「裁判＋熔岩洞」讓對手不能用特性、不能抽牌。英雄斗篷讓烈空坐多 100 HP，很多牌都打不倒它。</p>
+      </div>
+      <p>每段的時間是「那一段影片裡的分:秒」，對照課堂錄影拉到那個時間就能重看。課堂上有同學一起上課，這份筆記只整理卡牌和打法。</p>
+    </section>
+
+    <section id="segs">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 32 40" aria-hidden="true"><use href="#ico-card"/></svg>
+        <h2>各段重點（附影片時間）</h2>
+      </div>
+      <p class="note">時間是這一段影片裡的分:秒，例如 05:30。下面依段落編號整理，方便對照課堂錄影。</p>
+      <article class="seg c1" id="seg-01" aria-labelledby="h-seg-01">
+        <header>
+          <div class="badge" aria-hidden="true">01</div>
+          <h3 id="h-seg-01">第01段 開場與牌型環境</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">05:00</span>
+          <div>
+            <p class="k">沒有一套牌可以贏所有牌</p>
+            <p class="d">組牌時就要先想好會遇到哪些對局，例如想打胡地就放裁判。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">06:00</span>
+          <div>
+            <p class="k">老師整理的環境表</p>
+            <p class="d">依孩童組、少年組上位玩家的使用率，排出最常遇到的牌組。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">孩童組多龍非常多</p>
+            <p class="d">最好選對多龍有優勢或能打平的牌。老師認為烈空坐「不算差，也不算最好」。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">10:30</span>
+          <div>
+            <p class="k">主流是錘子多龍</p>
+            <p class="d">卡表大多一樣，只差大土龍（?）或火焰鳥那一兩張。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">11:30</span>
+          <div>
+            <p class="k">先知道對手大概的構築</p>
+            <p class="d">才能排好獎賞卡路線。沒想到對手有斗篷，原本算好的路線就會錯。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">13:00</span>
+          <div>
+            <p class="k">龍頭地鼠構築（同學的牌）</p>
+            <p class="d">現在多龍幾乎都選後攻、用含羞苞鎖物品卡；可以旁聽了解對手的想法。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c2" id="seg-02" aria-labelledby="h-seg-02">
+        <header>
+          <div class="badge" aria-hidden="true">02</div>
+          <h3 id="h-seg-02">第02段 烈空坐構築與龍頭地鼠對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:00</span>
+          <div>
+            <p class="k">目前使用的烈空坐</p>
+            <p class="d">帶不公印章、熔岩洞版本。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">00:30</span>
+          <div>
+            <p class="k">烈空坐三種主流</p>
+            <p class="d">頂尖捕捉器（?）型＝全力進攻；不公印章型＝什麼對局都能反打；英雄斗篷型＝現在最主流、最耐打。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:30</span>
+          <div>
+            <p class="k">為什麼斗篷好用</p>
+            <p class="d">烈空坐要累積場上能量才打得痛，不想被擊倒。280＋100＝380 HP，配合加 30 HP 的場地可到 410。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">03:30</span>
+          <div>
+            <p class="k">烈空坐打多龍的難處</p>
+            <p class="d">前期被錘子敲掉能量。重點是撐過多龍的「含羞苞＋錘子」那段時間。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">04:30</span>
+          <div>
+            <p class="k">對多龍可以五五開</p>
+            <p class="d">孩童組的錘子多龍多半不放大土龍（?），穩定操作就能打。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:00</span>
+          <div>
+            <p class="k">老師建議：考慮把不公印章換成英雄斗篷</p>
+            <p class="d">打多龍不太需要印章；斗篷還會讓對手算錯獎賞卡路線（資訊差）。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">07:00</span>
+          <div>
+            <p class="k">構築觀念：別為少見的牌放太多針對卡</p>
+            <p class="d">會讓起手和中盤的穩定度下降。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">12:30</span>
+          <div>
+            <p class="k">烈空坐打龍頭地鼠</p>
+            <p class="d">先出烈箭鷹ex進攻拿牌，先存好烈空坐的能量，再做裁判、熔岩洞的干擾。鳳王打不倒地鼠。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">13:00</span>
+          <div>
+            <p class="k">熔岩洞讓鐵啞鈴沒有特性</p>
+            <p class="d">兩套牌對打都選後攻，誰後攻誰有優勢。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">14:00</span>
+          <div>
+            <p class="k">中後期一定要做出干擾</p>
+            <p class="d">做不出「裁判＋熔岩洞」或「特殊紅牌＋熔岩洞」，就很難打地鼠。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">18:30</span>
+          <div>
+            <p class="k">用小代價換大結果</p>
+            <p class="d">先想對手要怎麼贏我們，再想辦法反制。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c3" id="seg-03" aria-labelledby="h-seg-03">
+        <header>
+          <div class="badge" aria-hidden="true">03</div>
+          <h3 id="h-seg-03">第03段 火焰雞多龍對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">03:00</span>
+          <div>
+            <p class="k">現在的多龍要慢慢進化</p>
+            <p class="d">第 2 回合就用吉雉雞ex打後排的多龍奇、黑夜魔靈、火稚雞（?），威脅很大。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">04:00</span>
+          <div>
+            <p class="k">孩童組的多龍九成是錘子多龍</p>
+            <p class="d">這是老師依自己的觀察說的。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:00</span>
+          <div>
+            <p class="k">開局檢索時先看獎賞卡</p>
+            <p class="d">用好友寶芬、小剛的發掘時，順便看裁判、紅牌、老大的指令有沒有卡在獎賞卡裡。要養成習慣、動作再快一點。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">06:00</span>
+          <div>
+            <p class="k">裁判的時機</p>
+            <p class="d">我們進攻完、對手下回合準備用多龍攻擊時開裁判。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">07:00</span>
+          <div>
+            <p class="k">多龍的連招</p>
+            <p class="d">大多龍抽牌→不公印章→很多錘子。放裁判就是為了不讓他輕鬆湊齊。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:00</span>
+          <div>
+            <p class="k">能量要扣好，不要亂填</p>
+            <p class="d">斗篷版沒有能量回收。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">不要在對手場上留多餘傷害</p>
+            <p class="d">遇到會轉傷的猴子（願增猿?）時更要注意，除非是為了下回合的進攻。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c4" id="seg-04" aria-labelledby="h-seg-04">
+        <header>
+          <div class="badge" aria-hidden="true">04</div>
+          <h3 id="h-seg-04">第04段 胡地牌型與對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:00</span>
+          <div>
+            <p class="k">胡地比預期多（約 13%）</p>
+            <p class="d">要認真準備這個對局。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:00</span>
+          <div>
+            <p class="k">胡地變化很多</p>
+            <p class="d">有土龍、黑夜魔靈、皮皮、珍珠（?）等各種組合。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">03:00</span>
+          <div>
+            <p class="k">胡地的武器</p>
+            <p class="d">手持循環扇（吹走能量）、琵琶（?，丟掉紅牌）、改造之錘。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">06:00</span>
+          <div>
+            <p class="k">帶皮皮的胡地通常有紅牌</p>
+            <p class="d">打法很激進；很早就丟或貼基本超能量，就可能有皮皮。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:00</span>
+          <div>
+            <p class="k">皮皮可以打倒兩獎寶可夢</p>
+            <p class="d">老師特別提醒要注意。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:30</span>
+          <div>
+            <p class="k">開局檢索看裁判、熔岩洞</p>
+            <p class="d">熔岩洞左半或右半卡在獎賞卡，會影響烈箭鷹ex要拿哪張。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">烈空坐打胡地相對有利</p>
+            <p class="d">很多裁判＋烈空坐耐打，撐過一次裁判回合就很有機會贏。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">10:30</span>
+          <div>
+            <p class="k">胡地只帶 2–3 張糖果</p>
+            <p class="d">後期紅牌＋熔岩洞、裁判對它干擾很大。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">17:30</span>
+          <div>
+            <p class="k">魔靈胡地沒有場地</p>
+            <p class="d">就快點集齊熔岩洞，配裁判，這場大概就贏了。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c1" id="seg-05" aria-labelledby="h-seg-05">
+        <header>
+          <div class="badge" aria-hidden="true">05</div>
+          <h3 id="h-seg-05">第05段 龍頭地鼠內戰與超級路卡利歐</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">02:00</span>
+          <div>
+            <p class="k">烈空坐打地鼠（複習）</p>
+            <p class="d">烈箭鷹先出、存好能量，再找裁判或紅牌＋熔岩洞。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">02:30</span>
+          <div>
+            <p class="k">超級路卡利歐有兩種</p>
+            <p class="d">有土龍的比較穩；帶鐵掌力士的上限高，但被干擾後比較難動。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">04:00</span>
+          <div>
+            <p class="k">看到土龍，多半是斗篷</p>
+            <p class="d">路卡利歐的 S 卡可能是頂尖捕捉器（?）、斗篷、印章、腰帶、秘密箱。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:30</span>
+          <div>
+            <p class="k">後排不要下太多隻</p>
+            <p class="d">下五隻，他就能打 300 打倒烈空坐。烈箭鷹拿裁判＋斗篷，保住烈空坐。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">06:00</span>
+          <div>
+            <p class="k">鐵掌力士型：一直干擾</p>
+            <p class="d">寧可送一隻不重要的怪，也要保住下回合的大怪。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">07:00</span>
+          <div>
+            <p class="k">對手出了鐵掌力士或土龍的基礎就蓋熔岩洞</p>
+            <p class="d">配合裁判效果最好，他們場地只有兩張。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:30</span>
+          <div>
+            <p class="k">烈空坐被路卡利歐打會減 30</p>
+            <p class="d">抵抗力記得算，不要被騙。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c2" id="seg-06" aria-labelledby="h-seg-06">
+        <header>
+          <div class="badge" aria-hidden="true">06</div>
+          <h3 id="h-seg-06">第06段 索羅亞克與呆呆王對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:30</span>
+          <div>
+            <p class="k">索羅亞克的構築變化很多</p>
+            <p class="d">可能有腰帶、斗篷、秘密箱、印章等。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:30</span>
+          <div>
+            <p class="k">怎麼猜對手的 S 卡</p>
+            <p class="d">有白塔＋兩張以上裁判 → 秘密箱型；有引力山岳、阿瑪米（?）、小剛、拉姆達 → 想找腰帶、斗篷或印章。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">03:00</span>
+          <div>
+            <p class="k">烈空坐打索羅亞克：速度是優勢</p>
+            <p class="d">索羅要累積手牌，第 2 回合很難湊齊打倒烈箭鷹。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">03:30</span>
+          <div>
+            <p class="k">裁判＋熔岩洞是最大武器</p>
+            <p class="d">熔岩洞讓索羅抽不了牌，他們通常只帶兩張場地。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">04:00</span>
+          <div>
+            <p class="k">斗篷的時機</p>
+            <p class="d">等烈空坐能打倒索羅時再貼斗篷，確保能打倒兩隻。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:00</span>
+          <div>
+            <p class="k">呆呆王都選先攻</p>
+            <p class="d">他們想學酋雷姆的招式，一次打三隻各 110。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:30</span>
+          <div>
+            <p class="k">對呆呆王少下喵喵、吉雉雞</p>
+            <p class="d">用烈箭鷹進攻、把裁判拿到手；呆呆王其實靠袋獸、拉帝亞斯驅動。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">11:00</span>
+          <div>
+            <p class="k">130＋麻痺的連招</p>
+            <p class="d">八部吐蕃（?）配未知圖騰，寶可夢交替一定要留好。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c3" id="seg-07" aria-labelledby="h-seg-07">
+        <header>
+          <div class="badge" aria-hidden="true">07</div>
+          <h3 id="h-seg-07">第07段 基礎型 Box 與後續對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:00</span>
+          <div>
+            <p class="k">袋獸 Box</p>
+            <p class="d">有袋獸、拉帝亞斯、喵喵、烈箭鷹，跟這副牌有點像。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">02:00</span>
+          <div>
+            <p class="k">打袋獸 Box</p>
+            <p class="d">對方都是基礎寶可夢，熔岩洞不太好用。要靠烈空坐持續高傷害，干擾時給烈空坐斗篷。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">02:30</span>
+          <div>
+            <p class="k">小心鐵荊棘</p>
+            <p class="d">鐵荊棘可以打倒烈空坐，有斗篷就打不倒。大約五五開。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">03:00</span>
+          <div>
+            <p class="k">看能量猜有沒有猛雷鼓</p>
+            <p class="d">很多不同顏色的基本能量（尤其鬥、電）→ 可能有猛雷鼓。優先打倒身上有電、鬥能量的寶可夢。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">08:00</span>
+          <div>
+            <p class="k">打祭典牌組（?）</p>
+            <p class="d">格拉吉歐（?）＋蟲可以打 360，只有斗篷烈空坐撐得住。前期烈箭鷹快打，再用裁判＋熔岩洞讓牠們沒特性。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">要打誰？哪邊少打哪邊</p>
+            <p class="d">攻擊手少就打攻擊手，猴子少就打猴子。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">13:00</span>
+          <div>
+            <p class="k">熔岩洞不要亂下</p>
+            <p class="d">配合干擾再下，對手場地多，很容易被蓋掉。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">19:00</span>
+          <div>
+            <p class="k">打化隱（?）</p>
+            <p class="d">烈箭鷹打一拳就撤退（撤退 0），換另一隻打，逼對手一定要找老大的指令。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">21:00</span>
+          <div>
+            <p class="k">遇到土龍</p>
+            <p class="d">裁判＋熔岩洞讓土龍抽不了牌。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c4" id="seg-08" aria-labelledby="h-seg-08">
+        <header>
+          <div class="badge" aria-hidden="true">08</div>
+          <h3 id="h-seg-08">第08段 烈咬陸鯊</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:00</span>
+          <div>
+            <p class="k">烈咬陸鯊 400 HP</p>
+            <p class="d">花椰菜（老師的暱稱，?）一隻加 30，三隻就打 350，再加道具能打倒斗篷烈空坐。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:00</span>
+          <div>
+            <p class="k">烈空坐進攻的那回合：裁判＋熔岩洞</p>
+            <p class="d">花椰菜沒特性就不能加傷害；烈空坐也抗鬥。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:30</span>
+          <div>
+            <p class="k">前面先用烈箭鷹</p>
+            <p class="d">烈箭鷹也抗鬥；鳳王快點下來填好能量。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">04:00</span>
+          <div>
+            <p class="k">印章或斗篷都可以</p>
+            <p class="d">但老師說斗篷能打的對局比較多。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:00</span>
+          <div>
+            <p class="k">烈空坐打祭典（再講一次）</p>
+            <p class="d">祭典選先攻、鋪場不穩；預設烈箭鷹會被打倒，所以要拿裁判＋熔岩洞一波反打。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">07:30</span>
+          <div>
+            <p class="k">最要把握的是多龍</p>
+            <p class="d">7 輪比賽越到後面越常遇到多龍，這幾天加強複習。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">可用 PTCG Live 練習</p>
+            <p class="d">英文版 App，可跟國外玩家對戰。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">10:00</span>
+          <div>
+            <p class="k">第二要把握的是胡地</p>
+            <p class="d">快拿裁判＋熔岩洞，讓胡地、土龍不能抽牌。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+      <article class="seg c1" id="seg-09" aria-labelledby="h-seg-09">
+        <header>
+          <div class="badge" aria-hidden="true">09</div>
+          <h3 id="h-seg-09">第09段 超級巨牙鯊與後續對局</h3>
+        </header>
+        <ul class="time-list">
+        <li>
+          <span class="time">00:00</span>
+          <div>
+            <p class="k">巨牙鯊牌組</p>
+            <p class="d">靠中毒和傷害指示物爆發，帶很多干擾（裁判、印章、白塔）。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">00:30</span>
+          <div>
+            <p class="k">前期會先掉一隻烈箭鷹，沒關係</p>
+            <p class="d">對手沒有手段打倒有斗篷的烈空坐。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">01:00</span>
+          <div>
+            <p class="k">小心歪鳥（?）把後排拉上來</p>
+            <p class="d">寶可夢交替要留好；熔岩洞讓牠不能用特性填能量。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:00</span>
+          <div>
+            <p class="k">寶石海星＋雪妖女：控制手牌數</p>
+            <p class="d">雪妖女依我們手牌每張打 50，烈空坐 280 要手牌 6 張才會倒。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">05:30</span>
+          <div>
+            <p class="k">拿獎賞卡也會增加手牌</p>
+            <p class="d">手牌 5 張、拿 3 張獎賞卡就變 8 張，要先算好、先用掉。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">06:30</span>
+          <div>
+            <p class="k">雪妖女的睡眠</p>
+            <p class="d">睡著不能撤退也不能攻擊，寶可夢交替要留好。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">07:30</span>
+          <div>
+            <p class="k">斗篷可以給任何受威脅的寶可夢</p>
+            <p class="d">不一定要給烈空坐，給烈箭鷹也可以。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">09:00</span>
+          <div>
+            <p class="k">火爆獸（11/15 輸過）</p>
+            <p class="d">趁他把阿響（?）的卡丟掉之前，用裁判＋熔岩洞讓火球鼠不能用特性；斗篷烈空坐他打不倒。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">13:30</span>
+          <div>
+            <p class="k">蜜集大蛇</p>
+            <p class="d">烈箭鷹後攻就打；他用時拉比（?）拿完牌後開裁判，效果很強。</p>
+          </div>
+        </li>
+        <li>
+          <span class="time">16:00</span>
+          <div>
+            <p class="k">大針蜂</p>
+            <p class="d">等他累積資源後，烈箭鷹＋裁判＋熔岩洞，讓土龍抽不了牌。</p>
+          </div>
+        </li>
+        </ul>
+      </article>
+    </section>
+
+    <section id="ideas" class="panel mizu">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 40 18" aria-hidden="true"><use href="#ico-energy"/></svg>
+        <h2>重點觀念</h2>
+      </div>
+      <ul class="ideas">
+        <li>
+          <h3>沒有一套牌能贏所有牌</h3>
+          <ul>
+            <li>組牌時先想好會遇到誰，例如多放裁判來打胡地。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>烈空坐的三種版本</h3>
+          <ul>
+            <li>頂尖捕捉器（?）型最會進攻，不公印章型最會反打，英雄斗篷型最耐打。</li>
+            <li>老師建議考慮把不公印章換成英雄斗篷，因為打多龍比較用不到印章。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>斗篷的資訊差</h3>
+          <ul>
+            <li>對手以為打兩下就能打倒，貼了斗篷他就要多花一回合，獎賞卡路線就亂了。</li>
+            <li>斗篷可以給任何快被打倒的寶可夢，烈箭鷹也可以。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>先存能量，再干擾</h3>
+          <ul>
+            <li>烈空坐要累積場上的能量才打得痛，能量不要亂填，也不要被敲光。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>裁判要在對的時間開</h3>
+          <ul>
+            <li>對手剛把手牌湊齊、下回合要大進攻時開最有效。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>熔岩洞配干擾再下</h3>
+          <ul>
+            <li>沒有裁判或紅牌就先下，對手很容易換掉場地。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>開局先看獎賞卡</h3>
+          <ul>
+            <li>用寶芬、檢索卡時，順便看裁判、紅牌、老大、熔岩洞有沒有卡獎。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>用小代價換大結果</h3>
+          <ul>
+            <li>先想對手要怎麼贏，再用最划算的方式反制。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>不要在對手場上留多餘傷害</h3>
+          <ul>
+            <li>對手有轉傷的寶可夢時更重要，除非是為了下回合的進攻。</li>
+          </ul>
+        </li>
+        <li>
+          <h3>後排不要放太滿</h3>
+          <ul>
+            <li>有些牌（像路卡利歐）會依我們後排數量加傷害，呆呆王則專打後排的兩獎小怪。</li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="matchups" class="panel take">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><use href="#ico-deck"/></svg>
+        <h2>對手牌組小抄</h2>
+      </div>
+      <p class="note">右邊是段落和時間，例如「05 05:30」是第 05 段 5 分 30 秒。</p>
+      <div class="cards">
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">紅錘多龍</span>
+            <span class="meta">02 03:30、03 06:00</span>
+          </div>
+          <h3>撐過前期錘子，裁判抓時機</h3>
+          <p>能量扣好不要亂填；多龍要進攻前開裁判；斗篷＋場地讓多龍兩下打不倒。</p>
+        </article>
+        <article class="card mizu">
+          <div class="card-top">
+            <span class="lead-tag">胡地</span>
+            <span class="meta">04 08:30、17:30</span>
+          </div>
+          <h3>相對有利：裁判多＋烈空坐耐打</h3>
+          <p>開局看裁判、熔岩洞有沒有卡獎；帶皮皮的胡地通常有紅牌、打法激進；魔靈胡地沒場地，熔岩洞超好用。</p>
+        </article>
+        <article class="card take">
+          <div class="card-top">
+            <span class="lead-tag">超級路卡利歐</span>
+            <span class="meta">05 05:30</span>
+          </div>
+          <h3>後排不超過 4 隻，烈空坐抗鬥</h3>
+          <p>土龍型多半帶斗篷；鐵掌力士型要一直干擾，對手出基礎時就蓋熔岩洞。</p>
+        </article>
+        <article class="card yama">
+          <div class="card-top">
+            <span class="lead-tag">N的索羅亞克</span>
+            <span class="meta">06 03:00</span>
+          </div>
+          <h3>速度＋裁判＋熔岩洞</h3>
+          <p>從白塔、引力山岳、小剛等線索猜 S 卡；能打倒索羅時再貼斗篷。</p>
+        </article>
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">龍頭地鼠</span>
+            <span class="meta">02 12:30</span>
+          </div>
+          <h3>先存好烈空坐的能量，再干擾</h3>
+          <p>鳳王打不倒地鼠；熔岩洞讓鐵啞鈴沒特性；中後期一定要做出裁判或紅牌＋熔岩洞。</p>
+        </article>
+        <article class="card mizu">
+          <div class="card-top">
+            <span class="lead-tag">呆呆王</span>
+            <span class="meta">06 08:00</span>
+          </div>
+          <h3>少下兩獎小怪，交替留好</h3>
+          <p>烈箭鷹進攻＋拿裁判；老大打袋獸、拉帝亞斯；防 130＋麻痺連招。</p>
+        </article>
+        <article class="card take">
+          <div class="card-top">
+            <span class="lead-tag">袋獸 Box／猛雷鼓</span>
+            <span class="meta">07 02:00</span>
+          </div>
+          <h3>熔岩洞不好用，靠斗篷烈空坐</h3>
+          <p>鐵荊棘打不倒有斗篷的烈空坐；能量顏色多就可能有猛雷鼓，優先打倒帶電、鬥能量的怪。</p>
+        </article>
+        <article class="card yama">
+          <div class="card-top">
+            <span class="lead-tag">祭典（?）</span>
+            <span class="meta">07 08:00、08 05:00</span>
+          </div>
+          <h3>哪邊少打哪邊</h3>
+          <p>只有斗篷烈空坐撐得住；烈箭鷹拿裁判＋熔岩洞一波反打。</p>
+        </article>
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">化隱（?）</span>
+            <span class="meta">07 19:00</span>
+          </div>
+          <h3>烈箭鷹打一拳就跑</h3>
+          <p>逼對手一定要用老大；遇到土龍用裁判＋熔岩洞。</p>
+        </article>
+        <article class="card mizu">
+          <div class="card-top">
+            <span class="lead-tag">烈咬陸鯊</span>
+            <span class="meta">08 01:00</span>
+          </div>
+          <h3>進攻回合用裁判＋熔岩洞</h3>
+          <p>烈箭鷹、烈空坐都抗鬥；鳳王快填能量。</p>
+        </article>
+        <article class="card take">
+          <div class="card-top">
+            <span class="lead-tag">超級巨牙鯊</span>
+            <span class="meta">09 00:30</span>
+          </div>
+          <h3>斗篷烈空坐打不倒</h3>
+          <p>前期先掉一隻烈箭鷹沒關係；小心歪鳥（?）拉後排；先攻壓白塔比較麻煩。</p>
+        </article>
+        <article class="card yama">
+          <div class="card-top">
+            <span class="lead-tag">寶石海星＋雪妖女</span>
+            <span class="meta">09 05:00</span>
+          </div>
+          <h3>控制手牌數</h3>
+          <p>裁判後只剩 4 張；拿獎賞卡前先算好。</p>
+        </article>
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">火爆獸</span>
+            <span class="meta">09 09:00</span>
+          </div>
+          <h3>趁阿響（?）的卡還在就干擾</h3>
+          <p>裁判一直打，配熔岩洞；斗篷烈空坐打不倒。</p>
+        </article>
+        <article class="card mizu">
+          <div class="card-top">
+            <span class="lead-tag">蜜集大蛇、大針蜂</span>
+            <span class="meta">09 13:30、16:00</span>
+          </div>
+          <h3>烈箭鷹先打，對手拿完牌再裁判</h3>
+          <p>大針蜂要靠土龍抽牌，熔岩洞讓牠動不了。</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="weak" class="panel coral">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-coin"/></svg>
+        <h2>針對最近比賽的弱點</h2>
+      </div>
+      <div class="cards">
+        <article class="card yama">
+          <div class="card-top">
+            <span class="lead-tag">開局鋪不起來</span>
+            <span class="meta">03 05:00、07 20:30</span>
+          </div>
+          <h3>後攻就出烈箭鷹ex拿牌，先穩定檯面</h3>
+          <p>烈箭鷹可以拿袋獸、高級球；開局用寶芬時先看重要的牌有沒有卡獎，動作再快一點。</p>
+        </article>
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">路卡利歐（含一回合被打完）</span>
+            <span class="meta">05 02:30–09:00</span>
+          </div>
+          <h3>後排別下滿、給烈空坐斗篷</h3>
+          <p>下到 5 隻他就能打 300；烈空坐抗鬥減 30；對手出基礎時配裁判蓋熔岩洞。</p>
+        </article>
+        <article class="card mizu">
+          <div class="card-top">
+            <span class="lead-tag">N的索羅亞克</span>
+            <span class="meta">06 03:00</span>
+          </div>
+          <h3>裁判＋熔岩洞讓牠抽不了牌</h3>
+          <p>索羅只有兩張場地；能打倒索羅時再貼斗篷。</p>
+        </article>
+        <article class="card take">
+          <div class="card-top">
+            <span class="lead-tag">猛擂鼓／袋獸</span>
+            <span class="meta">07 00:00–04:30</span>
+          </div>
+          <h3>看能量顏色猜猛雷鼓</h3>
+          <p>優先打倒帶電、鬥能量的寶可夢；斗篷擋鐵荊棘。</p>
+        </article>
+        <article class="card coral">
+          <div class="card-top">
+            <span class="lead-tag">紅錘多龍</span>
+            <span class="meta">02 03:30、03 全段</span>
+          </div>
+          <h3>撐過含羞苞＋錘子那段</h3>
+          <p>老師說這是最要把握的對局，這幾天多複習。</p>
+        </article>
+        <article class="card yama">
+          <div class="card-top">
+            <span class="lead-tag">火爆獸</span>
+            <span class="meta">09 09:00</span>
+          </div>
+          <h3>裁判＋熔岩洞，讓火球鼠沒特性</h3>
+          <p>老師說環境很少見，照這個方法就能平推。</p>
+        </article>
+      </div>
+      <p style="margin-top:1rem;">這兩場（11/14 士林、11/15 Magic Star）輸掉的對手，課堂上幾乎都講到了，照這些重點練幾局就會更熟。</p>
+    </section>
+
+    <section id="quiz" class="panel mizu">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-dice"/></svg>
+        <h2>練習題：這時候妳會怎麼出牌？</h2>
+      </div>
+      <p class="note">先自己想一想、說出答案，再點開「看答案」。</p>
+      <details class="quiz-item">
+        <summary>第 1 題：對手是紅錘多龍，妳後攻。剛開始用好友寶芬、檢索卡找牌時，除了找要用的牌，還要順便做什麼？</summary>
+        <p class="answer"><strong>答案：</strong>看裁判、特殊紅牌、老大的指令、熔岩洞有沒有卡在獎賞卡裡，之後才知道烈箭鷹要拿什麼。（第 03 段 05:00）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 2 題：多龍這回合剛好湊齊了不公印章和錘子，下回合準備用大多龍攻擊妳。這時候最適合打出哪張牌？</summary>
+        <p class="answer"><strong>答案：</strong>裁判。在多龍要進攻的前一回合打亂他的手牌，他就要重新找齊印章和錘子，非常困難。（第 03 段 06:00）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 3 題：對手是魔靈胡地，妳發現他整副牌好像沒有場地。妳的計畫是什麼？</summary>
+        <p class="answer"><strong>答案：</strong>烈箭鷹快點進攻，同時快點集齊熔岩洞，再配裁判。對手不能抽牌，這場大概就贏了。（第 04 段 17:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 4 題：開局發現熔岩洞的左半邊卡在獎賞卡裡。烈箭鷹ex要拿兩張牌，熔岩洞要怎麼拿？</summary>
+        <p class="answer"><strong>答案：</strong>先拿手上缺的那一半。老師的意思是卡獎的那一半之後抽獎賞卡時比較有機會拿到，所以要先注意哪一邊卡住了。（第 04 段 08:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 5 題：對手是有土龍的超級路卡利歐。妳的後排已經有 4 隻寶可夢，手上還有一隻基礎寶可夢，要不要放下去？</summary>
+        <p class="answer"><strong>答案：</strong>先不要。後排下到 5 隻，他就能打 300 打倒烈空坐。烈箭鷹優先拿裁判和斗篷保護烈空坐。（第 05 段 05:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 6 題：對手的路卡利歐說「這一下可以打倒妳的烈空坐」。妳要先檢查什麼？</summary>
+        <p class="answer"><strong>答案：</strong>烈空坐對鬥屬性有抵抗力，被路卡利歐打會減 30，自己算一次，不要被騙。（第 05 段 08:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 7 題：對手是 N 的索羅亞克，妳的烈空坐這回合可以打倒索羅了。斗篷現在貼還是先留著？</summary>
+        <p class="answer"><strong>答案：</strong>現在貼。等烈空坐能打倒索羅時再給斗篷，索羅打不倒有斗篷的烈空坐，就能確保打倒兩隻索羅。（第 06 段 04:00）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 8 題：對手是呆呆王（先攻）。妳手上有喵喵和吉雉雞ex，要不要都放到備戰區？</summary>
+        <p class="answer"><strong>答案：</strong>盡量少放。呆呆王想學酋雷姆一次打三隻各 110，後排兩獎怪越多越危險。用烈箭鷹進攻、把裁判拿到手。（第 06 段 09:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 9 題：對手是化隱（?），烈箭鷹打了一拳，對手下回合也會回打。妳的烈箭鷹要怎麼做？</summary>
+        <p class="answer"><strong>答案：</strong>打完就撤退（烈箭鷹撤退是 0），換另一隻上去打，逼對手一定要用老大的指令，他白打一拳，妳就賺到一回合。（第 07 段 19:00）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 10 題：對手是烈咬陸鯊，場上有三隻會加傷害的寶可夢（老師叫花椰菜）。烈空坐要進攻的那一回合，一定要搭配哪兩張牌？</summary>
+        <p class="answer"><strong>答案：</strong>裁判＋熔岩洞。花椰菜沒有特性就不能加傷害，再加上烈空坐抗鬥，他很難打倒烈空坐。（第 08 段 01:00）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 11 題：對手是雪妖女（每張手牌打 50）。妳手上 5 張，這回合打倒他會拿 3 張獎賞卡。要注意什麼？</summary>
+        <p class="answer"><strong>答案：</strong>拿完會變 8 張，超過 280 HP 能撐的 5 張。拿獎賞卡前先用掉或用高級球丟掉 3 張用不到的牌。（第 09 段 05:30）</p>
+      </details>
+      <details class="quiz-item">
+        <summary>第 12 題：對手是火爆獸，他剛用火球鼠的特性拿到阿響（?）的卡，還沒丟掉。妳這回合最該做什麼？</summary>
+        <p class="answer"><strong>答案：</strong>開裁判，加上熔岩洞，讓火球鼠沒有特性、阿響的卡被洗回去，他的傷害就起不來。（第 09 段 09:00）</p>
+      </details>
+    </section>
+
+    <section id="plan" class="panel take">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 40 28" aria-hidden="true"><use href="#ico-prize"/></svg>
+        <h2>複習計畫</h2>
+      </div>
+      <ol class="steps">
+        <li>
+          <div class="num" aria-hidden="true">1</div>
+          <div>
+            <h3>第 1 天：第 02 段＋第 03 段</h3>
+            <p>烈空坐構築、打多龍的方法和裁判時機，老師說多龍是最要把握的對局。</p>
+          </div>
+        </li>
+        <li>
+          <div class="num" aria-hidden="true">2</div>
+          <div>
+            <h3>第 2 天：第 05 段（02:30 起）＋第 06 段（前 5 分鐘）</h3>
+            <p>路卡利歐和索羅亞克，都是最近輸過的對手。</p>
+          </div>
+        </li>
+        <li>
+          <div class="num" aria-hidden="true">3</div>
+          <div>
+            <h3>第 3 天：第 07 段（前 5 分鐘）＋第 09 段（09:00–11:30）</h3>
+            <p>袋獸 Box、猛雷鼓和火爆獸。</p>
+          </div>
+        </li>
+        <li>
+          <div class="num" aria-hidden="true">4</div>
+          <div>
+            <h3>第 4 天：第 04 段＋第 08 段</h3>
+            <p>胡地（第二要把握的對局）和烈咬陸鯊。</p>
+          </div>
+        </li>
+        <li>
+          <div class="num" aria-hidden="true">＋</div>
+          <div>
+            <h3>有空再看：第 01 段、第 09 段其他對局</h3>
+            <p>環境介紹、巨牙鯊、雪妖女、蜜集大蛇、大針蜂。</p>
+          </div>
+        </li>
+        <li>
+          <div class="num" aria-hidden="true">題</div>
+          <div>
+            <h3>每看完一段就做對應的練習題</h3>
+            <p>再找人用那副牌對打兩三局，特別練前兩回合怎麼鋪場。</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="fixes" class="panel yama">
+      <div class="sec-head">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><use href="#ico-star"/></svg>
+        <h2>字幕修正與待確認</h2>
+      </div>
+      <p class="note">字幕是自動產生的，以下依官方繁中卡名和上下文修正；標（?）的請再對照影片確認。</p>
+      <h3>已修正的名稱</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>字幕原文</th><th>修正</th></tr></thead>
+          <tbody>
+            <tr><td>烈工作、列控座、雷空坐、立空做</td><td>烈空坐（超級烈空坐ex）</td></tr>
+            <tr><td>裂劍音、烈尖音、列劍衣、裂肩衣、烈箭營</td><td>烈箭鷹ex</td></tr>
+            <tr><td>龍巖洞、榮巖洞、融元凍、龍顏洞</td><td>熔岩洞（兩張一組的場地；官方卡名請再確認 ?）</td></tr>
+            <tr><td>硬張、印章</td><td>不公印章</td></tr>
+            <tr><td>斗篷、抖棚</td><td>英雄斗篷</td></tr>
+            <tr><td>頂尖槍</td><td>頂尖捕捉器（?）</td></tr>
+            <tr><td>鳳凰</td><td>鳳王</td></tr>
+            <tr><td>極致機、極字機、雞、騎制機</td><td>吉雉雞ex</td></tr>
+            <tr><td>鐵亞鈴、天亞林、鐵雅琳</td><td>鐵啞鈴</td></tr>
+            <tr><td>蓋諾賽哥特、甘諾塞科特</td><td>蓋諾賽克特ex</td></tr>
+            <tr><td>螺丁曆鼠、羅丁地鼠、地主</td><td>螺釘地鼠／龍頭地鼠</td></tr>
+            <tr><td>引力三越、引力三月、影帝三月</td><td>引力山岳</td></tr>
+            <tr><td>小鋼、小缸、小槓</td><td>小剛的發掘</td></tr>
+            <tr><td>寶分</td><td>好友寶芬</td></tr>
+            <tr><td>3.0</td><td>寶可齒輪3.0</td></tr>
+            <tr><td>拿木塔</td><td>火箭隊的拉姆達</td></tr>
+            <tr><td>紅牌</td><td>特殊紅牌</td></tr>
+            <tr><td>含羞包、寒修包、很羞包</td><td>含羞苞</td></tr>
+            <tr><td>魔靈、魔齡</td><td>黑夜魔靈</td></tr>
+            <tr><td>多龍騎</td><td>多龍奇</td></tr>
+            <tr><td>福地、湖蒂、胡迪、狐狸、虎地</td><td>胡地</td></tr>
+            <tr><td>入卡利歐、素卡利歐</td><td>路卡利歐</td></tr>
+            <tr><td>鐵場立士、鐵藏力士</td><td>鐵掌力士</td></tr>
+            <tr><td>索爾雅克、索雅克</td><td>索羅亞克</td></tr>
+            <tr><td>雷彈王、淡淡王</td><td>呆呆王</td></tr>
+            <tr><td>球雷姆、喬蓮姆</td><td>酋雷姆</td></tr>
+            <tr><td>傑拉奧拉</td><td>捷拉奧拉</td></tr>
+            <tr><td>戴壽、代獸、代收</td><td>袋獸</td></tr>
+            <tr><td>拉蒂亞絲</td><td>拉帝亞斯</td></tr>
+            <tr><td>了西塞姆、藍西拉姆</td><td>萊希拉姆</td></tr>
+            <tr><td>猛雷骨</td><td>猛雷鼓</td></tr>
+            <tr><td>顧勒盾</td><td>故勒頓</td></tr>
+            <tr><td>密集大蛇、秘籍大蛇</td><td>蜜集大蛇</td></tr>
+            <tr><td>大真鋒、大陣風</td><td>大針蜂</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>還不確定的名稱（?）</h3>
+      <div class="table-wrap fixes-unsure">
+        <table>
+          <thead><tr><th>字幕原文</th><th>說明</th></tr></thead>
+          <tbody>
+            <tr><td>熔岩洞</td><td>老師一直這樣叫，也說是兩張一組的場地，能讓寶可夢沒有特性；官方卡名沒查到</td></tr>
+            <tr><td>大土龍</td><td>能打 60× 的寶可夢，可能是老師的暱稱</td></tr>
+            <tr><td>畫影、話影、化影 → 化隱</td><td>依先前戰報寫成化隱；同段的花言怪、萊杯出茶、波波多倫也無法確認</td></tr>
+            <tr><td>記點月5、繼點月五 → 祭典</td><td>祭典類牌組（蟲、魚、猴子）的正式名稱不確定</td></tr>
+            <tr><td>格拉吉歐、手鐲</td><td>祭典牌組用來加傷害的卡，名稱不確定</td></tr>
+            <tr><td>八部吐蕃</td><td>呆呆王 130＋麻痺連招用的卡，無法辨識</td></tr>
+            <tr><td>歪鳥、陶帶狼、龍元</td><td>巨牙鯊／索羅亞克牌組裡的卡，無法辨識</td></tr>
+            <tr><td>阿翔</td><td>可能是阿響（火爆獸牌組的卡）</td></tr>
+            <tr><td>阿瑪米</td><td>索羅亞克牌組的支援者，名稱不確定</td></tr>
+            <tr><td>琵琶、珍珠、超補丁</td><td>胡地與呆呆王牌組裡的卡，名稱不確定</td></tr>
+            <tr><td>冰淇淋</td><td>同學地鼠牌組裡回血的卡，名稱不確定</td></tr>
+            <tr><td>怨真元的轉傷、猴子</td><td>可能是願增猿</td></tr>
+            <tr><td>雪拉比</td><td>可能是時拉比</td></tr>
+            <tr><td>火焰雞多龍、小火雞</td><td>推測是火焰雞／火稚雞</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <svg class="deco" viewBox="0 0 240 36" aria-hidden="true">
+      <circle cx="18" cy="18" r="8" fill="#F2A497" stroke="#3E3A39" stroke-width="1.6"/>
+      <circle cx="42" cy="18" r="8" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.6"/>
+      <circle cx="66" cy="18" r="8" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.6"/>
+      <circle cx="90" cy="18" r="8" fill="#B9DAA5" stroke="#3E3A39" stroke-width="1.6"/>
+      <rect x="112" y="6" width="16" height="22" rx="3" fill="#A8D3E6" stroke="#3E3A39" stroke-width="1.5"/>
+      <rect x="126" y="8" width="16" height="22" rx="3" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.5"/>
+      <circle cx="168" cy="18" r="12" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.6"/>
+      <text x="168" y="22" text-anchor="middle" font-size="9" font-family="Huninn, sans-serif" fill="#3E3A39">先</text>
+      <polygon points="200,6 203,14 212,14.2 205,19.2 207.5,28 200,23 192.5,28 195,19.2 188,14.2 197,14" fill="#F6D27A" stroke="#3E3A39" stroke-width="1.2" stroke-linejoin="round"/>
+    </svg>
+    <p>給小朋友複習用的課堂筆記。標有（?）的名稱還要再確認。</p>
+  </footer>
+</body>
+</html>
